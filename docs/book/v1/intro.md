@@ -1,3 +1,3 @@
-# pars-{component}
+# pars-mvc
 
 This component provides ...
