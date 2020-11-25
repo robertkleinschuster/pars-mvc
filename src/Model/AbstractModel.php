@@ -18,14 +18,13 @@ use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
 use Pars\Helper\Validation\ValidationHelperAwareTrait;
-use Pars\Mvc\Bean\TemplateDataBean;
 use Pars\Mvc\Exception\MvcException;
-use Pars\Mvc\Parameter\IdParameter;
-use Pars\Mvc\Parameter\MoveParameter;
-use Pars\Mvc\Parameter\OrderParameter;
-use Pars\Mvc\Parameter\PaginationParameter;
-use Pars\Mvc\Parameter\SearchParameter;
-use Pars\Mvc\Parameter\SubmitParameter;
+use Pars\Helper\Parameter\IdParameter;
+use Pars\Helper\Parameter\MoveParameter;
+use Pars\Helper\Parameter\OrderParameter;
+use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\SearchParameter;
+use Pars\Helper\Parameter\SubmitParameter;
 
 /**
  * Class AbstractModel
@@ -48,22 +47,6 @@ abstract class AbstractModel implements
     public const OPTION_CREATE_ALLOWED = 'create_allowed';
     public const OPTION_EDIT_ALLOWED = 'edit_allowed';
     public const OPTION_DELETE_ALLOWED = 'delete_allowed';
-
-    /**
-     * @var TemplateDataBean
-     */
-    private ?TemplateDataBean $templateData = null;
-
-    /**
-     * @return TemplateDataBean
-     */
-    public function getTemplateData(): TemplateDataBean
-    {
-        if (null == $this->templateData) {
-            $this->templateData = new TemplateDataBean();
-        }
-        return $this->templateData;
-    }
 
     public function initialize()
     {

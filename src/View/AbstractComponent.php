@@ -93,8 +93,8 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     public function render(BeanInterface $bean = null): string
     {
-        if ($bean !== null && !$this->hasBeanConverter()) {
-            $this->setBeanConverter(new ComponentBeanConverter());
+        if (!$this->hasBeanConverter()) {
+            $this->setBeanConverter(new ViewBeanConverter());
         }
         $this->initialize();
         return parent::render($bean);

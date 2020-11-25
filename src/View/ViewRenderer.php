@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
+use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Type\Base\BeanInterface;
 
 /**
@@ -66,9 +67,23 @@ class ViewRenderer
             'view',
             $view
         );
+        if ($view instanceof BeanConverterAwareInterface && !$view->hasBeanConverter()) {
+            $view->setBeanConverter(new ViewBeanConverter());
+        }
         if ($view->hasTemplate()) {
             return $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
         } elseif ($view->hasLayout()) {
+            $layout = $view->getLayout();
+            if (
+                $view instanceof BeanConverterAwareInterface &&
+                $layout instanceof BeanConverterAwareInterface
+            ) {
+                if ($view->hasBeanConverter()) {
+                    if (!$layout->hasBeanConverter()) {
+                        $layout->setBeanConverter($view->getBeanConverter());
+                    }
+                }
+            }
             $result = '<!DOCTYPE html>';
             if ($view instanceof BeanInterface) {
                 $result .= $view->getLayout()->render($view);
@@ -78,7 +93,7 @@ class ViewRenderer
             return $result;
         } else {
             $class = get_class($view);
-            throw new ViewException("Could not render view {$class}.");
+            throw new ViewException("Could not render view {$class}, no template or layout set.");
         }
     }
 }

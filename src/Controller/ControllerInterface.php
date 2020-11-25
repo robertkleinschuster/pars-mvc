@@ -38,6 +38,11 @@ interface ControllerInterface
     public function unauthorized();
 
     /**
+     * @return mixed
+     */
+    public function notfound();
+
+    /**
      * @return ControllerRequest
      */
     public function getControllerRequest(): ControllerRequest;

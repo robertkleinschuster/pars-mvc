@@ -29,6 +29,7 @@ class HtmlElement extends AbstractBaseBean implements
     public ?string $content = null;
     public ?string $path = null;
     public ?string $group = null;
+    public ?array $inlineStyles = [];
     public ?HtmlElementList $elementList = null;
 
     /**
@@ -165,6 +166,20 @@ class HtmlElement extends AbstractBaseBean implements
         }
     }
 
+    protected function handleInlineStyles()
+    {
+        $styles = "";
+        if ($this->hasAttribute('style')) {
+            $styles = $this->getAttribute('style');
+        }
+        foreach ($this->inlineStyles as $name => $value) {
+            $styles .= " $name: $value;";
+        }
+        if (!empty($styles)) {
+            $this->setAttribute('style', $styles);
+        }
+    }
+
     /**
      * @param string $str
      * @param BeanInterface $bean
@@ -178,10 +193,15 @@ class HtmlElement extends AbstractBaseBean implements
         $keys = [];
         $values = [];
         foreach ($bean->toArray() as $name => $value) {
-            $keys[] = "{{$name}}";
-            $keys[] = urlencode("{{$name}}");
-            $values[] = $value;
-            $values[] = urlencode($value);
+            if (is_string($value)) {
+                $keys[] = "{{$name}}";
+                $keys[] = urlencode("{{$name}}");
+                $values[] = $value;
+                $values[] = urlencode($value);
+            } else {
+                $keys[] = "{{$name}}";
+                $values[] = "$name not string";
+            }
         }
         return str_replace($keys, $values, $str);
     }
@@ -405,6 +425,27 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
+     * @param string $name
+     * @param string $value
+     * @return $this
+     */
+    public function addInlineStyle(string $name, string $value)
+    {
+        $this->inlineStyles[$name] = $value;
+        return $this;
+    }
+
+    /**
+     * @param string $name
+     * @return $this
+     */
+    public function removeInlineStyle(string $name)
+    {
+        unset($this->inlineStyles[$name]);
+        return $this;
+    }
+
+    /**
      * @param BeanInterface|null $bean
      * @return string
      */
@@ -426,6 +467,9 @@ class HtmlElement extends AbstractBaseBean implements
         $result = '';
         if ($this->hasElementList()) {
             foreach ($this->getElementList() as $element) {
+                if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
+                    $element->setBeanConverter($this->getBeanConverter());
+                }
                 $result .= $element->render($bean);
             }
         }
@@ -438,10 +482,15 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function renderOpenTag(BeanInterface $bean = null): string
     {
+        $this->handleInlineStyles();
         $tag = '';
         $attributes = $this->getHtmlAttributes($bean, true);
         if ($this->hasPath()) {
-            $tag .= "<a href='{$this->getPath($bean)}'>";
+            if ($this->hasOption('text-decoration-none')) {
+                $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}'>";
+            } else {
+                $tag .= "<a href='{$this->getPath($bean)}'>";
+            }
         }
         if (empty($attributes)) {
             $tag .= "<{$this->getTag()}>";

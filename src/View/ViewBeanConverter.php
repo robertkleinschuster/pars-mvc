@@ -6,8 +6,9 @@ namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Converter\AbstractBeanConverter;
 use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Component\Base\Form\DateTimeLocal;
 
-class ComponentBeanConverter extends AbstractBeanConverter
+class ViewBeanConverter extends AbstractBeanConverter
 {
     public function convertValueFromBean(BeanInterface $bean, string $name, $value)
     {
@@ -22,7 +23,7 @@ class ComponentBeanConverter extends AbstractBeanConverter
                 return $value ? 'true' : 'false';
             case \DateTime::class:
                 try {
-                    return new \DateTime($value);
+                    return $value->format(DateTimeLocal::FORMAT);
                 } catch (\Exception $e) {
                     return $e->getMessage();
                 }

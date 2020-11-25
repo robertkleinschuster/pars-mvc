@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Model;
 
-use Pars\Mvc\Bean\TemplateDataBean;
-use Pars\Mvc\Helper\ValidationHelper;
-use Pars\Mvc\Parameter\IdParameter;
-use Pars\Mvc\Parameter\MoveParameter;
-use Pars\Mvc\Parameter\OrderParameter;
-use Pars\Mvc\Parameter\PaginationParameter;
-use Pars\Mvc\Parameter\SearchParameter;
-use Pars\Mvc\Parameter\SubmitParameter;
+use Pars\Helper\Parameter\IdParameter;
+use Pars\Helper\Parameter\MoveParameter;
+use Pars\Helper\Parameter\OrderParameter;
+use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\SearchParameter;
+use Pars\Helper\Parameter\SubmitParameter;
 
 /**
  * Interface ModelInterface
@@ -19,10 +17,6 @@ use Pars\Mvc\Parameter\SubmitParameter;
  */
 interface ModelInterface
 {
-    /**
-     * @return TemplateDataBean
-     */
-    public function getTemplateData(): TemplateDataBean;
 
     /**
      * initialize data source in model

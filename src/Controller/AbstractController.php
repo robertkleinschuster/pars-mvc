@@ -4,11 +4,12 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
 use Pars\Mvc\Model\ModelInterface;
-use Pars\Mvc\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Mvc\View\ViewInterface;
 use Throwable;
 
@@ -124,6 +125,10 @@ abstract class AbstractController implements ControllerInterface
      */
     public function error(Throwable $exception)
     {
+        if ($this->hasView()) {
+            $this->view = null;
+            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        }
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Error</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Error</h1><p>{$exception->getMessage()}</p></body></html>");
     }
 
@@ -132,7 +137,20 @@ abstract class AbstractController implements ControllerInterface
      */
     public function unauthorized()
     {
+        if ($this->hasView()) {
+            $this->view = null;
+            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        }
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Unauthorized</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Unauthorized</h1><p>Permission to requested ressource was denied!</p></body></html>");
+    }
+
+    public function notfound()
+    {
+        if ($this->hasView()) {
+            $this->view = null;
+            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        }
+        $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Not found</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Not found</h1><p>The requested ressource was not found!</p></body></html>");
     }
 
 
@@ -195,9 +213,14 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasSubmit()) {
             if ($this->handleSubmitSecurity()) {
+                if ($this->getControllerRequest()->hasId()) {
+                    $id = $this->getControllerRequest()->getId();
+                } else {
+                    $id = new IdParameter();
+                }
                 $this->getModel()->handleSubmit(
                     $this->getControllerRequest()->getSubmit(),
-                    $this->getControllerRequest()->getId(),
+                    $id,
                     $this->getControllerRequest()->getAttribute_List()
                 );
             }
@@ -347,19 +370,6 @@ abstract class AbstractController implements ControllerInterface
     public function hasTemplate(): bool
     {
         return $this->template !== null;
-    }
-
-
-    /**
-     * @param string $key
-     * @param $value
-     * @return AbstractController
-     * @throws \Niceshops\Bean\Type\Base\BeanException
-     */
-    protected function setTemplateVariable(string $key, $value)
-    {
-        $this->getModel()->getTemplateData()->setData($key, $value);
-        return $this;
     }
 
     /**

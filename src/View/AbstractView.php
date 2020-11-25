@@ -3,10 +3,14 @@
 
 namespace Pars\Mvc\View;
 
+use Niceshops\Bean\Converter\BeanConverterAwareInterface;
+use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
 
-abstract class AbstractView extends AbstractBaseBean implements ViewInterface
+abstract class AbstractView extends AbstractBaseBean implements ViewInterface, BeanConverterAwareInterface
 {
+    use BeanConverterAwareTrait;
+
     protected ?LayoutInterface $layout = null;
     public ?string $template = null;
 

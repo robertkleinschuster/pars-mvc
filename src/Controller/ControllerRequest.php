@@ -9,14 +9,14 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
-use Pars\Mvc\Parameter\IdParameter;
-use Pars\Mvc\Parameter\MoveParameter;
-use Pars\Mvc\Parameter\NavParameter;
-use Pars\Mvc\Parameter\OrderParameter;
-use Pars\Mvc\Parameter\PaginationParameter;
-use Pars\Mvc\Parameter\RedirectParameter;
-use Pars\Mvc\Parameter\SearchParameter;
-use Pars\Mvc\Parameter\SubmitParameter;
+use Pars\Helper\Parameter\IdParameter;
+use Pars\Helper\Parameter\MoveParameter;
+use Pars\Helper\Parameter\NavParameter;
+use Pars\Helper\Parameter\OrderParameter;
+use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\RedirectParameter;
+use Pars\Helper\Parameter\SearchParameter;
+use Pars\Helper\Parameter\SubmitParameter;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -104,7 +104,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getId(): IdParameter
     {
         $idParameter = new IdParameter();
-        $idParameter->fromRequest($this);
+        $idParameter->fromData($this->getAttribute($idParameter->getParameterKey()));
         return $idParameter;
     }
 
@@ -122,7 +122,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getRedirect(): RedirectParameter
     {
         $redirectParameter = new RedirectParameter();
-        $redirectParameter->fromRequest($this);
+        $redirectParameter->fromData($this->getAttribute($redirectParameter->getParameterKey()));
         return $redirectParameter;
     }
 
@@ -140,7 +140,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getSubmit(): SubmitParameter
     {
         $submitParameter = new SubmitParameter();
-        $submitParameter->fromRequest($this);
+        $submitParameter->fromData($this->getAttribute($submitParameter->getParameterKey()));
         return $submitParameter;
     }
 
@@ -158,7 +158,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getNav(): NavParameter
     {
         $navParameter = new NavParameter();
-        $navParameter->fromRequest($this);
+        $navParameter->fromData($this->getAttribute($navParameter->getParameterKey()));
         return $navParameter;
     }
 
@@ -179,7 +179,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getPagination(): PaginationParameter
     {
         $paginationParameter = new PaginationParameter();
-        $paginationParameter->fromRequest($this);
+        $paginationParameter->fromData($this->getAttribute($paginationParameter->getParameterKey()));
         return $paginationParameter;
     }
 
@@ -197,7 +197,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getSearch(): SearchParameter
     {
         $searchParamter = new SearchParameter();
-        $searchParamter->fromRequest($this);
+        $searchParamter->fromData($this->getAttribute($searchParamter->getParameterKey()));
         return $searchParamter;
     }
 
@@ -215,7 +215,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getOrder(): OrderParameter
     {
         $orderParameter = new OrderParameter();
-        $orderParameter->fromRequest($this);
+        $orderParameter->fromData($this->getAttribute($orderParameter->getParameterKey()));
         return $orderParameter;
     }
 
@@ -233,7 +233,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getMove(): MoveParameter
     {
         $moveParameter = new MoveParameter();
-        $moveParameter->fromRequest($this);
+        $moveParameter->fromData($this->getAttribute($moveParameter->getParameterKey()));
         return $moveParameter;
     }
 

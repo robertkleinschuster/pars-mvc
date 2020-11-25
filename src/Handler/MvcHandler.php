@@ -139,8 +139,13 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 $controller->unauthorized();
             }
             $controller->finalize();
+        } catch (NotFoundException $exception) {
+            $controller = $this->getErrorController($controller, $errorController, $request, $config);
+            $controller->getControllerResponse()->setStatusCode(404);
+            $controller->notfound();
         } catch (Throwable $exception) {
             $controller = $this->getErrorController($controller, $errorController, $request, $config);
+            $controller->getControllerResponse()->setStatusCode(500);
             $controller->error($exception);
         }
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {

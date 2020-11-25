@@ -163,6 +163,9 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
                 return '';
             }
         }
+        if (!$this->hasBeanConverter()) {
+            $this->setBeanConverter(new ViewBeanConverter());
+        }
         if ($this->hasFormat()) {
             $this->setContent(($this->getFormat())($this, $this->getContent($bean), $bean));
         }
