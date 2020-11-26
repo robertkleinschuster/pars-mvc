@@ -520,7 +520,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function generateId(): string
     {
-        $this->setId(substr(str_shuffle(str_repeat($x='abcdefghijklmnopqrstuvwxyz', intval(ceil(10/strlen($x))) )),1, 10));
+        $this->setId(substr(str_shuffle(str_repeat($x='abcdefghijklmnopqrstuvwxyz', (int) (ceil(10/strlen($x))) )),1, 10));
         return $this->getId();
     }
 }

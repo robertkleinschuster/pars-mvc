@@ -104,7 +104,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getId(): IdParameter
     {
         $idParameter = new IdParameter();
-        $idParameter->fromData($this->getAttribute($idParameter->getParameterKey()));
+        $idParameter->fromData($this->getAttribute($idParameter->name()));
         return $idParameter;
     }
 
@@ -122,7 +122,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getRedirect(): RedirectParameter
     {
         $redirectParameter = new RedirectParameter();
-        $redirectParameter->fromData($this->getAttribute($redirectParameter->getParameterKey()));
+        $redirectParameter->fromData($this->getAttribute($redirectParameter->name()));
         return $redirectParameter;
     }
 
@@ -140,7 +140,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getSubmit(): SubmitParameter
     {
         $submitParameter = new SubmitParameter();
-        $submitParameter->fromData($this->getAttribute($submitParameter->getParameterKey()));
+        $submitParameter->fromData($this->getAttribute($submitParameter->name()));
         return $submitParameter;
     }
 
@@ -158,7 +158,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getNav(): NavParameter
     {
         $navParameter = new NavParameter();
-        $navParameter->fromData($this->getAttribute($navParameter->getParameterKey()));
+        $navParameter->fromData($this->getAttribute($navParameter->name()));
         return $navParameter;
     }
 
@@ -179,7 +179,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getPagination(): PaginationParameter
     {
         $paginationParameter = new PaginationParameter();
-        $paginationParameter->fromData($this->getAttribute($paginationParameter->getParameterKey()));
+        $paginationParameter->fromData($this->getAttribute($paginationParameter->name()));
         return $paginationParameter;
     }
 
@@ -197,7 +197,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getSearch(): SearchParameter
     {
         $searchParamter = new SearchParameter();
-        $searchParamter->fromData($this->getAttribute($searchParamter->getParameterKey()));
+        $searchParamter->fromData($this->getAttribute($searchParamter->name()));
         return $searchParamter;
     }
 
@@ -215,7 +215,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getOrder(): OrderParameter
     {
         $orderParameter = new OrderParameter();
-        $orderParameter->fromData($this->getAttribute($orderParameter->getParameterKey()));
+        $orderParameter->fromData($this->getAttribute($orderParameter->name()));
         return $orderParameter;
     }
 
@@ -233,7 +233,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getMove(): MoveParameter
     {
         $moveParameter = new MoveParameter();
-        $moveParameter->fromData($this->getAttribute($moveParameter->getParameterKey()));
+        $moveParameter->fromData($this->getAttribute($moveParameter->name()));
         return $moveParameter;
     }
 

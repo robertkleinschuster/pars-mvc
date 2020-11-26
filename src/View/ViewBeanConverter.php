@@ -16,7 +16,7 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_STRING:
             case BeanInterface::DATA_TYPE_INT:
             case BeanInterface::DATA_TYPE_FLOAT:
-                return strval($value);
+                return (string) $value;
             case BeanInterface::DATA_TYPE_ARRAY:
                 return json_encode($value);
             case BeanInterface::DATA_TYPE_BOOL:
@@ -36,11 +36,11 @@ class ViewBeanConverter extends AbstractBeanConverter
     {
         switch ($bean->type($name)) {
             case BeanInterface::DATA_TYPE_STRING:
-                return strval($value);
+                return (string) $value;
             case BeanInterface::DATA_TYPE_INT:
-                return intval($value);
+                return (int) $value;
             case BeanInterface::DATA_TYPE_FLOAT:
-                return floatval($value);
+                return (float) $value;
             case BeanInterface::DATA_TYPE_ARRAY:
                 return json_decode($value);
             case BeanInterface::DATA_TYPE_BOOL:
