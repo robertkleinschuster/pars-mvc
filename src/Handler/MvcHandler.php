@@ -149,21 +149,17 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             $controller->error($exception);
         }
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
-           /* if ($controller->hasSubControllerMap()) {
+            if ($controller->hasSubControllerMap()) {
                 foreach ($controller->getSubControllerMap() as $c => $a) {
                     $subController = $this->renderControllerAction($c, $a, $config, $request);
                     if ($subController->hasView() && $controller->hasView()) {
                         $components = $subController->getView()->getLayout()->getComponentList();
                         foreach ($components as $component) {
-                            $controller->getView()->addComponent($component);
+                            $controller->getView()->append($component);
                         }
                     }
-                    $templateData->setData(
-                        "subcontroller.$c.$a",
-                        (new ServerResponseFactory())($controller->getControllerResponse())->getBody()
-                    );
                 }
-            }*/
+            }
             if ($controller->hasView()) {
                 $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
                 $view = $controller->getView();

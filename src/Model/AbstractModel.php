@@ -16,15 +16,15 @@ use Niceshops\Bean\Type\Base\BeanListAwareInterface;
 use Niceshops\Bean\Type\Base\BeanListInterface;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
-use Pars\Helper\Validation\ValidationHelperAwareInterface;
-use Pars\Helper\Validation\ValidationHelperAwareTrait;
-use Pars\Mvc\Exception\MvcException;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
 use Pars\Helper\Parameter\OrderParameter;
 use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
+use Pars\Helper\Validation\ValidationHelperAwareInterface;
+use Pars\Helper\Validation\ValidationHelperAwareTrait;
+use Pars\Mvc\Exception\MvcException;
 
 /**
  * Class AbstractModel
@@ -112,17 +112,21 @@ abstract class AbstractModel implements
      */
     public function handleMove(MoveParameter $moveParameter)
     {
-        if ($this->hasBeanProcessor() && $this->hasBeanFinder()) {
-            $model = clone $this;
-            $model->initialize();
-            $this->getBeanProcessor()->move(
-                $model->getBeanFinder(),
-                $this->getBeanFinder()->getBean(),
-                $moveParameter->getField(),
-                $moveParameter->getSteps(),
-                $moveParameter->getReferenceField(),
-                $moveParameter->getReferenceValue()
-            );
+        if ($this->hasOption(self::OPTION_EDIT_ALLOWED)) {
+            if ($this->hasBeanProcessor() && $this->hasBeanFinder()) {
+                $model = clone $this;
+                $model->initialize();
+                $this->getBeanProcessor()->move(
+                    $model->getBeanFinder(),
+                    $this->getBeanFinder()->getBean(),
+                    $moveParameter->getField(),
+                    $moveParameter->getSteps(),
+                    $moveParameter->getReferenceField(),
+                    $moveParameter->getReferenceValue()
+                );
+            }
+        } else {
+            $this->handlePermissionDenied();
         }
     }
 

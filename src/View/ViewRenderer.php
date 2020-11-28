@@ -86,7 +86,12 @@ class ViewRenderer
             }
             $result = '<!DOCTYPE html>';
             if ($view instanceof BeanInterface) {
-                $result .= $view->getLayout()->render($view);
+                if ($view->hasBeanConverter()) {
+                    $bean = $view->getBeanConverter()->convert($view);
+                } else {
+                    $bean = $view;
+                }
+                $result .= $view->getLayout()->render($bean);
             } else {
                 $result .= $view->getLayout()->render();
             }

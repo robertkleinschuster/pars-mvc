@@ -6,7 +6,10 @@ namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareTrait;
+use Niceshops\Bean\Converter\BeanConverterInterface;
+use Niceshops\Bean\Converter\ConverterBeanDecorator;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
+use Niceshops\Bean\Type\Base\BeanAwareInterface;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
@@ -31,6 +34,8 @@ class HtmlElement extends AbstractBaseBean implements
     public ?string $group = null;
     public ?array $inlineStyles = [];
     public ?HtmlElementList $elementList = null;
+
+    private bool $initialized = false;
 
     /**
      * HtmlElement constructor.
@@ -61,8 +66,8 @@ class HtmlElement extends AbstractBaseBean implements
         $this->path = $path;
         $this->content = $content;
         if (null !== $attributes) {
-            foreach ($attributes as $key => $content) {
-                $this->setAttribute($key, $content);
+            foreach ($attributes as $key => $value) {
+                $this->setAttribute($key, $value);
             }
         }
     }
@@ -103,11 +108,9 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function getId(BeanInterface $bean = null): string
     {
-        if (null !== $bean) {
-            return $this->replacePlaceholder($this->getAttribute(self::ATTRIBUTE_ID), $bean);
-        } else {
-            return $this->getAttribute(self::ATTRIBUTE_ID);
-        }
+
+        return $this->getAttribute(self::ATTRIBUTE_ID);
+
     }
 
     /**
@@ -135,11 +138,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function getCssClasses(BeanInterface $bean = null): string
     {
-        if (null !== $bean) {
-            return $this->replacePlaceholder(implode(' ', $this->getOption_List()), $bean);
-        } else {
-            return implode(' ', $this->getOption_List());
-        }
+        return implode(' ', $this->getOption_List());
     }
 
     /**
@@ -159,11 +158,7 @@ class HtmlElement extends AbstractBaseBean implements
                 $attributes[] = "class='{$classes}'";
             }
         }
-        if ($bean !== null) {
-            return $this->replacePlaceholder(implode(' ', $attributes), $bean);
-        } else {
-            return implode(' ', $attributes);
-        }
+        return implode(' ', $attributes);
     }
 
     protected function handleInlineStyles()
@@ -187,19 +182,22 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function replacePlaceholder(string $str, BeanInterface $bean): string
     {
-        if ($this->hasBeanConverter()) {
-            $bean = $this->getBeanConverter()->convert($bean);
-        }
         $keys = [];
         $values = [];
         foreach ($bean->toArray() as $name => $value) {
             if (is_string($value)) {
                 $keys[] = "{{$name}}";
-                $keys[] = urlencode("{{$name}}");
+                $encoded = urlencode("{{$name}}");
+                $keys[] = $encoded;
+                $keys[] = urlencode($encoded);
                 $values[] = $value;
-                $values[] = urlencode($value);
+                $encoded = urlencode($value);
+                $values[] = $encoded;
+                $values[] = urlencode($encoded);
             } else {
                 $keys[] = "{{$name}}";
+                $keys[] = urlencode("{{$name}}");
+                $values[] = "$name not string";
                 $values[] = "$name not string";
             }
         }
@@ -213,11 +211,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function getPath(BeanInterface $bean = null)
     {
-        if ($bean !== null) {
-            return $this->replacePlaceholder($this->path, $bean);
-        } else {
-            return $this->path;
-        }
+        return $this->path;
     }
 
     /**
@@ -245,11 +239,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function getGroup(BeanInterface $bean = null): string
     {
-        if (null !== $bean) {
-            return $this->replacePlaceholder($this->group, $bean);
-        } else {
-            return $this->group;
-        }
+        return $this->group;
     }
 
     /**
@@ -278,11 +268,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function getContent(BeanInterface $bean = null): string
     {
-        if ($bean !== null) {
-            return $this->replacePlaceholder($this->content, $bean);
-        } else {
-            return $this->content;
-        }
+        return $this->content;
     }
 
     /**
@@ -340,14 +326,45 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function render(BeanInterface $bean = null): string
     {
+        if (!$this->initialized) {
+            $this->initialize();
+            $this->initialized = true;
+        }
+        if ($this instanceof BeanAwareInterface && $this->hasBean()) {
+            if (null !== $bean) {
+                $thisbean = $this->getBean();
+                foreach ($bean as $name => $value) {
+                    if (!$thisbean->exists($name) || $thisbean->empty($name)) {
+                        if ($this->hasBeanConverter()) {
+                            $this->getBeanConverter()->convert($thisbean)->set($name, $value);
+                        } else {
+                            $thisbean->set($name, $value);
+                        }
+                    }
+                }
+                $bean = $thisbean;
+            } else {
+                $bean = $this->getBean();
+            }
+            if ($bean !== null && $this->hasBeanConverter() && !$bean instanceof ConverterBeanDecorator) {
+                $bean = $this->getBeanConverter()->convert($bean);
+            }
+        }
+        $this->beforeRender($bean);
         $result = '';
         $result .= $this->renderOpenTag($bean);
         $result .= $this->renderValue($bean);
         $result .= $this->renderElements($bean);
         $result .= $this->renderCloseTag($bean);
+        if ($bean !== null) {
+            $result = $this->replacePlaceholder($result, $bean);
+        }
         return $result;
     }
 
+    protected function beforeRender(BeanInterface $bean = null){}
+
+    protected function initialize(){}
     /**
      * @param mixed ...$element
      * @return $this|HtmlInterface
@@ -470,10 +487,20 @@ class HtmlElement extends AbstractBaseBean implements
                 if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
                     $element->setBeanConverter($this->getBeanConverter());
                 }
-                $result .= $element->render($bean);
+                try {
+                    $this->beforeRenderElement($element, $bean);
+                    $result .= $element->render($bean);
+                } catch (\Throwable $error) {
+                    $result .= $error->getMessage();
+                    $result .= str_replace(PHP_EOL, '<br>', $error->getTraceAsString());
+                }
             }
         }
         return $result;
+    }
+
+    protected function beforeRenderElement(HtmlElement $element, BeanInterface $bean = null)
+    {
     }
 
     /**
@@ -520,7 +547,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function generateId(): string
     {
-        $this->setId(substr(str_shuffle(str_repeat($x='abcdefghijklmnopqrstuvwxyz', (int) (ceil(10/strlen($x))) )),1, 10));
+        $this->setId(substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10));
         return $this->getId();
     }
 }

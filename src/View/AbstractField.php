@@ -4,6 +4,7 @@
 namespace Pars\Mvc\View;
 
 
+use Niceshops\Bean\Type\Base\BeanAwareInterface;
 use Niceshops\Bean\Type\Base\BeanInterface;
 
 /**
@@ -72,11 +73,7 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
      */
     public function getLabel(BeanInterface $bean = null): string
     {
-        if (null !== $bean) {
-            return $this->replacePlaceholder($this->label, $bean);
-        } else {
-            return $this->label;
-        }
+        return $this->label;
     }
 
     /**
@@ -169,12 +166,6 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
         if ($this->hasFormat()) {
             $this->setContent(($this->getFormat())($this, $this->getContent($bean), $bean));
         }
-        $this->initialize();
         return parent::render($bean);
     }
-
-    /**
-     * @return mixed
-     */
-    abstract protected function initialize();
 }

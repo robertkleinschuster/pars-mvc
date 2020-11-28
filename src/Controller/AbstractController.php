@@ -211,6 +211,7 @@ abstract class AbstractController implements ControllerInterface
             $this->getModel()->handleMove($this->getControllerRequest()->getMove());
         }
 
+
         if ($this->getControllerRequest()->hasSubmit()) {
             if ($this->handleSubmitSecurity()) {
                 if ($this->getControllerRequest()->hasId()) {
@@ -227,7 +228,7 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasRedirect()) {
-            $this->getControllerResponse()->setRedirect($this->getControllerRequest()->getRedirect()->getLink());
+            $this->getControllerResponse()->setRedirect($this->getControllerRequest()->getRedirect()->getPath());
         }
     }
 

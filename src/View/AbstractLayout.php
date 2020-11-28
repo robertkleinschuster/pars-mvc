@@ -20,14 +20,4 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
         }
         return $this->componentList;
     }
-
-    public function render(BeanInterface $bean = null): string
-    {
-        $this->initialize();
-        return parent::render($bean);
-    }
-
-
-    abstract protected function initialize();
-
 }

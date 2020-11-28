@@ -23,7 +23,7 @@ trait FieldListAwareTrait
      * @param FieldList|null $fieldList
      * @return FieldListAwareTrait
      */
-    public function setFieldList(?FieldList $fieldList): FieldListAwareTrait
+    public function setFieldList(?FieldList $fieldList)
     {
         $this->fieldList = $fieldList;
         return $this;

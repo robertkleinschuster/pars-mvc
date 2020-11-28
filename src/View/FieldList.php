@@ -12,21 +12,21 @@ use Niceshops\Bean\Type\Base\AbstractBaseBeanList;
 class FieldList extends AbstractBaseBeanList
 {
     /**
-     * @param FieldInterface[] $component
+     * @param FieldInterface[] $field
      * @return $this
      */
-    public function push(...$component): self
+    public function push(...$field): self
     {
-        return parent::push(...$component);
+        return parent::push(...$field);
     }
 
     /**
-     * @param FieldInterface[] $component
+     * @param FieldInterface[] $field
      * @return $this
      */
-    public function unshift(...$component): self
+    public function unshift(...$field): self
     {
-        return parent::unshift(...$component);
+        return parent::unshift(...$field);
     }
 
     /**

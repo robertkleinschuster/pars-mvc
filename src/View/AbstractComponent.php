@@ -8,9 +8,8 @@ use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Type\Base\BeanInterface;
 
-abstract class AbstractComponent extends HtmlElement implements ComponentInterface, BeanConverterAwareInterface
+abstract class AbstractComponent extends HtmlElement implements ComponentInterface
 {
-    use BeanConverterAwareTrait;
 
     public ?string $template = null;
     public ?string $name = null;
@@ -46,18 +45,6 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
         return null !== $this->template;
     }
 
-    /**
-     * @param string $str
-     * @param BeanInterface $bean
-     * @return string
-     */
-    protected function replacePlaceholder(string $str, BeanInterface $bean): string
-    {
-        if ($this->hasBeanConverter()) {
-            $bean = $this->getBeanConverter()->convert($bean);
-        }
-        return str_replace($bean->keys(), $bean->values(), $str);
-    }
 
     /**
      * @param BeanInterface|null $bean
@@ -65,11 +52,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
      */
     public function getName(BeanInterface $bean = null): string
     {
-        if ($bean !== null) {
-            return $this->replacePlaceholder($this->name, $bean);
-        } else {
-            return $this->name;
-        }
+        return $this->name;
     }
 
     /**
@@ -90,17 +73,5 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     {
         return $this->name !== null;
     }
-
-    public function render(BeanInterface $bean = null): string
-    {
-        if (!$this->hasBeanConverter()) {
-            $this->setBeanConverter(new ViewBeanConverter());
-        }
-        $this->initialize();
-        return parent::render($bean);
-    }
-
-
-    abstract protected function initialize();
 
 }

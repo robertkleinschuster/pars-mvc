@@ -31,6 +31,7 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public const OPTION_RENDER_RESPONSE = 'render_response';
 
     public const STATUS_NOT_FOUND = 404;
+    public const STATUS_PERMISSION_DENIED = 401;
     public const STATUS_FOUND = 200;
 
     /**
