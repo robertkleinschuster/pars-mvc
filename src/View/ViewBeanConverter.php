@@ -51,7 +51,7 @@ class ViewBeanConverter extends AbstractBeanConverter
         }
         switch ($bean->type($name)) {
             case BeanInterface::DATA_TYPE_STRING:
-                return (string)$value;
+                return strip_tags((string)$value);
             case BeanInterface::DATA_TYPE_INT:
                 return (int)$value;
             case BeanInterface::DATA_TYPE_FLOAT:
