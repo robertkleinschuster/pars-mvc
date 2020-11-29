@@ -51,7 +51,7 @@ class ViewBeanConverter extends AbstractBeanConverter
         }
         switch ($bean->type($name)) {
             case BeanInterface::DATA_TYPE_STRING:
-                return strip_tags((string)$value);
+                return $this->sanitizeString($name, (string) $value);
             case BeanInterface::DATA_TYPE_INT:
                 return (int)$value;
             case BeanInterface::DATA_TYPE_FLOAT:
@@ -69,4 +69,22 @@ class ViewBeanConverter extends AbstractBeanConverter
         }
     }
 
+    /**
+     * @param string $name
+     * @param $value
+     * @return string
+     */
+    protected function sanitizeString(string $name, $value)
+    {
+        if (in_array($name, ['ArticleTranslation_Teaser', 'ArticleTranslation_Text', 'ArticleTranslation_Footer'])) {
+            $allowed = '<div><span><pre><p><br><hr><hgroup><h1><h2><h3><h4><h5><h6>
+            <ul><ol><li><dl><dt><dd><strong><em><b><i><u>
+            <img><a><abbr><address><blockquote>
+            <form><fieldset><label><input><textarea>
+            <caption><table><tbody><td><tfoot><th><thead><tr>';
+            return strip_tags($value, $allowed);
+        } else {
+            return strip_tags($value);
+        }
+    }
 }
