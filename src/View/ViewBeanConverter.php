@@ -11,6 +11,9 @@ use Psr\Http\Message\UploadedFileInterface;
 
 class ViewBeanConverter extends AbstractBeanConverter
 {
+
+    private ?string $timezone = null;
+
     public function convertValueFromBean(BeanInterface $bean, string $name, $value)
     {
         switch ($bean->type($name)) {
@@ -25,6 +28,14 @@ class ViewBeanConverter extends AbstractBeanConverter
             case \DateTime::class:
                 try {
                     if ($value instanceof \DateTime) {
+                        $timezone = 'Europe/Vienna';
+                        if ($this->hasTimezone()) {
+                            $timezone = $this->getTimezone();
+                        }
+                        $userTimezone = new \DateTimeZone($timezone);
+                        $offset = $userTimezone->getOffset($value);
+                        $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                        $value->add($myInterval);
                         return $value->format(DateTimeLocal::FORMAT);
                     } else {
                         return '';
@@ -51,7 +62,7 @@ class ViewBeanConverter extends AbstractBeanConverter
         }
         switch ($bean->type($name)) {
             case BeanInterface::DATA_TYPE_STRING:
-                return $this->sanitizeString($name, (string) $value);
+                return $this->sanitizeString($name, (string)$value);
             case BeanInterface::DATA_TYPE_INT:
                 return (int)$value;
             case BeanInterface::DATA_TYPE_FLOAT:
@@ -61,7 +72,12 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value === 'true' || $value === true;
             case \DateTime::class:
-                return new \DateTime($value);
+                $value = new \DateTime($value);
+                $userTimezone = new \DateTimeZone('UTC');
+                $offset = $userTimezone->getOffset($value);
+                $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                $value->add($myInterval);
+                return $value;
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;
             default:
@@ -87,4 +103,33 @@ class ViewBeanConverter extends AbstractBeanConverter
             return strip_tags($value);
         }
     }
+
+    /**
+     * @return string
+     */
+    public function getTimezone(): string
+    {
+        return $this->timezone;
+    }
+
+    /**
+     * @param string $timezone
+     *
+     * @return $this
+     */
+    public function setTimezone(string $timezone): self
+    {
+        $this->timezone = $timezone;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasTimezone(): bool
+    {
+        return isset($this->timezone);
+    }
+
+
 }

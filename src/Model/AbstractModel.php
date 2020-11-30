@@ -9,6 +9,7 @@ use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Factory\BeanFactoryAwareInterface;
 use Niceshops\Bean\Finder\BeanFinderAwareInterface;
 use Niceshops\Bean\Finder\BeanFinderAwareTrait;
+use Niceshops\Bean\Processor\BeanOrderProcessorAwareTrait;
 use Niceshops\Bean\Processor\BeanProcessorAwareInterface;
 use Niceshops\Bean\Processor\BeanProcessorAwareTrait;
 use Niceshops\Bean\Type\Base\BeanInterface;
@@ -43,6 +44,7 @@ abstract class AbstractModel implements
     use BeanProcessorAwareTrait;
     use BeanConverterAwareTrait;
     use ValidationHelperAwareTrait;
+    use BeanOrderProcessorAwareTrait;
 
     public const OPTION_CREATE_ALLOWED = 'create_allowed';
     public const OPTION_EDIT_ALLOWED = 'edit_allowed';
@@ -113,15 +115,10 @@ abstract class AbstractModel implements
     public function handleMove(MoveParameter $moveParameter)
     {
         if ($this->hasOption(self::OPTION_EDIT_ALLOWED)) {
-            if ($this->hasBeanProcessor() && $this->hasBeanFinder()) {
-                $model = clone $this;
-                $model->initialize();
-                $this->getBeanProcessor()->move(
-                    $model->getBeanFinder(),
+            if ($this->hasBeanOrderProcessor()) {
+                $this->getBeanOrderProcessor()->move(
                     $this->getBeanFinder()->getBean(),
-                    $moveParameter->getField(),
                     $moveParameter->getSteps(),
-                    $moveParameter->getReferenceField(),
                     $moveParameter->getReferenceValue()
                 );
             }
