@@ -117,7 +117,7 @@ class ViewBeanConverter extends AbstractBeanConverter
      *
      * @return $this
      */
-    public function setTimezone(string $timezone): self
+    public function setTimezone(?string $timezone): self
     {
         $this->timezone = $timezone;
         return $this;
