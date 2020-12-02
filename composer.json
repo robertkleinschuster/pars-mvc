@@ -14,7 +14,7 @@
     },
     "require": {
         "php": "^7.4",
-        "pars/pars-core": "dev-master"
+        "pars/pars-core": "^1.0"
     },
     "require-dev": {
         "phpunit/phpunit": "^7.5 || ^8.1",
