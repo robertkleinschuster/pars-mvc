@@ -15,6 +15,7 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Model\Cms\Paragraph\CmsParagraphBean;
 
 class HtmlElement extends AbstractBaseBean implements
     HtmlInterface,
@@ -175,6 +176,24 @@ class HtmlElement extends AbstractBaseBean implements
         }
     }
 
+    protected function unnormalizeArray(array $data, string $name = null)
+    {
+        $result = [];
+        foreach ($data as $key => $value) {
+            if (null !== $name) {
+                $arrKey = "{$name}[$key]";
+            } else {
+                $arrKey = $key;
+            }
+            if (is_array($value)) {
+                $result = array_replace($result, $this->unnormalizeArray($value, $arrKey));
+            } else {
+                $result[$arrKey] = $value;
+            }
+        }
+        return $result;
+    }
+
     /**
      * @param string $str
      * @param BeanInterface $bean
@@ -184,7 +203,7 @@ class HtmlElement extends AbstractBaseBean implements
     {
         $keys = [];
         $values = [];
-        foreach ($bean->toArray() as $name => $value) {
+        foreach ($this->unnormalizeArray($bean->toArray(true)) as $name => $value) {
             if (is_string($value)) {
                 $keys[] = "{{$name}}";
                 $encoded = urlencode("{{$name}}");

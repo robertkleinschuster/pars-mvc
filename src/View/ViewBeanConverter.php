@@ -5,6 +5,7 @@ namespace Pars\Mvc\View;
 
 
 use Niceshops\Bean\Converter\AbstractBeanConverter;
+use Niceshops\Bean\Type\Base\AbstractBaseBean;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Pars\Component\Base\Form\DateTimeLocal;
 use Psr\Http\Message\UploadedFileInterface;
@@ -80,6 +81,8 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value;
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;
+            case BeanInterface::class:
+                return AbstractBaseBean::createFromArray($value);
             default:
                 return $value;
         }
