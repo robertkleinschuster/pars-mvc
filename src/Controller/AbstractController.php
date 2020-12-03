@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
@@ -219,9 +220,15 @@ abstract class AbstractController implements ControllerInterface
                 } else {
                     $id = new IdParameter();
                 }
+                if ($this->getControllerRequest()->hasIdList()) {
+                    $idList = $this->getControllerRequest()->getIdList();
+                } else {
+                    $idList = new IdListParameter();
+                }
                 $this->getModel()->handleSubmit(
                     $this->getControllerRequest()->getSubmit(),
                     $id,
+                    $idList,
                     $this->getControllerRequest()->getAttribute_List()
                 );
             }

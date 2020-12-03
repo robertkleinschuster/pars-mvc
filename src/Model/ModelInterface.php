@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Model;
 
+use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
 use Pars\Helper\Parameter\OrderParameter;
@@ -57,8 +58,9 @@ interface ModelInterface
      * Handle form submit
      *
      * @param SubmitParameter $submitParameter
-     * @param IdParameter $idParamter
+     * @param IdParameter $idParameter
+     * @param IdListParameter $idListParameter
      * @param array $attribute_List
      */
-    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParamter, array $attribute_List);
+    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParameter, IdListParameter $idListParameter, array $attribute_List);
 }

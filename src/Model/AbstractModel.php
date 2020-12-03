@@ -17,6 +17,7 @@ use Niceshops\Bean\Type\Base\BeanListAwareInterface;
 use Niceshops\Bean\Type\Base\BeanListInterface;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
 use Pars\Helper\Parameter\OrderParameter;
@@ -133,12 +134,19 @@ abstract class AbstractModel implements
      * @param array $attribute_List
      * @throws \Niceshops\Core\Exception\AttributeNotFoundException
      */
-    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParameter, array $attribute_List)
+    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParameter, IdListParameter $idListParameter, array $attribute_List)
     {
         switch ($submitParameter->getMode()) {
             case SubmitParameter::MODE_SAVE:
                 if ($this->hasOption(self::OPTION_EDIT_ALLOWED)) {
                     $this->save($attribute_List);
+                } else {
+                    $this->handlePermissionDenied();
+                }
+                break;
+            case SubmitParameter::MODE_SAVE_BULK:
+                if ($this->hasOption(self::OPTION_EDIT_ALLOWED)) {
+                    $this->save_bulk($idListParameter, $attribute_List);
                 } else {
                     $this->handlePermissionDenied();
                 }
@@ -150,9 +158,23 @@ abstract class AbstractModel implements
                     $this->handlePermissionDenied();
                 }
                 break;
+            case SubmitParameter::MODE_CREATE_BULK:
+                if ($this->hasOption(self::OPTION_CREATE_ALLOWED)) {
+                    $this->create_bulk($idParameter, $idListParameter, $attribute_List);
+                } else {
+                    $this->handlePermissionDenied();
+                }
+                break;
             case SubmitParameter::MODE_DELETE:
                 if ($this->hasOption(self::OPTION_DELETE_ALLOWED)) {
                     $this->delete($idParameter);
+                } else {
+                    $this->handlePermissionDenied();
+                }
+                break;
+            case SubmitParameter::MODE_DELETE_BULK:
+                if ($this->hasOption(self::OPTION_DELETE_ALLOWED)) {
+                    $this->delete_bulk($idListParameter, $attribute_List);
                 } else {
                     $this->handlePermissionDenied();
                 }
@@ -180,6 +202,50 @@ abstract class AbstractModel implements
                 }
                 $beanList = $factory->getEmptyBeanList();
                 $beanList->push($bean);
+                $processor = $this->getBeanProcessor();
+                if ($processor instanceof BeanListAwareInterface) {
+                    $processor->setBeanList($beanList);
+                }
+                $processor->save();
+                if ($processor instanceof ValidationHelperAwareInterface) {
+                    $this->getValidationHelper()->addErrorFieldMap(
+                        $processor->getValidationHelper()->getErrorFieldMap()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param IdParameter $idParameter
+     * @param array $attributes
+     */
+    protected function create_bulk(IdParameter $idParameter, IdListParameter $idListParameter, array $attributes): void
+    {
+        $id = $idParameter->getAttribute_List();
+        $ids = $idListParameter->getAttribute_List();
+        $ids_new = [];
+        foreach ($ids as $key => $values) {
+            foreach ($values as $i => $value) {
+                if (!isset($ids_new[$i])) {
+                    $ids_new[$i] = $id;
+                }
+                $ids_new[$i][$key] = $value;
+            }
+        }
+        if ($this->hasBeanFinder() && $this->hasBeanProcessor()) {
+            $finder = $this->getBeanFinder();
+            if ($finder instanceof BeanFactoryAwareInterface) {
+                $factory = $finder->getBeanFactory();
+                $beanList = $factory->getEmptyBeanList();
+                foreach ($ids_new as $data) {
+                    $bean = $factory->getEmptyBean($data);
+                    if ($this->hasBeanConverter()) {
+                        $converter = $this->getBeanConverter();
+                        $bean = $converter->convert($bean, $data)->toBean();
+                    }
+                    $beanList->push($bean);
+                }
                 $processor = $this->getBeanProcessor();
                 if ($processor instanceof BeanListAwareInterface) {
                     $processor->setBeanList($beanList);
@@ -228,6 +294,39 @@ abstract class AbstractModel implements
 
     /**
      * @param IdParameter $idParameter
+     * @param IdListParameter $idListParameter
+     * @param array $attributes
+     */
+    protected function save_bulk(IdListParameter $idListParameter, array $attributes): void
+    {
+        if ($this->hasBeanFinder() && $this->hasBeanProcessor()) {
+            $finder = $this->getBeanFinder();
+            if ($finder instanceof BeanFactoryAwareInterface) {
+                $data = $attributes;
+                $this->getBeanFinder()->filter($idListParameter->getAttribute_List());
+                $beanList = $this->getBeanFinder()->getBeanList();
+                foreach ($beanList as $bean) {
+                    if ($this->hasBeanConverter()) {
+                        $converter = $this->getBeanConverter();
+                        $converter->convert($bean)->fromArray($data);
+                    }
+                }
+                $processor = $this->getBeanProcessor();
+                if ($processor instanceof BeanListAwareInterface) {
+                    $processor->setBeanList($beanList);
+                }
+                $processor->save();
+                if ($processor instanceof ValidationHelperAwareInterface) {
+                    $this->getValidationHelper()->addErrorFieldMap(
+                        $processor->getValidationHelper()->getErrorFieldMap()
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * @param IdParameter $idParameter
      */
     protected function delete(IdParameter $idParameter): void
     {
@@ -239,6 +338,27 @@ abstract class AbstractModel implements
                     $beanList = $finder->getBeanList(true);
                     $processor->setBeanList($beanList);
                 }
+            }
+            $processor->delete();
+            if ($processor instanceof ValidationHelperAwareInterface) {
+                $this->getValidationHelper()->addErrorFieldMap(
+                    $processor->getValidationHelper()->getErrorFieldMap()
+                );
+            }
+        }
+    }
+    /**
+     * @param IdParameter $idListParameter
+     */
+    protected function delete_bulk(IdListParameter $idListParameter, array $attributes): void
+    {
+        if ($this->hasBeanFinder() && $this->getBeanProcessor() && count($idListParameter->getAttribute_List())) {
+            $finder = $this->getBeanFinder();
+            $finder->filter($idListParameter->getAttribute_List());
+            $processor = $this->getBeanProcessor();
+            if ($processor instanceof BeanListAwareInterface) {
+                $beanList = $finder->getBeanList(true);
+                $processor->setBeanList($beanList);
             }
             $processor->delete();
             if ($processor instanceof ValidationHelperAwareInterface) {

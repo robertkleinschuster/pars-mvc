@@ -9,6 +9,7 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
 use Pars\Helper\Parameter\NavParameter;
@@ -92,7 +93,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasId(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_ID);
+        return $this->hasAttribute(IdParameter::name());
     }
 
     /**
@@ -111,9 +112,30 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     /**
      * @return bool
      */
+    public function hasIdList(): bool
+    {
+        return $this->hasAttribute(IdListParameter::name(false));
+    }
+
+    /**
+     * @return IdParameter
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     */
+    public function getIdList(): IdListParameter
+    {
+        $idListParameter = new IdListParameter();
+        $idListParameter->fromData($this->getAttribute($idListParameter::name(false)));
+        return $idListParameter;
+    }
+
+    /**
+     * @return bool
+     */
     public function hasRedirect(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_REDIRECT);
+        return $this->hasAttribute(RedirectParameter::name());
     }
 
     /**
@@ -131,7 +153,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasSubmit(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_SUBMIT);
+        return $this->hasAttribute(SubmitParameter::name());
     }
 
     /**
@@ -149,7 +171,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasNav(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_NAV);
+        return $this->hasAttribute(NavParameter::name());
     }
 
     /**
@@ -167,7 +189,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasPagingation(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_PAGINATION);
+        return $this->hasAttribute(PaginationParameter::name());
     }
 
     /**
@@ -188,7 +210,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasSearch(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_SEARCH);
+        return $this->hasAttribute(SearchParameter::name());
     }
 
     /**
@@ -206,7 +228,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasOrder(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_ORDER);
+        return $this->hasAttribute(OrderParameter::name());
     }
 
     /**
@@ -224,7 +246,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function hasMove(): bool
     {
-        return $this->hasAttribute(self::ATTRIBUTE_MOVE);
+        return $this->hasAttribute(MoveParameter::name());
     }
 
     /**
