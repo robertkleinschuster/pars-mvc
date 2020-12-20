@@ -415,7 +415,7 @@ class HtmlElement extends AbstractBaseBean implements
             }
         }
         $this->beforeRender($bean);
-        $result = '<!-- ' . static::class . ' -->';
+        $result = '';
         $result .= $this->renderOpenTag($bean);
         $result .= $this->renderValue($bean);
         $result .= $this->renderElements($bean);
