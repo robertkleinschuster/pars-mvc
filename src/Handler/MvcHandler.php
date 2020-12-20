@@ -173,7 +173,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                     "$mvcTemplateFolder::$controllerCode/$actionCode"
                 );
             }
-            $controller->getControllerResponse()->setBody(TinyMinify::html($renderedOutput));
+            $controller->getControllerResponse()->setBody($renderedOutput);
         }
         return $controller;
     }

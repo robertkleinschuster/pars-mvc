@@ -151,9 +151,10 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
 
     /**
      * @param BeanInterface|null $bean
+     * @param bool $placeholders
      * @return string
      */
-    public function render(BeanInterface $bean = null): string
+    public function render(BeanInterface $bean = null, bool $placeholders = false): string
     {
         if ($this->hasAccept()) {
             if (($this->getAccept())($this, $bean) === false) {
@@ -166,6 +167,6 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
         if ($this->hasFormat()) {
             $this->setContent(($this->getFormat())($this, $this->hasContent() ? $this->getContent($bean): '', $bean));
         }
-        return parent::render($bean);
+        return parent::render($bean, $placeholders);
     }
 }

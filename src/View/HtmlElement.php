@@ -201,26 +201,68 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function replacePlaceholder(string $str, BeanInterface $bean): string
     {
+        $matches = [];
+        preg_match_all('/\{.*?\}|%7B.*?%7D|%257B.*?%257D/', $str, $matches);
         $keys = [];
         $values = [];
-        foreach ($this->unnormalizeArray($bean->toArray(true)) as $name => $value) {
-            if (is_string($value)) {
-                $keys[] = "{{$name}}";
-                $encoded = urlencode("{{$name}}");
-                $keys[] = $encoded;
-                $keys[] = urlencode($encoded);
-                $values[] = $value;
-                $encoded = urlencode($value);
-                $values[] = $encoded;
-                $values[] = urlencode($encoded);
+        $this->replacePlaceholderValues($matches, $str, $bean, $keys, $values);
+        return str_replace($keys, $values, $str);
+    }
+
+    /**
+     * @param array $keys
+     * @param string $subject
+     * @param BeanInterface $bean
+     * @param array $repkeys
+     * @param array $repvalues
+     */
+    private function replacePlaceholderValues(
+        array $keys,
+        string &$subject,
+        BeanInterface $bean,
+        array &$repkeys,
+        array &$repvalues
+    ) {
+        foreach ($keys as $key) {
+            if (is_array($key)) {
+                $this->replacePlaceholderValues($key, $subject, $bean, $repkeys, $repvalues);
             } else {
-                $keys[] = "{{$name}}";
-                $keys[] = urlencode("{{$name}}");
-                $values[] = "$name not string";
-                $values[] = "$name not string";
+                if (strpos($key, ' ') !== false) {
+                    continue;
+                }
+                $value = $key;
+                $name = $key;
+                $name = str_replace('{', '', $name);
+                $name = str_replace('}', '', $name);
+                $name = str_replace('%7B', '', $name);
+                $name = str_replace('%7D', '', $name);
+                $name = str_replace('%257B', '', $name);
+                $name = str_replace('%257D', '', $name);
+                if ($bean->exists($name)) {
+                    $value = $bean->get($name);
+                } else {
+                    $data = $this->unnormalizeArray($bean->toArray(true));
+                    if (isset($data[$name])) {
+                        $value = $data[$name];
+                    }
+                }
+                if (is_string($value)) {
+                    $repkeys[] = "{{$name}}";
+                    $repkeys[] = "%7B{$name}%7D";
+                    $repkeys[] = "%257B{$name}%257D";
+                    $repvalues[] = $value;
+                    $repvalues[] = $value;
+                    $repvalues[] = $value;
+                } else {
+                    $repkeys[] = "{{$name}}";
+                    $repkeys[] = "%7B{$name}%7D";
+                    $repkeys[] = "%257B{$name}%257D";
+                    $repvalues[] = "$name not string";
+                    $repvalues[] = "$name not string";
+                    $repvalues[] = "$name not string";
+                }
             }
         }
-        return str_replace($keys, $values, $str);
     }
 
 
@@ -341,15 +383,18 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param BeanInterface|null $bean
+     * @param bool $placeholders
      * @return string
      */
-    public function render(BeanInterface $bean = null): string
+    public function render(BeanInterface $bean = null, bool $placeholders = false): string
     {
         if (!$this->initialized) {
             $this->initialize();
             $this->initialized = true;
+            $this->handleInlineStyles();
         }
         if ($this instanceof BeanAwareInterface && $this->hasBean()) {
+            $placeholders = true;
             if (null !== $bean) {
                 $thisbean = $this->getBean();
                 foreach ($bean as $name => $value) {
@@ -370,12 +415,12 @@ class HtmlElement extends AbstractBaseBean implements
             }
         }
         $this->beforeRender($bean);
-        $result = '';
+        $result = '<!-- ' . static::class . ' -->';
         $result .= $this->renderOpenTag($bean);
         $result .= $this->renderValue($bean);
         $result .= $this->renderElements($bean);
         $result .= $this->renderCloseTag($bean);
-        if ($bean !== null) {
+        if ($bean !== null && $placeholders) {
             $result = $this->replacePlaceholder($result, $bean);
         }
         return $result;
@@ -528,7 +573,6 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function renderOpenTag(BeanInterface $bean = null): string
     {
-        $this->handleInlineStyles();
         $tag = '';
         $attributes = $this->getHtmlAttributes($bean, true);
         if ($this->hasPath()) {

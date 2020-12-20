@@ -91,7 +91,7 @@ class ViewRenderer
                 } else {
                     $bean = $view;
                 }
-                $result .= $view->getLayout()->render($bean);
+                $result .= $view->getLayout()->render($bean, true);
             } else {
                 $result .= $view->getLayout()->render();
             }
