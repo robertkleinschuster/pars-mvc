@@ -93,13 +93,13 @@ class HtmlElementTest extends \Niceshops\Core\PHPUnit\DefaultTestCase
         $this->object->setContent('test');
         $child = $this->mockElement();
         $child->setTag('p');
-        $child->setValue('foo');
+        $child->setContent('foo');
         $child2 = $this->mockElement();
         $child2->setTag('div');
         $child2->addOption('bla');
         $child3 = $this->mockElement();
         $child3->setTag('p');
-        $child3->setValue('bla');
+        $child3->setContent('bla');
         $child2->getElementList()->push($child3);
         $this->object->getElementList()->push($child);
         $this->object->getElementList()->push($child2);
@@ -120,17 +120,17 @@ class HtmlElementTest extends \Niceshops\Core\PHPUnit\DefaultTestCase
         $this->object->setContent('test');
         $child = $this->mockElement();
         $child->setTag('p');
-        $child->setValue('{foo}');
+        $child->setContent('{foo}');
         $child2 = $this->mockElement();
         $child2->setTag('div');
         $child2->addOption('bla');
         $child3 = $this->mockElement();
         $child3->setTag('p');
-        $child3->setValue('bla');
+        $child3->setContent('bla');
         $child2->getElementList()->push($child3);
         $this->object->getElementList()->push($child);
         $this->object->getElementList()->push($child2);
-        $this->assertEquals("<div id='myDiv' class='col'>test<p>bar</p><div class='bla'><p>bla</p></div></div>", $this->object->render($bean));
+        $this->assertEquals("<div id='myDiv' class='col'>test<p>bar</p><div class='bla'><p>bla</p></div></div>", $this->object->render($bean, true));
     }
 
     /**
@@ -148,16 +148,16 @@ class HtmlElementTest extends \Niceshops\Core\PHPUnit\DefaultTestCase
         $this->object->setPath("/test/bla?id=" . urlencode("foo={foo}"));
         $child = $this->mockElement();
         $child->setTag('p');
-        $child->setValue('foo');
+        $child->setContent('foo');
         $child2 = $this->mockElement();
         $child2->setTag('div');
         $child2->addOption('bla');
         $child3 = $this->mockElement();
         $child3->setTag('p');
-        $child3->setValue('bla');
+        $child3->setContent('bla');
         $child2->getElementList()->push($child3);
         $this->object->getElementList()->push($child);
         $this->object->getElementList()->push($child2);
-        $this->assertEquals("<a href='/test/bla?id=foo%3Dbar'><div id='myDiv' class='col'>test<p>foo</p><div class='bla'><p>bla</p></div></div></a>", $this->object->render($bean));
+        $this->assertEquals("<a href='/test/bla?id=foo%3Dbar'><div id='myDiv' class='col'>test<p>foo</p><div class='bla'><p>bla</p></div></div></a>", $this->object->render($bean, true));
     }
 }
