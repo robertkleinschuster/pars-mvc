@@ -6,7 +6,6 @@ namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareTrait;
-use Niceshops\Bean\Converter\BeanConverterInterface;
 use Niceshops\Bean\Converter\ConverterBeanDecorator;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
 use Niceshops\Bean\Type\Base\BeanAwareInterface;
@@ -15,7 +14,6 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
-use Pars\Model\Cms\Paragraph\CmsParagraphBean;
 
 class HtmlElement extends AbstractBaseBean implements
     HtmlInterface,
