@@ -38,9 +38,10 @@ interface ControllerInterface
     public function unauthorized();
 
     /**
+     * @param Throwable $exception
      * @return mixed
      */
-    public function notfound();
+    public function notfound(Throwable $exception);
 
     /**
      * @return ControllerRequest

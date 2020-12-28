@@ -22,9 +22,9 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_STRING:
             case BeanInterface::DATA_TYPE_INT:
             case BeanInterface::DATA_TYPE_FLOAT:
-                return (string)$value;
+                return (string) $value;
             case BeanInterface::DATA_TYPE_ARRAY:
-                return json_encode($value);
+                return (array) $value;
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value ? 'true' : 'false';
             case \DateTime::class:
@@ -36,7 +36,7 @@ class ViewBeanConverter extends AbstractBeanConverter
                         }
                         $userTimezone = new \DateTimeZone($timezone);
                         $offset = $userTimezone->getOffset($value);
-                        $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
+                        $myInterval = \DateInterval::createFromDateString((string) $offset . 'seconds');
                         $value->add($myInterval);
                         return $value->format(DateTimeLocal::FORMAT);
                     } else {
@@ -49,7 +49,7 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value === null ? '' : $value->getClientFilename();
             default:
                 if (is_scalar($value)) {
-                    return (string)$value;
+                    return (string) $value;
                 } elseif (is_array($value)) {
                     return json_encode($value);
                 }
@@ -70,7 +70,10 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_FLOAT:
                 return (float)$value;
             case BeanInterface::DATA_TYPE_ARRAY:
-                return json_decode($value);
+                if (is_array($value)) {
+                    return $value;
+                }
+                return (array) json_decode($value);
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value === 'true' || $value === true;
             case \DateTime::class:
@@ -84,6 +87,9 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value instanceof UploadedFileInterface ? $value : null;
             case BeanInterface::class:
                 try {
+                    if (!is_array($value)) {
+                        $value = (array) json_decode($value);
+                    }
                     return AbstractBaseBean::createFromArray($value);
                 } catch (BeanException $exception) {
                     return $exception->getMessage();

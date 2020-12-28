@@ -242,6 +242,13 @@ class HtmlElement extends AbstractBaseBean implements
                     $data = $this->unnormalizeArray($bean->toArray(true));
                     if (isset($data[$name])) {
                         $value = $data[$name];
+                    } else {
+                        if ($bean instanceof ConverterBeanDecorator) {
+                            $data = $this->unnormalizeArray($bean->toBean()->toArray(true));
+                            if (isset($data[$name])) {
+                                $value = $data[$name];
+                            }
+                        }
                     }
                 }
                 if (is_string($value)) {

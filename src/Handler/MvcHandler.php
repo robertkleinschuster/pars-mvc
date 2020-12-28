@@ -142,7 +142,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         } catch (NotFoundException $exception) {
             $controller = $this->getErrorController($controller, $errorController, $request, $config);
             $controller->getControllerResponse()->setStatusCode(404);
-            $controller->notfound();
+            $controller->notfound($exception);
         } catch (Throwable $exception) {
             $controller = $this->getErrorController($controller, $errorController, $request, $config);
             $controller->getControllerResponse()->setStatusCode(500);
@@ -188,7 +188,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $response = $this->handle($request);
-        if ($response->getStatusCode() === 404) {
+        if ($response->getStatusCode() === 404 && empty($response->getBody()->getSize())) {
             return $handler->handle($request);
         }
         return $response;

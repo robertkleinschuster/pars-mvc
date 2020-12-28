@@ -12,9 +12,11 @@ use Niceshops\Bean\Finder\BeanFinderAwareTrait;
 use Niceshops\Bean\Processor\BeanOrderProcessorAwareTrait;
 use Niceshops\Bean\Processor\BeanProcessorAwareInterface;
 use Niceshops\Bean\Processor\BeanProcessorAwareTrait;
+use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Niceshops\Bean\Type\Base\BeanListAwareInterface;
 use Niceshops\Bean\Type\Base\BeanListInterface;
+use Niceshops\Core\Exception\CoreException;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
 use Pars\Helper\Parameter\IdListParameter;
@@ -27,6 +29,7 @@ use Pars\Helper\Parameter\SubmitParameter;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
 use Pars\Helper\Validation\ValidationHelperAwareTrait;
 use Pars\Mvc\Exception\MvcException;
+use Pars\Mvc\Exception\NotFoundException;
 
 /**
  * Class AbstractModel
@@ -284,8 +287,8 @@ abstract class AbstractModel implements
                 }
                 $processor->save();
                 if ($processor instanceof ValidationHelperAwareInterface) {
-                    $this->getValidationHelper()->addErrorFieldMap(
-                        $processor->getValidationHelper()->getErrorFieldMap()
+                    $this->getValidationHelper()->merge(
+                        $processor->getValidationHelper()
                     );
                 }
             }
@@ -387,25 +390,41 @@ abstract class AbstractModel implements
 
     /**
      * @return BeanInterface
-     * @throws MvcException
+     * @throws NotFoundException
      */
     public function getBean(): BeanInterface
     {
-        if ($this->hasBeanFinder()) {
-            return $this->getBeanFinder()->getBean();
+        try {
+            if ($this->hasBeanFinder()) {
+                return $this->getBeanFinder()->getBean();
+            }
+        } catch (BeanException $exception) {
+            throw new NotFoundException(
+                'Could not get bean!',
+                CoreException::NOT_FOUND_EXCEPTION_CODE,
+                $exception
+            );
         }
-        throw new MvcException('Could not get bean!');
+        throw new NotFoundException('Could not get bean!');
     }
 
     /**
      * @return BeanListInterface
-     * @throws MvcException
+     * @throws NotFoundException
      */
     public function getBeanList(): BeanListInterface
     {
-        if ($this->hasBeanFinder()) {
-            return $this->getBeanFinder()->getBeanListDecorator();
+        try {
+            if ($this->hasBeanFinder()) {
+                return $this->getBeanFinder()->getBeanListDecorator();
+            }
+        } catch (BeanException $exception) {
+            throw new NotFoundException(
+                'Could not get bean list!',
+                CoreException::NOT_FOUND_EXCEPTION_CODE,
+                $exception
+            );
         }
-        throw new MvcException('Could not get bean list!');
+        throw new NotFoundException('Could not get bean list!');
     }
 }
