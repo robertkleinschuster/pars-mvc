@@ -8,7 +8,6 @@ use Exception;
 use Laminas\Diactoros\Response;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
-use Minifier\TinyMinify;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\ActionException;
