@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Pars\Mvc\Exception\MvcException;
 use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Mode\ModeAwareInterface;
 use Niceshops\Core\Mode\ModeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Mvc\Exception\MvcException;
 
 /**
  * Class ControllerResponse

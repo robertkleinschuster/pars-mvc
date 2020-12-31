@@ -5,14 +5,11 @@ declare(strict_types=1);
 namespace Pars\Mvc\Handler;
 
 use Exception;
-use Laminas\Diactoros\Response;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
-use Pars\Mvc\Exception\ActionException;
 use Pars\Mvc\Exception\ActionNotFoundException;
-use Pars\Mvc\Exception\ControllerException;
 use Pars\Mvc\Exception\ControllerNotFoundException;
 use Pars\Mvc\Exception\NotFoundException;
 use Pars\Mvc\Factory\ControllerFactory;
@@ -59,7 +56,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         TemplateRendererInterface $renderer,
         ControllerFactory $controllerFactory,
         array $config
-    ) {
+    )
+    {
         $this->renderer = $renderer;
         $this->controllerFactory = $controllerFactory;
         $this->config = $config;
@@ -121,7 +119,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         string $actionCode,
         array $config,
         ServerRequestInterface $request
-    ): ControllerInterface {
+    ): ControllerInterface
+    {
         $mvcTemplateFolder = $config['template_folder'];
         $errorController = $config['error_controller'];
         $actionSuffix = $config['action']['suffix'] ?? '';

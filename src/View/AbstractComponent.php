@@ -4,8 +4,6 @@
 namespace Pars\Mvc\View;
 
 
-use Niceshops\Bean\Converter\BeanConverterAwareInterface;
-use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Type\Base\BeanInterface;
 
 abstract class AbstractComponent extends HtmlElement implements ComponentInterface

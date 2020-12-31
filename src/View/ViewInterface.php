@@ -4,7 +4,6 @@
 namespace Pars\Mvc\View;
 
 
-
 use Niceshops\Bean\Type\Base\BeanInterface;
 
 /**

@@ -117,6 +117,7 @@ interface HtmlInterface extends RenderableInterface
      * @return $this
      */
     public function setElementList(HtmlElementList $elementList): self;
+
     /**
      * @return bool
      */

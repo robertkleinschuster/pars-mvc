@@ -6,11 +6,11 @@ namespace Pars\Mvc\Controller;
 
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
+use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
 use Pars\Mvc\Model\ModelInterface;
-use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Mvc\View\ViewInterface;
 use Throwable;
 
@@ -63,7 +63,8 @@ abstract class AbstractController implements ControllerInterface
         ControllerResponse $controllerResponse,
         ModelInterface $model,
         PathHelper $pathHelper
-    ) {
+    )
+    {
         $this->model = $model;
         $this->controllerRequest = $controllerRequest;
         $this->controllerResponse = $controllerResponse;

@@ -31,6 +31,7 @@ interface ComponentInterface
      * @return $this
      */
     public function setName(string $name): self;
+
     /**
      * @return bool
      */

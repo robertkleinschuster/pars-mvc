@@ -220,7 +220,8 @@ class HtmlElement extends AbstractBaseBean implements
         BeanInterface $bean,
         array &$repkeys,
         array &$repvalues
-    ) {
+    )
+    {
         foreach ($keys as $key) {
             if (is_array($key)) {
                 $this->replacePlaceholderValues($key, $subject, $bean, $repkeys, $repvalues);
@@ -431,9 +432,14 @@ class HtmlElement extends AbstractBaseBean implements
         return $result;
     }
 
-    protected function beforeRender(BeanInterface $bean = null){}
+    protected function beforeRender(BeanInterface $bean = null)
+    {
+    }
 
-    protected function initialize(){}
+    protected function initialize()
+    {
+    }
+
     /**
      * @param mixed ...$element
      * @return $this|HtmlInterface
