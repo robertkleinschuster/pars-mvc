@@ -50,6 +50,11 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     private RouteResult $routeResult;
 
     /**
+     * @var string|null
+     */
+    private ?string $action = null;
+
+    /**
      * ControllerRequestProperties constructor.
      * @param ServerRequestInterface $serverRequest
      */
@@ -267,4 +272,22 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     {
         return strtolower($this->getServerRequest()->getHeaderLine('X-Requested-With')) === 'xmlhttprequest';
     }
+
+    /**
+     * @return string|null
+     */
+    public function getAction(): ?string
+    {
+        return $this->action;
+    }
+
+    /**
+     * @param string|null $action
+     */
+    public function setAction(?string $action): void
+    {
+        $this->action = $action;
+    }
+
+
 }

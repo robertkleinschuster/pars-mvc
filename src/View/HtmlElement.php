@@ -30,6 +30,7 @@ class HtmlElement extends AbstractBaseBean implements
     public ?string $tag = null;
     public ?string $content = null;
     public ?string $path = null;
+    public ?string $target = null;
     public ?string $group = null;
     public ?array $inlineStyles = [];
     public ?HtmlElementList $elementList = null;
@@ -587,11 +588,20 @@ class HtmlElement extends AbstractBaseBean implements
         $tag = '';
         $attributes = $this->getHtmlAttributes($bean, true);
         if ($this->hasPath()) {
-            if ($this->hasOption('text-decoration-none')) {
-                $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}'>";
+            if ($this->hasTarget()) {
+                if ($this->hasOption('text-decoration-none')) {
+                    $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                } else {
+                    $tag .= "<a href='{$this->getPath($bean)}' target='{$this->getTarget()}>";
+                }
             } else {
-                $tag .= "<a href='{$this->getPath($bean)}'>";
+                if ($this->hasOption('text-decoration-none')) {
+                    $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}'>";
+                } else {
+                    $tag .= "<a href='{$this->getPath($bean)}'>";
+                }
             }
+
         }
         if (empty($attributes)) {
             $tag .= "<{$this->getTag()}>";
@@ -624,4 +634,32 @@ class HtmlElement extends AbstractBaseBean implements
         $this->setId(substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10));
         return $this->getId();
     }
+
+    /**
+    * @return string
+    */
+    public function getTarget(): string
+    {
+        return $this->target;
+    }
+
+    /**
+    * @param string $target
+    *
+    * @return $this
+    */
+    public function setTarget(string $target): self
+    {
+        $this->target = $target;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasTarget(): bool
+    {
+        return isset($this->target);
+    }
+
 }

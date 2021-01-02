@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Model;
 
+use Laminas\I18n\Translator\TranslatorAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Factory\BeanFactoryAwareInterface;
@@ -12,6 +13,8 @@ use Niceshops\Bean\Finder\BeanFinderAwareTrait;
 use Niceshops\Bean\Processor\BeanOrderProcessorAwareTrait;
 use Niceshops\Bean\Processor\BeanProcessorAwareInterface;
 use Niceshops\Bean\Processor\BeanProcessorAwareTrait;
+use Niceshops\Bean\Processor\DefaultMetaFieldHandler;
+use Niceshops\Bean\Processor\TimestampMetaFieldHandler;
 use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Niceshops\Bean\Type\Base\BeanListAwareInterface;
@@ -53,6 +56,10 @@ abstract class AbstractModel implements
     public const OPTION_CREATE_ALLOWED = 'create_allowed';
     public const OPTION_EDIT_ALLOWED = 'edit_allowed';
     public const OPTION_DELETE_ALLOWED = 'delete_allowed';
+
+    public function initializeDependencies()
+    {
+    }
 
     public function initialize()
     {
@@ -191,7 +198,7 @@ abstract class AbstractModel implements
      * @param IdParameter $idParameter
      * @param array $attributes
      */
-    protected function create(IdParameter $idParameter, array $attributes): void
+    protected function create(IdParameter $idParameter, array &$attributes): void
     {
         if ($this->hasBeanFinder() && $this->hasBeanProcessor()) {
             $finder = $this->getBeanFinder();
@@ -210,6 +217,10 @@ abstract class AbstractModel implements
                     $processor->setBeanList($beanList);
                 }
                 $processor->save();
+                if ($this->hasBeanConverter()) {
+                    $converter = $this->getBeanConverter();
+                    $attributes = array_replace($attributes, $converter->convert($bean)->toArray());
+                }
                 if ($processor instanceof ValidationHelperAwareInterface) {
                     $this->getValidationHelper()->addErrorFieldMap(
                         $processor->getValidationHelper()->getErrorFieldMap()
