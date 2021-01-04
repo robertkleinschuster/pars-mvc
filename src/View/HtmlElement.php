@@ -388,6 +388,15 @@ class HtmlElement extends AbstractBaseBean implements
         return $this->elementList !== null && $this->elementList->count();
     }
 
+    protected function handleInitialize()
+    {
+        if (!$this->initialized) {
+            $this->initialize();
+            $this->initialized = true;
+            $this->handleInlineStyles();
+        }
+    }
+
     /**
      * @param BeanInterface|null $bean
      * @param bool $placeholders
@@ -395,11 +404,7 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function render(BeanInterface $bean = null, bool $placeholders = false): string
     {
-        if (!$this->initialized) {
-            $this->initialize();
-            $this->initialized = true;
-            $this->handleInlineStyles();
-        }
+        $this->handleInitialize();
         if ($this instanceof BeanAwareInterface && $this->hasBean()) {
             $placeholders = true;
             if (null !== $bean) {
@@ -662,4 +667,77 @@ class HtmlElement extends AbstractBaseBean implements
         return isset($this->target);
     }
 
+    /**
+     * @param BeanInterface|null $bean
+     * @param bool $placeholders
+     * @return string
+     */
+    public function __toString()
+    {
+        return $this->render();
+    }
+
+    /**
+     * @param BeanInterface|null $bean
+     * @param bool $placeholders
+     * @return string
+     */
+    public function __invoke(BeanInterface $bean = null, bool $placeholders = false)
+    {
+        return $this->render($bean, $placeholders);
+    }
+
+
+    /**
+     * @param string $id
+     */
+    public function getElementById(string $id)
+    {
+        $this->handleInitialize();
+        if ($this->hasId() && $this->getId() == $id) {
+            return $this;
+        }
+        foreach ($this->getElementList() as $element) {
+            $found = $element->getElementById($id);
+            if ($found !== null) {
+                return $found;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * @param string $class
+     */
+    public function getElementsByClassName(string $class)
+    {
+        $this->handleInitialize();
+        $list = new HtmlElementList();
+        if ($this->hasOption($class)) {
+            $list->push($this);
+        }
+        foreach ($this->getElementList() as $element) {
+            $found = $element->getElementsByClassName($class);
+            $list->push(...$found);
+        }
+        return $list;
+    }
+
+
+    /**
+     * @param string $tag
+     */
+    public function getElementsByTagName(string $tag)
+    {
+        $this->handleInitialize();
+        $list = new HtmlElementList();
+        if ($this->getTag() == $tag) {
+            $list->push($this);
+        }
+        foreach ($this->getElementList() as $element) {
+            $found = $element->getElementsByTagName($tag);
+            $list->push(...$found);
+        }
+        return $list;
+    }
 }

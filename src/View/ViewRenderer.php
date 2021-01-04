@@ -53,9 +53,11 @@ class ViewRenderer
 
     /**
      * @param ViewInterface $view
+     * @param string|null $id
      * @return string
+     * @throws ViewException
      */
-    public function render(ViewInterface $view): string
+    public function render(ViewInterface $view, ?string $id = null): string
     {
         $this->getTemplateRenderer()->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
@@ -91,7 +93,15 @@ class ViewRenderer
                 } else {
                     $bean = $view;
                 }
-                $result .= $view->getLayout()->render($bean, true);
+                if ($id !== null) {
+                    $result = '';
+                    $renderable = $view->getLayout()->getElementById($id);
+                } else {
+                    $renderable = $view->getLayout();
+                }
+                if ($renderable instanceof RenderableInterface) {
+                    $result .= $renderable->render($bean, true);
+                }
             } else {
                 $result .= $view->getLayout()->render();
             }

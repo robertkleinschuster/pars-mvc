@@ -162,7 +162,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             if ($controller->hasView()) {
                 $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
                 $view = $controller->getView();
-                $renderedOutput = $viewRenderer->render($view);
+                $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
+                $renderedOutput = $viewRenderer->render($view, $elementId);
             } elseif ($controller->hasTemplate()) {
                 $renderedOutput = $this->renderer->render(
                     "$mvcTemplateFolder::{$controller->getTemplate()}"

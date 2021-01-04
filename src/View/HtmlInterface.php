@@ -161,4 +161,21 @@ interface HtmlInterface extends RenderableInterface
      * @return mixed
      */
     public function setAccesskey(string $value): self;
+
+    /**
+     * @param string $id
+     * @return mixed
+     */
+    public function getElementById(string $id);
+
+    /**
+     * @param string $class
+     */
+    public function getElementsByClassName(string $class);
+
+
+    /**
+     * @param string $tag
+     */
+    public function getElementsByTagName(string $tag);
 }
