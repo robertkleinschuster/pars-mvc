@@ -36,7 +36,7 @@ class ServerResponseFactory
                 $data = [
                     'html' => $controllerResponse->getBody(),
                     'attributes' => $controllerResponse->getAttributes(),
-                    'inject' => $controllerResponse->getInjector()->toArray()
+                    'inject' => $controllerResponse->getInjector()->toArray(),
                 ];
                 return new JsonResponse($data, $controllerResponse->getStatusCode(), $controllerResponse->getHeaders());
             case ControllerResponse::MODE_REDIRECT:

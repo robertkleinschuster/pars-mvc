@@ -7,6 +7,7 @@ namespace Pars\Mvc\View;
 use Mezzio\Template\TemplateRendererInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Component\Base\Layout\BaseLayout;
 
 /**
  * Class ViewRenderer
@@ -54,10 +55,11 @@ class ViewRenderer
     /**
      * @param ViewInterface $view
      * @param string|null $id
+     * @param bool $onlyelement
      * @return string
      * @throws ViewException
      */
-    public function render(ViewInterface $view, ?string $id = null): string
+    public function render(ViewInterface $view, ?string $id = null, bool $onlyelement = false): string
     {
         $this->getTemplateRenderer()->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
@@ -95,7 +97,22 @@ class ViewRenderer
                 }
                 if ($id !== null) {
                     $result = '';
-                    $renderable = $view->getLayout()->getElementById($id);
+                    $renderable = new BaseLayout();
+                    $element = $view->getLayout()->getElementById($id);
+                    if ($renderable instanceof BeanConverterAwareInterface) {
+                        if ($view->hasBeanConverter()) {
+                            $renderable->setBeanConverter($view->getBeanConverter());
+                            $element->setBeanConverter($view->getBeanConverter());
+                        } else {
+                            $renderable->setBeanConverter(new ViewBeanConverter());
+                            $element->setBeanConverter(new ViewBeanConverter());
+                        }
+                    }
+                    if ($onlyelement) {
+                        $renderable = $element;
+                    } else {
+                        $renderable->getComponentList()->push($element);
+                    }
                 } else {
                     $renderable = $view->getLayout();
                 }

@@ -173,9 +173,6 @@ abstract class AbstractController implements ControllerInterface
      */
     protected function handleParameter()
     {
-        if ($this->getControllerRequest()->isAjax()) {
-            $this->getControllerResponse()->setMode(ControllerResponse::MODE_JSON);
-        }
 
         if ($this->getControllerRequest()->hasNav()) {
             $navParameter = $this->getControllerRequest()->getNav();
@@ -237,6 +234,10 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasRedirect()) {
             $this->getControllerResponse()->setRedirect($this->getControllerRequest()->getRedirect()->getPath());
+        }
+
+        if ($this->getControllerRequest()->isAjax()) {
+            $this->getControllerResponse()->setMode(ControllerResponse::MODE_JSON);
         }
     }
 
