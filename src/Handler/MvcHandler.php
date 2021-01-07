@@ -165,6 +165,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
                 $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
                 $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
+                $controller->getControllerResponse()->setAttribute('component', $elementId);
             } elseif ($controller->hasTemplate()) {
                 $renderedOutput = $this->renderer->render(
                     "$mvcTemplateFolder::{$controller->getTemplate()}"

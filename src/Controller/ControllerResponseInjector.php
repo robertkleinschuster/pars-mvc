@@ -54,27 +54,24 @@ class ControllerResponseInjector
         ];
     }
 
-    /**
-     * @param string $template
-     * @param string $selector
-     * @param string $mode
-     */
-    public function addTemplate(string $template, string $selector, string $mode)
+   /* public function addTemplate(string $template, string $selector, string $mode)
     {
         $this->template[] = [
             'template' => $template,
             'selector' => $selector,
             'mode' => $mode
         ];
-    }
+    }*/
 
     /**
      * @param string $script
+     * @param bool $unique
      */
-    public function addScript(string $script)
+    public function addScript(string $script, bool $unique = true)
     {
         $this->script[] = [
             'script' => $script,
+            'unique' => $unique
         ];
     }
 
