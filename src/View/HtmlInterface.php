@@ -19,7 +19,7 @@ interface HtmlInterface extends RenderableInterface
      *
      * @return $this
      */
-    public function setTag(string $tag): self;
+    public function setTag(?string $tag): self;
 
     /**
      * @return bool
@@ -45,7 +45,7 @@ interface HtmlInterface extends RenderableInterface
      * @param string $id
      * @return $this
      */
-    public function setId(string $id): self;
+    public function setId(?string $id): self;
 
     /**
      * @return bool
@@ -63,7 +63,7 @@ interface HtmlInterface extends RenderableInterface
      *
      * @return $this
      */
-    public function setPath(string $path): self;
+    public function setPath(?string $path): self;
 
     /**
      * @return bool
@@ -81,7 +81,7 @@ interface HtmlInterface extends RenderableInterface
      *
      * @return $this
      */
-    public function setContent(string $value): self;
+    public function setContent(?string $value): self;
 
     /**
      * @return bool
@@ -99,7 +99,7 @@ interface HtmlInterface extends RenderableInterface
      *
      * @return $this
      */
-    public function setGroup(string $group): self;
+    public function setGroup(?string $group): self;
 
     /**
      * @return bool

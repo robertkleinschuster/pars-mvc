@@ -86,7 +86,7 @@ class HtmlElement extends AbstractBaseBean implements
      *
      * @return $this
      */
-    public function setTag(string $tag): self
+    public function setTag(?string $tag): self
     {
         $this->tag = $tag;
         return $this;
@@ -118,9 +118,13 @@ class HtmlElement extends AbstractBaseBean implements
      *
      * @return $this
      */
-    public function setId(string $id): self
+    public function setId(?string $id): self
     {
-        $this->setAttribute(self::ATTRIBUTE_ID, $id);
+        if ($id == null) {
+            $this->unsetAttribute(self::ATTRIBUTE_ID);
+        } else {
+            $this->setAttribute(self::ATTRIBUTE_ID, $id);
+        }
         return $this;
     }
 
@@ -287,7 +291,7 @@ class HtmlElement extends AbstractBaseBean implements
      *
      * @return $this
      */
-    public function setPath(string $path): self
+    public function setPath(?string $path): self
     {
         $this->path = $path;
         return $this;
@@ -315,7 +319,7 @@ class HtmlElement extends AbstractBaseBean implements
      *
      * @return $this
      */
-    public function setGroup(string $group): self
+    public function setGroup(?string $group): self
     {
         $this->group = $group;
         return $this;
@@ -344,7 +348,7 @@ class HtmlElement extends AbstractBaseBean implements
      *
      * @return $this
      */
-    public function setContent(string $content): self
+    public function setContent(?string $content): self
     {
         $this->content = $content;
         return $this;
