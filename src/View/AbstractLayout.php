@@ -7,6 +7,7 @@ namespace Pars\Mvc\View;
 abstract class AbstractLayout extends HtmlElement implements LayoutInterface
 {
     private ?ComponentList $componentList = null;
+    protected array $staticFiles = [];
 
     /**
      * @return ComponentList
@@ -18,4 +19,25 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
         }
         return $this->componentList;
     }
+
+    /**
+     * @param array $data
+     * @return $this|LayoutInterface
+     */
+    public function setStaticFiles(array $data): LayoutInterface
+    {
+        $this->staticFiles = $data;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getStaticFiles(): array
+    {
+        return $this->staticFiles;
+    }
+
+
+
 }

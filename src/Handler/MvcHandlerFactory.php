@@ -23,7 +23,7 @@ class MvcHandlerFactory
         return new MvcHandler(
             $container->get(TemplateRendererInterface::class),
             $container->get(ControllerFactory::class),
-            $container->get('config')['mvc']
+            $container->get('config')
         );
     }
 }

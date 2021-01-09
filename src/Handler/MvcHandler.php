@@ -90,16 +90,17 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $controllerCode = $request->getAttribute(self::CONTROLLER_ATTRIBUTE) ?? 'index';
         $actionCode = $request->getAttribute(self::ACTION_ATTRIBUTE) ?? 'index';
         $routeResult = $request->getAttribute(RouteResult::class);
+        $mvcConfig = $this->config['mvc'];
         if (
             is_string($routeResult->getMatchedRouteName())
-            && isset($this->config['module'][$routeResult->getMatchedRouteName()])
+            && isset($mvcConfig['module'][$routeResult->getMatchedRouteName()])
         ) {
             $config = array_replace_recursive(
-                $this->config,
-                $this->config['module'][$routeResult->getMatchedRouteName()]
+                $mvcConfig,
+                $mvcConfig['module'][$routeResult->getMatchedRouteName()]
             );
         } else {
-            $config = $this->config;
+            $config = $mvcConfig;
         }
         $controller = $this->renderControllerAction($controllerCode, $actionCode, $config, $request);
         return (new ServerResponseFactory())($controller->getControllerResponse());
@@ -162,6 +163,9 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             if ($controller->hasView()) {
                 $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
                 $view = $controller->getView();
+                if ($view->hasLayout()) {
+                    $view->getLayout()->setStaticFiles($this->config['bundles']['list']);
+                }
                 $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
                 $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
                 $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
