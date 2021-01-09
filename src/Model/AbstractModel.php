@@ -351,6 +351,11 @@ abstract class AbstractModel implements
                 if ($finder->count() == 1) {
                     $beanList = $finder->getBeanList(true);
                     $processor->setBeanList($beanList);
+                    if ($this->hasBeanOrderProcessor()) {
+                        foreach ($beanList as $bean) {
+                            $this->getBeanOrderProcessor()->delete($bean);
+                        }
+                    }
                 }
             }
             $processor->delete();
@@ -371,11 +376,16 @@ abstract class AbstractModel implements
             $finder = $this->getBeanFinder();
             $finder->filter($idListParameter->getAttribute_List());
             $processor = $this->getBeanProcessor();
+            $beanList = $finder->getBeanList(true);
             if ($processor instanceof BeanListAwareInterface) {
-                $beanList = $finder->getBeanList(true);
                 $processor->setBeanList($beanList);
             }
             $processor->delete();
+            if ($this->hasBeanOrderProcessor()) {
+                foreach ($beanList as $bean) {
+                    $this->getBeanOrderProcessor()->delete($bean);
+                }
+            }
             if ($processor instanceof ValidationHelperAwareInterface) {
                 $this->getValidationHelper()->addErrorFieldMap(
                     $processor->getValidationHelper()->getErrorFieldMap()

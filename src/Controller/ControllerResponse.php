@@ -184,7 +184,9 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
      */
     public function setRedirect(string $uri): bool
     {
-        $this->setMode(self::MODE_REDIRECT);
+        if (!$this->isMode(self::MODE_JSON)) {
+            $this->setMode(self::MODE_REDIRECT);
+        }
         $this->setAttribute(self::ATTRIBUTE_REDIRECT_URI, $uri);
         $this->removeOption(self::OPTION_RENDER_RESPONSE);
         return true;

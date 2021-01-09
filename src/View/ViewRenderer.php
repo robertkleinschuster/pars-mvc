@@ -99,7 +99,7 @@ class ViewRenderer
                     $result = '';
                     $renderable = new BaseLayout();
                     $element = $view->getLayout()->getElementById($id);
-                    if ($renderable instanceof BeanConverterAwareInterface) {
+                    if ($renderable instanceof BeanConverterAwareInterface && $element !== null) {
                         if ($view->hasBeanConverter()) {
                             $renderable->setBeanConverter($view->getBeanConverter());
                             $element->setBeanConverter($view->getBeanConverter());
