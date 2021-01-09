@@ -257,8 +257,8 @@ abstract class AbstractController implements ControllerInterface
     abstract protected function handleSubmitSecurity(): bool;
 
     /**
-     * gandle validation errors from model after submit
-     * e.g. set to flash messanger to display them after redirect
+     * handle validation errors from model after submit
+     * e.g. set to flash messenger to display them after redirect
      *
      * @param ValidationHelper $validationHelper
      * @return mixed
@@ -266,7 +266,7 @@ abstract class AbstractController implements ControllerInterface
     abstract protected function handleValidationError(ValidationHelper $validationHelper);
 
     /**
-     * persist naviation states in session
+     * persist navigation states in session
      * @param string $id
      * @param int $index
      * @return mixed
