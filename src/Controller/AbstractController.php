@@ -21,6 +21,9 @@ use Throwable;
 abstract class AbstractController implements ControllerInterface
 {
 
+    const SUB_CONTROLLER_MODE_APPEND = 'append';
+    const SUB_CONTROLLER_MODE_PREPEND = 'prepend';
+
     /**
      * @var ControllerRequest
      */
@@ -79,15 +82,16 @@ abstract class AbstractController implements ControllerInterface
     private array $subController_Map = [];
 
     /**
-     * @param string $controllerCode
-     * @param string $actionCode
+     * @param string $controller
+     * @param string $action
      * @param string $mode
      */
-    protected function addSubController(string $controllerCode, string $actionCode)
+    protected function addSubController(string $controller, string $action, string $mode = self::SUB_CONTROLLER_MODE_APPEND)
     {
         $this->subController_Map[] = [
-            'controller' => $controllerCode,
-            'action' => $actionCode,
+            'controller' => $controller,
+            'action' => $action,
+            'mode' => $mode,
         ];
     }
 

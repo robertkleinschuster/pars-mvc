@@ -168,7 +168,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                     if ($subController->hasView() && $controller->hasView()) {
                         $components = $subController->getView()->getLayout()->getComponentList();
                         foreach ($components as $component) {
-                            $controller->getView()->append($component);
+                            if (isset($item['mode']) && $item['mode'] == 'prepend') {
+                                $controller->getView()->prepend($component);
+                            } else {
+                                $controller->getView()->append($component);
+                            }
                         }
                     }
                 }
