@@ -80,9 +80,13 @@ abstract class AbstractController implements ControllerInterface
      * @param string $controllerCode
      * @param string $actionCode
      */
-    protected function addSubController(string $controllerCode, string $actionCode)
+    protected function addSubController(string $controllerCode, string $actionCode, $data = null)
     {
-        $this->subController_Map[$controllerCode] = $actionCode;
+        $this->subController_Map[] = [
+            'controller' => $controllerCode,
+            'action' => $actionCode,
+            'data' => $data
+        ];
     }
 
     /**

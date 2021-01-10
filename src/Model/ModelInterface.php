@@ -24,6 +24,8 @@ interface ModelInterface
      */
     public function initialize();
 
+    public function initializeDependencies();
+
     /**
      * @param PaginationParameter $paginationParameter
      * @return mixed
