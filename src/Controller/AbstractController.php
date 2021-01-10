@@ -51,6 +51,8 @@ abstract class AbstractController implements ControllerInterface
      */
     private ?string $template = null;
 
+    private ?ControllerInterface $parent = null;
+
     /**
      * AbstractController constructor.
      * @param ControllerRequest $controllerRequest
@@ -79,13 +81,13 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @param string $controllerCode
      * @param string $actionCode
+     * @param string $mode
      */
-    protected function addSubController(string $controllerCode, string $actionCode, $data = null)
+    protected function addSubController(string $controllerCode, string $actionCode)
     {
         $this->subController_Map[] = [
             'controller' => $controllerCode,
             'action' => $actionCode,
-            'data' => $data
         ];
     }
 
@@ -105,6 +107,29 @@ abstract class AbstractController implements ControllerInterface
         return count($this->subController_Map) > 0;
     }
 
+    /**
+     * @return ControllerInterface|null
+     */
+    public function getParent(): ?ControllerInterface
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param ControllerInterface|null $parent
+     */
+    public function setParent(?ControllerInterface $parent): void
+    {
+        $this->parent = $parent;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasParent(): bool
+    {
+        return isset($this->parent);
+    }
 
     /**
      * @return mixed|void

@@ -22,9 +22,9 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_STRING:
             case BeanInterface::DATA_TYPE_INT:
             case BeanInterface::DATA_TYPE_FLOAT:
-                return (string)$value;
+                return (string) $value;
             case BeanInterface::DATA_TYPE_ARRAY:
-                return (array)$value;
+                return (array) $value;
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value ? 'true' : 'false';
             case \DateTime::class:
@@ -66,14 +66,14 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_STRING:
                 return $this->sanitizeString($name, (string)$value);
             case BeanInterface::DATA_TYPE_INT:
-                return (int)$value;
+                return (int) $value;
             case BeanInterface::DATA_TYPE_FLOAT:
-                return (float)$value;
+                return (float) $value;
             case BeanInterface::DATA_TYPE_ARRAY:
                 if (is_array($value)) {
                     return $value;
                 }
-                return (array)json_decode($value);
+                return (array) json_decode($value);
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value === 'true' || $value === true;
             case \DateTime::class:

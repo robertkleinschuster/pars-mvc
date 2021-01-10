@@ -7,6 +7,7 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
+use Niceshops\Bean\Type\Base\BeanInterface;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\ActionNotFoundException;
@@ -111,15 +112,20 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      * @param string $actionCode
      * @param array $config
      * @param ServerRequestInterface $request
+     * @param ControllerInterface|null $parent
      * @return ControllerInterface
      * @throws ControllerNotFoundException
      * @throws \Niceshops\Bean\Type\Base\BeanException
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Pars\Mvc\View\ViewException
      */
     protected function renderControllerAction(
         string $controllerCode,
         string $actionCode,
         array $config,
-        ServerRequestInterface $request
+        ServerRequestInterface $request,
+        ControllerInterface $parent = null
     ): ControllerInterface
     {
         $mvcTemplateFolder = $config['template_folder'];
@@ -130,6 +136,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $controller = null;
         try {
             $controller = ($this->controllerFactory)($controllerCode, $request, $config);
+            $controller->setParent($parent);
             $controller->getControllerRequest()->setAction($actionCode);
             $controller->initialize();
             if ($controller->isAuthorized()) {
@@ -151,11 +158,16 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
             if ($controller->hasSubControllerMap()) {
                 foreach ($controller->getSubControllerMap() as $item) {
-                    $subController = $this->renderControllerAction($item['controller'], $item['action'], $config, $request);
+                    $subController = $this->renderControllerAction(
+                        $item['controller'],
+                        $item['action'],
+                        $config,
+                        $request,
+                        $controller
+                    );
                     if ($subController->hasView() && $controller->hasView()) {
                         $components = $subController->getView()->getLayout()->getComponentList();
                         foreach ($components as $component) {
-                            $component->set('data', $item['data']);
                             $controller->getView()->append($component);
                         }
                     }
