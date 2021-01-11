@@ -131,6 +131,12 @@ interface HtmlInterface extends RenderableInterface
     public function push(...$element): self;
 
     /**
+     * @param mixed ...$element
+     * @return $this
+     */
+    public function unshift(...$element): self;
+
+    /**
      * @param string $role
      * @return mixed
      */

@@ -461,6 +461,16 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
+     * @param mixed ...$element
+     * @return $this|HtmlInterface
+     */
+    public function unshift(...$element): HtmlInterface
+    {
+        $this->getElementList()->unshift(...$element);
+        return $this;
+    }
+
+    /**
      * @param string $role
      * @return $this
      * @throws \Niceshops\Core\Exception\AttributeExistsException
