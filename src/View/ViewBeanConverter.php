@@ -16,28 +16,32 @@ class ViewBeanConverter extends AbstractBeanConverter
 
     private ?string $timezone = null;
 
+
     public function convertValueFromBean(BeanInterface $bean, string $name, $value)
     {
         switch ($bean->type($name)) {
             case BeanInterface::DATA_TYPE_STRING:
             case BeanInterface::DATA_TYPE_INT:
             case BeanInterface::DATA_TYPE_FLOAT:
-                return (string) $value;
+                return (string)$value;
             case BeanInterface::DATA_TYPE_ARRAY:
-                return (array) $value;
+                return (array)$value;
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value ? 'true' : 'false';
             case \DateTime::class:
                 try {
                     if ($value instanceof \DateTime) {
-                        $timezone = 'Europe/Vienna';
+                        $timezone = 'UTC';
                         if ($this->hasTimezone()) {
                             $timezone = $this->getTimezone();
                         }
                         $userTimezone = new \DateTimeZone($timezone);
                         $offset = $userTimezone->getOffset($value);
                         $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                        $value->add($myInterval);
+                        if ($value->getTimezone()->getName() != $userTimezone->getName()) {
+                            $value->add($myInterval);
+                        }
+                        $value->setTimezone($userTimezone);
                         return $value->format(DateTimeLocal::FORMAT);
                     } else {
                         return '';
@@ -66,22 +70,29 @@ class ViewBeanConverter extends AbstractBeanConverter
             case BeanInterface::DATA_TYPE_STRING:
                 return $this->sanitizeString($name, (string)$value);
             case BeanInterface::DATA_TYPE_INT:
-                return (int) $value;
+                return (int)$value;
             case BeanInterface::DATA_TYPE_FLOAT:
-                return (float) $value;
+                return (float)$value;
             case BeanInterface::DATA_TYPE_ARRAY:
                 if (is_array($value)) {
                     return $value;
                 }
-                return (array) json_decode($value);
+                return (array)json_decode($value);
             case BeanInterface::DATA_TYPE_BOOL:
                 return $value === 'true' || $value === true;
             case \DateTime::class:
                 $value = new \DateTime($value);
-                $userTimezone = new \DateTimeZone('UTC');
+                $timezone = 'UTC';
+                if ($this->hasTimezone()) {
+                    $timezone = $this->getTimezone();
+                }
+                $userTimezone = new \DateTimeZone($timezone);
                 $offset = $userTimezone->getOffset($value);
                 $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                $value->add($myInterval);
+                if ($value->getTimezone()->getName() != $userTimezone->getName()) {
+                    $value->sub($myInterval);
+                }
+                $value->setTimezone($userTimezone);
                 return $value;
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;
