@@ -393,7 +393,7 @@ class HtmlElement extends AbstractBaseBean implements
         return $this->elementList !== null && $this->elementList->count();
     }
 
-    protected function handleInitialize()
+    public function handleInitialize()
     {
         if (!$this->initialized) {
             $this->initialize();

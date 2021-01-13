@@ -12,6 +12,15 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     public ?string $template = null;
     public ?string $name = null;
 
+    protected function beforeRender(BeanInterface $bean = null)
+    {
+        if ($this->hasName()) {
+            $this->unshift(new HtmlElement('h3.mb-3', $this->getName()));
+        }
+        parent::beforeRender($bean);
+    }
+
+
     /**
      * @return string
      * @throws ViewException
@@ -58,7 +67,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
      *
      * @return $this
      */
-    public function setName(string $name): self
+    public function setName(?string $name): self
     {
         $this->name = $name;
         return $this;

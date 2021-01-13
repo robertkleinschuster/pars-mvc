@@ -21,8 +21,8 @@ use Throwable;
 abstract class AbstractController implements ControllerInterface
 {
 
-    const SUB_CONTROLLER_MODE_APPEND = 'append';
-    const SUB_CONTROLLER_MODE_PREPEND = 'prepend';
+    const SUB_ACTION_MODE_APPEND = 'append';
+    const SUB_ACTION_MODE_PREPEND = 'prepend';
 
     /**
      * @var ControllerRequest
@@ -79,16 +79,16 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @var array
      */
-    private array $subController_Map = [];
+    private array $action_Map = [];
 
     /**
      * @param string $controller
      * @param string $action
      * @param string $mode
      */
-    protected function addSubController(string $controller, string $action, string $mode = self::SUB_CONTROLLER_MODE_APPEND)
+    protected function pushAction(string $controller, string $action, string $mode = self::SUB_ACTION_MODE_PREPEND)
     {
-        $this->subController_Map[] = [
+        $this->action_Map[] = [
             'controller' => $controller,
             'action' => $action,
             'mode' => $mode,
@@ -98,17 +98,17 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @return array
      */
-    public function getSubControllerMap(): array
+    public function getActionMap(): array
     {
-        return $this->subController_Map;
+        return $this->action_Map;
     }
 
     /**
      * @return bool
      */
-    public function hasSubControllerMap(): bool
+    public function hasActions(): bool
     {
-        return count($this->subController_Map) > 0;
+        return count($this->action_Map) > 0;
     }
 
     /**
@@ -305,6 +305,12 @@ abstract class AbstractController implements ControllerInterface
      * @return mixed
      */
     abstract protected function handleNavigationState(string $id, int $index);
+
+    /**
+     * @param string $id
+     * @return int
+     */
+    public abstract function getNavigationState(string $id): int;
 
     /**
      * @return ControllerRequest

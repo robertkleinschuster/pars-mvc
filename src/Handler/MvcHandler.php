@@ -7,7 +7,8 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
-use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Component\Base\Tabs\Tabs;
+use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\ActionNotFoundException;
@@ -15,9 +16,7 @@ use Pars\Mvc\Exception\ControllerNotFoundException;
 use Pars\Mvc\Exception\NotFoundException;
 use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
-use Pars\Mvc\View\HtmlElement;
 use Pars\Mvc\View\ViewRenderer;
-use PHPUnit\TextUI\XmlConfiguration\Logging\TestDox\Html;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -105,7 +104,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         } else {
             $config = $mvcConfig;
         }
-        $controller = $this->renderControllerAction($controllerCode, $actionCode, $config, $request);
+        $controller = $this->executeController($controllerCode, $actionCode, $config, $request);
         return (new ServerResponseFactory())($controller->getControllerResponse());
     }
 
@@ -122,7 +121,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      * @throws \Niceshops\Core\Exception\AttributeLockException
      * @throws \Pars\Mvc\View\ViewException
      */
-    protected function renderControllerAction(
+    protected function executeController(
         string $controllerCode,
         string $actionCode,
         array $config,
@@ -135,6 +134,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $actionSuffix = $config['action']['suffix'] ?? '';
         $actionPrefix = $config['action']['prefix'] ?? '';
         $actionMethod = $actionPrefix . $actionCode . $actionSuffix;
+        $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
+        $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
         $controller = null;
         try {
             $controller = ($this->controllerFactory)($controllerCode, $request, $config);
@@ -158,47 +159,57 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             $controller->error($exception);
         }
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
-            if ($controller->hasSubControllerMap()) {
-                foreach ($controller->getSubControllerMap() as $item) {
-                    $subController = $this->renderControllerAction(
+            if ($controller->hasActions()) {
+                $tabs_before = new Tabs();
+                $tabs_before->setId($controllerCode . $actionCode . '-before');
+                $tabs_before->setActive($controller->getNavigationState($controllerCode . $actionCode . '-before__list'));
+                $tabs_after = new Tabs();
+                $tabs_after->setId($controllerCode . $actionCode . '-after');
+                $tabs_after->setActive($controller->getNavigationState($controllerCode . $actionCode . '-after__list'));
+                foreach ($controller->getActionMap() as $item) {
+                    $subController = $this->executeController(
                         $item['controller'],
                         $item['action'],
                         $config,
                         $request,
                         $controller
                     );
-                    if ($subController->hasView() && $controller->hasView()) {
+                    if ($subController->hasView()) {
                         $components = $subController->getView()->getLayout()->getComponentList();
                         foreach ($components as $component) {
-                            if (isset($item['mode']) && $item['mode'] == 'prepend') {
-                                $controller->getView()->prepend($component);
+                            if (isset($item['mode']) && $item['mode'] == AbstractController::SUB_ACTION_MODE_PREPEND) {
+                                $tabs_before->append($component);
                             } else {
-                                $controller->getView()->append($component);
+                                $tabs_after->append($component);
                             }
                         }
                     }
                 }
-            }
-            if ($controller->hasView()) {
-                $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
-                $view = $controller->getView();
-                if ($view->hasLayout()) {
-                    $view->getLayout()->setStaticFiles($this->config['bundles']['list']);
+                if ($controller->hasView()) {
+                    $controller->getView()->prepend($tabs_before);
+                    $controller->getView()->append($tabs_after);
                 }
-                $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
-                $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
-                $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
-                $controller->getControllerResponse()->setAttribute('component', $elementId);
-            } elseif ($controller->hasTemplate()) {
-                $renderedOutput = $this->renderer->render(
-                    "$mvcTemplateFolder::{$controller->getTemplate()}"
-                );
-            } else {
-                $renderedOutput = $this->renderer->render(
-                    "$mvcTemplateFolder::$controllerCode/$actionCode"
-                );
             }
-            $controller->getControllerResponse()->setBody($renderedOutput);
+            if ($parent === null) {
+                if ($controller->hasView()) {
+                    $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
+                    $view = $controller->getView();
+                    if ($view->hasLayout()) {
+                        $view->getLayout()->setStaticFiles($this->config['bundles']['list']);
+                    }
+                    $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
+                    $controller->getControllerResponse()->setAttribute('component', $elementId);
+                } elseif ($controller->hasTemplate()) {
+                    $renderedOutput = $this->renderer->render(
+                        "$mvcTemplateFolder::{$controller->getTemplate()}"
+                    );
+                } else {
+                    $renderedOutput = $this->renderer->render(
+                        "$mvcTemplateFolder::$controllerCode/$actionCode"
+                    );
+                }
+                $controller->getControllerResponse()->setBody($renderedOutput);
+            }
         }
         return $controller;
     }
