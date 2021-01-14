@@ -84,31 +84,36 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @param string $controller
      * @param string $action
+     * @param string $name
      * @param string $mode
+     * @param bool $ajax
      */
-    protected function pushAction(string $controller, string $action, string $mode = self::SUB_ACTION_MODE_PREPEND)
+    protected function pushAction(string $controller, string $action, string $name, string $mode = self::SUB_ACTION_MODE_APPEND, bool $ajax = true)
     {
-        $this->action_Map[] = [
+        $this->action_Map[$mode][] = [
             'controller' => $controller,
             'action' => $action,
-            'mode' => $mode,
+            'name' => $name,
+            'ajax' => $ajax,
         ];
     }
 
     /**
+     * @param string $mode
      * @return array
      */
-    public function getActionMap(): array
+    public function getActionMap(string $mode): array
     {
-        return $this->action_Map;
+        return $this->action_Map[$mode];
     }
 
     /**
+     * @param string $mode
      * @return bool
      */
-    public function hasActions(): bool
+    public function hasActions(string $mode): bool
     {
-        return count($this->action_Map) > 0;
+        return isset($this->action_Map[$mode]) && count($this->action_Map[$mode]) > 0;
     }
 
     /**

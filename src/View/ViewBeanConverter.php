@@ -8,7 +8,6 @@ use Niceshops\Bean\Converter\AbstractBeanConverter;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
 use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
-use Pars\Component\Base\Form\DateTimeLocal;
 use Psr\Http\Message\UploadedFileInterface;
 
 class ViewBeanConverter extends AbstractBeanConverter
@@ -41,7 +40,7 @@ class ViewBeanConverter extends AbstractBeanConverter
                                 #$value->setTimezone($userTimezone);
                             }
                         }
-                        return $value->format(DateTimeLocal::FORMAT);
+                        return $value->format('Y-m-d\TH:i:s');
                     } else {
                         return '';
                     }

@@ -7,7 +7,6 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
-use Pars\Component\Base\Tabs\Tabs;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
@@ -16,6 +15,7 @@ use Pars\Mvc\Exception\ControllerNotFoundException;
 use Pars\Mvc\Exception\NotFoundException;
 use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
+use Pars\Mvc\View\DefaultComponent;
 use Pars\Mvc\View\ViewRenderer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -159,35 +159,12 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             $controller->error($exception);
         }
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
-            if ($controller->hasActions()) {
-                $tabs_before = new Tabs();
-                $tabs_before->setId($controllerCode . $actionCode . '-before');
-                $tabs_before->setActive($controller->getNavigationState($controllerCode . $actionCode . '-before__list'));
-                $tabs_after = new Tabs();
-                $tabs_after->setId($controllerCode . $actionCode . '-after');
-                $tabs_after->setActive($controller->getNavigationState($controllerCode . $actionCode . '-after__list'));
-                foreach ($controller->getActionMap() as $item) {
-                    $subController = $this->executeController(
-                        $item['controller'],
-                        $item['action'],
-                        $config,
-                        $request,
-                        $controller
-                    );
-                    if ($subController->hasView()) {
-                        $components = $subController->getView()->getLayout()->getComponentList();
-                        foreach ($components as $component) {
-                            if (isset($item['mode']) && $item['mode'] == AbstractController::SUB_ACTION_MODE_PREPEND) {
-                                $tabs_before->append($component);
-                            } else {
-                                $tabs_after->append($component);
-                            }
-                        }
-                    }
+            if ($controller->hasView()) {
+                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_PREPEND)) {
+                    $this->handleActions(AbstractController::SUB_ACTION_MODE_PREPEND, $controllerCode, $actionCode, $config, $request, $controller);
                 }
-                if ($controller->hasView()) {
-                    $controller->getView()->prepend($tabs_before);
-                    $controller->getView()->append($tabs_after);
+                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_APPEND)) {
+                    $this->handleActions(AbstractController::SUB_ACTION_MODE_APPEND, $controllerCode, $actionCode, $config, $request, $controller);
                 }
             }
             if ($parent === null) {
@@ -212,6 +189,60 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             }
         }
         return $controller;
+    }
+
+    protected function handleActions(string $mode, string $controller, string $action, array $config, ServerRequestInterface $request, ControllerInterface $parent)
+    {
+        $active = 1;
+        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
+            $id = $controller . $action . '-before';
+            $active = $parent->getNavigationState($id . '__list');
+            $parent->getView()->getLayout()->set('actionActiveBefore', $active);
+            $parent->getView()->getLayout()->set('actionIdBefore', $id);
+            $active = $parent->getNavigationState($id . '__list');
+        }
+        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+            $id = $controller . $action . '-after';
+            $active = $parent->getNavigationState($id . '__list');
+            $parent->getView()->getLayout()->set('actionActiveAfter', $active);
+            $parent->getView()->getLayout()->set('actionIdAfter', $id);
+        }
+        foreach ($parent->getActionMap($mode) as $key => $item) {
+            if ($active == $key + 1 || !$item['ajax']) {
+                $subController = $this->executeController(
+                    $item['controller'],
+                    $item['action'],
+                    $config,
+                    $request,
+                    $parent
+                );
+                if ($subController->hasView() && $subController->getView()->hasLayout()) {
+                    $components = $subController->getView()->getLayout()->getComponentList();
+                    foreach ($components as $component) {
+                        if (isset($item['name'])) {
+                            $component->setName($item['name']);
+                        }
+                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
+                            $parent->getView()->getLayout()->getComponentListBefore()->push($component);
+                        }
+                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+                            $parent->getView()->getLayout()->getComponentListAfter()->push($component);
+                        }
+                    }
+                }
+            } else {
+                $ajaxTab = new DefaultComponent();
+                if (isset($item['name'])) {
+                    $ajaxTab->setName($item['name']);
+                }
+                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
+                    $parent->getView()->getLayout()->getComponentListBefore()->push($ajaxTab);
+                }
+                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+                    $parent->getView()->getLayout()->getComponentListAfter()->push($ajaxTab);
+                }
+            }
+        }
     }
 
     /**

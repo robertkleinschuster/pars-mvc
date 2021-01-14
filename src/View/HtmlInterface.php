@@ -6,7 +6,7 @@ namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Type\Base\BeanInterface;
 
-interface HtmlInterface extends RenderableInterface
+interface HtmlInterface extends RenderableInterface, BeanInterface
 {
 
     /**

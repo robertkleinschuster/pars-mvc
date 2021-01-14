@@ -7,7 +7,6 @@ namespace Pars\Mvc\View;
 use Mezzio\Template\TemplateRendererInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Type\Base\BeanInterface;
-use Pars\Component\Base\Layout\BaseLayout;
 
 /**
  * Class ViewRenderer
@@ -97,7 +96,8 @@ class ViewRenderer
                 }
                 if ($id !== null) {
                     $result = '';
-                    $renderable = new BaseLayout();
+                    $layout = $view->getLayout();
+                    $renderable = new $layout();
                     $element = $view->getLayout()->getElementById($id);
                     if ($renderable instanceof BeanConverterAwareInterface && $element !== null) {
                         if ($view->hasBeanConverter()) {
