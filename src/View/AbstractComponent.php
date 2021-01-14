@@ -15,7 +15,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     protected function beforeRender(BeanInterface $bean = null)
     {
         if ($this->hasName()) {
-            $this->unshift(new HtmlElement('h3.mb-3', $this->getName()));
+            $this->unshift(new HtmlElement('h3.mb-2', $this->getName()));
         }
         parent::beforeRender($bean);
     }
