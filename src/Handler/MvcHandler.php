@@ -7,6 +7,7 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
+use Pars\Core\Cache\ParsCache;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
