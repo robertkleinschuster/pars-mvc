@@ -26,7 +26,7 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
     /**
      * @return ComponentList
      */
-    public function getComponentListBefore(): ComponentList
+    public function getComponentListAfter(): ComponentList
     {
         if (null === $this->componentListBefore) {
             $this->componentListBefore = new ComponentList();
@@ -38,7 +38,7 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
     /**
      * @return ComponentList
      */
-    public function getComponentListAfter(): ComponentList
+    public function getComponentListSubAction(): ComponentList
     {
         if (null === $this->componentListAfter) {
             $this->componentListAfter = new ComponentList();

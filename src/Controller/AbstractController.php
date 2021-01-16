@@ -21,8 +21,8 @@ use Throwable;
 abstract class AbstractController implements ControllerInterface
 {
 
-    const SUB_ACTION_MODE_APPEND = 'append';
-    const SUB_ACTION_MODE_PREPEND = 'prepend';
+    const SUB_ACTION_MODE_TABBED = 'append';
+    const SUB_ACTION_MODE_STANDARD = 'prepend';
 
     /**
      * @var ControllerRequest
@@ -88,7 +88,7 @@ abstract class AbstractController implements ControllerInterface
      * @param string $mode
      * @param bool $ajax
      */
-    protected function pushAction(string $controller, string $action, string $name, string $mode = self::SUB_ACTION_MODE_APPEND, bool $ajax = true)
+    protected function pushAction(string $controller, string $action, string $name, string $mode = self::SUB_ACTION_MODE_TABBED, bool $ajax = true)
     {
         $this->action_Map[$mode][] = [
             'controller' => $controller,

@@ -161,11 +161,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         }
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
             if ($controller->hasView()) {
-                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_PREPEND)) {
-                    $this->handleActions(AbstractController::SUB_ACTION_MODE_PREPEND, $controllerCode, $actionCode, $config, $request, $controller);
+                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_STANDARD)) {
+                    $this->handleActions(AbstractController::SUB_ACTION_MODE_STANDARD, $controllerCode, $actionCode, $config, $request, $controller);
                 }
-                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_APPEND)) {
-                    $this->handleActions(AbstractController::SUB_ACTION_MODE_APPEND, $controllerCode, $actionCode, $config, $request, $controller);
+                if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_TABBED)) {
+                    $this->handleActions(AbstractController::SUB_ACTION_MODE_TABBED, $controllerCode, $actionCode, $config, $request, $controller);
                 }
             }
             if ($parent === null) {
@@ -195,14 +195,14 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     protected function handleActions(string $mode, string $controller, string $action, array $config, ServerRequestInterface $request, ControllerInterface $parent)
     {
         $active = 1;
-        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
+        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
             $id = $controller . $action . '-before';
             $active = $parent->getNavigationState($id . '__list');
             $parent->getView()->getLayout()->set('actionActiveBefore', $active);
             $parent->getView()->getLayout()->set('actionIdBefore', $id);
             $active = $parent->getNavigationState($id . '__list');
         }
-        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_TABBED) {
             $id = $controller . $action . '-after';
             $active = $parent->getNavigationState($id . '__list');
             $parent->getView()->getLayout()->set('actionActiveAfter', $active);
@@ -223,11 +223,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                         if (isset($item['name'])) {
                             $component->setName($item['name']);
                         }
-                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
-                            $parent->getView()->getLayout()->getComponentListBefore()->push($component);
-                        }
-                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
                             $parent->getView()->getLayout()->getComponentListAfter()->push($component);
+                        }
+                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_TABBED) {
+                            $parent->getView()->getLayout()->getComponentListSubAction()->push($component);
                         }
                     }
                 }
@@ -236,11 +236,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 if (isset($item['name'])) {
                     $ajaxTab->setName($item['name']);
                 }
-                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_PREPEND) {
-                    $parent->getView()->getLayout()->getComponentListBefore()->push($ajaxTab);
-                }
-                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_APPEND) {
+                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
                     $parent->getView()->getLayout()->getComponentListAfter()->push($ajaxTab);
+                }
+                if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_TABBED) {
+                    $parent->getView()->getLayout()->getComponentListSubAction()->push($ajaxTab);
                 }
             }
         }
