@@ -14,7 +14,6 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
-use Pars\Model\Cms\Post\CmsPostBean;
 
 class HtmlElement extends AbstractBaseBean implements
     HtmlInterface,
