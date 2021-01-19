@@ -6,7 +6,6 @@ namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Converter\AbstractBeanConverter;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
-use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
@@ -51,7 +50,7 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value === null ? '' : $value->getClientFilename();
             default:
                 if (is_scalar($value)) {
-                    return (string)$value;
+                    return (string) $value;
                 } elseif (is_array($value)) {
                     return json_encode($value);
                 }
@@ -94,14 +93,13 @@ class ViewBeanConverter extends AbstractBeanConverter
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;
             case BeanInterface::class:
-                try {
-                    if (!is_array($value)) {
-                        $value = (array)json_decode($value);
-                    }
-                    return AbstractBaseBean::createFromArray($value);
-                } catch (BeanException $exception) {
-                    return $exception->getMessage();
+                if (isset($value['__class'])) {
+                    $emptyBean = AbstractBaseBean::createFromArray([
+                        '__class' => $value['__class']
+                    ]);
+                    return (new static())->convert($emptyBean, $value)->toBean();
                 }
+                return null;
             default:
                 return $value;
         }
