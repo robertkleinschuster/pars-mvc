@@ -216,7 +216,7 @@ abstract class AbstractModel implements
                 $processor->save();
                 if ($this->hasBeanConverter()) {
                     $converter = $this->getBeanConverter();
-                    $attributes = array_replace($attributes, $converter->convert($bean)->toArray());
+                    $attributes = array_replace($attributes, $converter->convert($bean)->toArray(true));
                 }
                 if ($processor instanceof ValidationHelperAwareInterface) {
                     $this->getValidationHelper()->addErrorFieldMap(
