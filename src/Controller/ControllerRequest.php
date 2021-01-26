@@ -9,6 +9,7 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\EditLocaleParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
@@ -18,6 +19,7 @@ use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Helper\Parameter\RedirectParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
+use PHP_CodeSniffer\Tests\Core\File\testFECNNamespacedClass;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -216,6 +218,26 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function hasSearch(): bool
     {
         return $this->hasAttribute(SearchParameter::name());
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEditLocale(): bool
+    {
+        return $this->hasAttribute(EditLocaleParameter::name());
+    }
+
+    /**
+     * @return EditLocaleParameter
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     */
+    public function getEditLocale(): EditLocaleParameter
+    {
+        $editLocaleParamter = new EditLocaleParameter($this->getAttribute(EditLocaleParameter::name()));
+        return $editLocaleParamter;
     }
 
     /**

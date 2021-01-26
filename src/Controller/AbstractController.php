@@ -357,6 +357,9 @@ abstract class AbstractController implements ControllerInterface
             if ($this->getControllerRequest()->hasSearch()) {
                 $this->pathHelper->addParameter($this->getControllerRequest()->getSearch());
             }
+            if ($this->getControllerRequest()->hasEditLocale()) {
+                $this->pathHelper->addParameter($this->getControllerRequest()->getEditLocale());
+            }
             return $this->pathHelper;
         }
         return $this->pathHelper->reset();
