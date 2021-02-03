@@ -9,6 +9,7 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
@@ -284,6 +285,27 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $moveParameter = new MoveParameter();
         $moveParameter->fromData($this->getAttribute($moveParameter->name()));
         return $moveParameter;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasData(): bool
+    {
+        return $this->hasAttribute(DataParameter::name());
+    }
+
+    /**
+     * @return DataParameter
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     */
+    public function getData(): DataParameter
+    {
+        $dataParameter = new DataParameter();
+        $dataParameter->fromData($this->getAttribute($dataParameter->name()));
+        return $dataParameter;
     }
 
     /**
