@@ -12,6 +12,8 @@ use Psr\Http\Message\UploadedFileInterface;
 class ViewBeanConverter extends AbstractBeanConverter
 {
 
+    public const DATE_FORMAT = 'Y-m-d\TH:i:s';
+
     private ?string $timezone = null;
 
 
@@ -39,7 +41,7 @@ class ViewBeanConverter extends AbstractBeanConverter
                                 #$value->setTimezone($userTimezone);
                             }
                         }
-                        return $value->format('Y-m-d\TH:i:s');
+                        return $value->format(self::DATE_FORMAT);
                     } else {
                         return '';
                     }
