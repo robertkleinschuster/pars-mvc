@@ -237,10 +237,20 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasPagingation()) {
             $paginationParameter = $this->getControllerRequest()->getPagination();
-            $this->getModel()->handlePagination($paginationParameter);
+            if ($this->getControllerRequest()->acceptParameter($paginationParameter)) {
+                $this->getModel()->handlePagination($paginationParameter);
+            } elseif ($this->getDefaultLimit() > 0) {
+                $paginationParameter = new PaginationParameter();
+                $paginationParameter->setController($this->getControllerRequest()->getController());
+                $paginationParameter->setAction($this->getControllerRequest()->getAction());
+                $paginationParameter->setLimit($this->getDefaultLimit())->setPage(1);
+                $this->getModel()->handlePagination($paginationParameter);
+            }
         } elseif ($this->getDefaultLimit() > 0) {
             $paginationParameter = new PaginationParameter();
-            $paginationParameter->setLimit($this->getDefaultLimit())->setPage(0);
+            $paginationParameter->setController($this->getControllerRequest()->getController());
+            $paginationParameter->setAction($this->getControllerRequest()->getAction());
+            $paginationParameter->setLimit($this->getDefaultLimit())->setPage(1);
             $this->getModel()->handlePagination($paginationParameter);
         }
 

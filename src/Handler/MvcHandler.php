@@ -141,6 +141,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             $controller = ($this->controllerFactory)($controllerCode, $request, $config);
             $controller->setParent($parent);
             $controller->getControllerRequest()->setAction($actionCode);
+            $controller->getControllerRequest()->setController($controllerCode);
             $controller->initialize();
             if ($controller->isAuthorized()) {
                 $this->executeControllerAction($controller, $actionMethod);

@@ -17,6 +17,7 @@ use Pars\Helper\Parameter\MoveParameter;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Helper\Parameter\OrderParameter;
 use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\ParameterInterface;
 use Pars\Helper\Parameter\RedirectParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
@@ -56,6 +57,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @var string|null
      */
     private ?string $action = null;
+    private ?string $controller = null;
 
     /**
      * ControllerRequestProperties constructor.
@@ -327,11 +329,41 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @param string|null $action
+     * @return ControllerRequest
      */
-    public function setAction(?string $action): void
+    public function setAction(?string $action): ControllerRequest
     {
         $this->action = $action;
+        return $this;
     }
 
+    /**
+     * @return string|null
+     */
+    public function getController(): ?string
+    {
+        return $this->controller;
+    }
+
+    /**
+     * @param string|null $controller
+     * @return ControllerRequest
+     */
+    public function setController(?string $controller): ControllerRequest
+    {
+        $this->controller = $controller;
+        return $this;
+    }
+
+    /**
+     * @param ParameterInterface $parameter
+     * @return bool
+     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     */
+    public function acceptParameter(ParameterInterface $parameter): bool
+    {
+       return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
+           && (!$parameter->hasController() || $parameter->getController() == $this->getController());
+    }
 
 }
