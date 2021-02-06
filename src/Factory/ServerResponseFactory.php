@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Factory;
 
+use Laminas\Diactoros\Response;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\Response\RedirectResponse;
+use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\UriFactory;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;
@@ -19,7 +21,7 @@ class ServerResponseFactory
 {
     /**
      * @param ControllerResponse $controllerResponse
-     * @return HtmlResponse|JsonResponse|RedirectResponse
+     * @return HtmlResponse|JsonResponse|RedirectResponse|Response
      * @throws MvcException
      * @throws \Niceshops\Core\Exception\AttributeNotFoundException
      */
@@ -45,6 +47,13 @@ class ServerResponseFactory
                         $controllerResponse->getAttribute(ControllerResponse::ATTRIBUTE_REDIRECT_URI, true, '')
                     )
                 );
+            case ControllerResponse::MODE_DOWNLOAD:
+                $filename = $controllerResponse->getAttribute(ControllerResponse::ATTRIBUTE_FILENAME);
+                return (new Response\TextResponse(
+                    $controllerResponse->getBody(),
+                    $controllerResponse->getStatusCode(),
+                    $controllerResponse->getHeaders()
+                ))->withAddedHeader('Content-disposition', 'attachment; filename="' . $filename . '"');
         }
         throw new MvcException("Invalid Mode '{$controllerResponse->getMode()}' set in ControlerResponse.");
     }

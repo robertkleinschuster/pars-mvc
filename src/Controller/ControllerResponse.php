@@ -25,8 +25,10 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public const MODE_HTML = 'html';
     public const MODE_JSON = 'json';
     public const MODE_REDIRECT = 'redirect';
+    public const MODE_DOWNLOAD = 'download';
 
     public const ATTRIBUTE_REDIRECT_URI = 'redirect_url';
+    public const ATTRIBUTE_FILENAME = 'filename';
 
     public const OPTION_RENDER_RESPONSE = 'render_response';
 
@@ -190,5 +192,21 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
         $this->setAttribute(self::ATTRIBUTE_REDIRECT_URI, $uri);
         $this->removeOption(self::OPTION_RENDER_RESPONSE);
         return true;
+    }
+
+    /**
+     * @param string $filename
+     * @param string $body
+     * @param string $contentType
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     */
+    public function setDownload(string $filename, string $body, string $contentType)
+    {
+        $this->setMode(self::MODE_DOWNLOAD);
+        $this->unsetOption(self::OPTION_RENDER_RESPONSE);
+        $this->setAttribute(self::ATTRIBUTE_FILENAME, $filename);
+        $this->setBody($body);
+        $this->setHeaders(['Content-Type' => $contentType]);
     }
 }
