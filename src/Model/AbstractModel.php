@@ -16,6 +16,7 @@ use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Niceshops\Bean\Type\Base\BeanListAwareInterface;
 use Niceshops\Bean\Type\Base\BeanListInterface;
+use Niceshops\Core\Exception\AttributeNotFoundException;
 use Niceshops\Core\Exception\CoreException;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
@@ -60,13 +61,12 @@ abstract class AbstractModel implements
 
     public function initialize()
     {
-
     }
 
 
     /**
      * @param PaginationParameter $paginationParameter
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function handlePagination(PaginationParameter $paginationParameter)
     {
@@ -81,7 +81,7 @@ abstract class AbstractModel implements
 
     /**
      * @param SearchParameter $searchParameter
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function handleSearch(SearchParameter $searchParameter)
     {
@@ -96,7 +96,7 @@ abstract class AbstractModel implements
     /**
      * @param OrderParameter $orderParameter
      * @return mixed|void
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function handleOrder(OrderParameter $orderParameter)
     {
@@ -118,7 +118,7 @@ abstract class AbstractModel implements
     /**
      * @param MoveParameter $moveParameter
      * @return mixed|void
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function handleMove(MoveParameter $moveParameter)
     {
@@ -138,11 +138,16 @@ abstract class AbstractModel implements
     /**
      * @param SubmitParameter $submitParameter
      * @param IdParameter $idParameter
+     * @param IdListParameter $idListParameter
      * @param array $attribute_List
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
-    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParameter, IdListParameter $idListParameter, array $attribute_List)
-    {
+    public function handleSubmit(
+        SubmitParameter $submitParameter,
+        IdParameter $idParameter,
+        IdListParameter $idListParameter,
+        array $attribute_List
+    ) {
         switch ($submitParameter->getMode()) {
             case SubmitParameter::MODE_SAVE:
                 if ($this->hasOption(self::OPTION_EDIT_ALLOWED)) {
@@ -229,10 +234,14 @@ abstract class AbstractModel implements
 
     /**
      * @param IdParameter $idParameter
+     * @param IdListParameter $idListParameter
      * @param array $attributes
      */
-    protected function create_bulk(IdParameter $idParameter, IdListParameter $idListParameter, array $attributes): void
-    {
+    protected function create_bulk(
+        IdParameter $idParameter,
+        IdListParameter $idListParameter,
+        array $attributes
+    ): void {
         $id = $idParameter->getAttribute_List();
         $ids = $idListParameter->getAttribute_List();
         $ids_new = [];
@@ -304,7 +313,6 @@ abstract class AbstractModel implements
     }
 
     /**
-     * @param IdParameter $idParameter
      * @param IdListParameter $idListParameter
      * @param array $attributes
      */
@@ -365,7 +373,8 @@ abstract class AbstractModel implements
     }
 
     /**
-     * @param IdParameter $idListParameter
+     * @param IdListParameter $idListParameter
+     * @param array $attributes
      */
     protected function delete_bulk(IdListParameter $idListParameter, array $attributes): void
     {
