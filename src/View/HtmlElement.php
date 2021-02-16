@@ -9,11 +9,16 @@ use Niceshops\Bean\Converter\BeanConverterAwareTrait;
 use Niceshops\Bean\Converter\ConverterBeanDecorator;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
 use Niceshops\Bean\Type\Base\BeanAwareInterface;
+use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
 use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
+use Niceshops\Core\Exception\AttributeExistsException;
+use Niceshops\Core\Exception\AttributeLockException;
+use Niceshops\Core\Exception\AttributeNotFoundException;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Placeholder\PlaceholderHelper;
 
 class HtmlElement extends AbstractBaseBean implements
     HtmlInterface,
@@ -25,28 +30,69 @@ class HtmlElement extends AbstractBaseBean implements
     use AttributeAwareTrait;
     use BeanConverterAwareTrait;
 
+    /**
+     *
+     */
     public const ATTRIBUTE_ID = 'id';
 
+    /**
+     * @var string|null
+     */
     public ?string $tag = null;
+
+    /**
+     * @var string|null
+     */
     public ?string $content = null;
+
+    /**
+     * @var string|null
+     */
     public ?string $path = null;
+
+    /**
+     * @var string|null
+     */
     public ?string $target = null;
+
+    /**
+     * @var string|null
+     */
     public ?string $group = null;
+
+    /**
+     * @var array|null
+     */
     public ?array $inlineStyles = [];
+
+    /**
+     * @var HtmlElementList|null
+     */
     public ?HtmlElementList $elementList = null;
 
+    /**
+     * @var bool
+     */
     private bool $initialized = false;
 
     /**
      * HtmlElement constructor.
      * @param string|null $tag
      * @param string|null $content
+     * @param array|null $attributes
      * @param string|null $path
      * @param string|null $group
-     * @throws \Niceshops\Bean\Type\Base\BeanException
+     * @throws BeanException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
-    public function __construct(?string $tag = null, ?string $content = null, ?array $attributes = null, ?string $path = null, ?string $group = null)
-    {
+    public function __construct(
+        ?string $tag = null,
+        ?string $content = null,
+        ?array $attributes = null,
+        ?string $path = null,
+        ?string $group = null
+    ) {
         parent::__construct();
         $exp = explode('.', $tag);
         if (count($exp) > 1) {
@@ -82,7 +128,7 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-     * @param string $tag
+     * @param string|null $tag
      *
      * @return $this
      */
@@ -100,23 +146,22 @@ class HtmlElement extends AbstractBaseBean implements
         return $this->tag !== null;
     }
 
-
     /**
      * @param BeanInterface|null $bean
      * @return string
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getId(BeanInterface $bean = null): string
     {
-
         return $this->getAttribute(self::ATTRIBUTE_ID);
-
     }
 
     /**
-     * @param string $id
+     * @param string|null $id
      *
      * @return $this
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setId(?string $id): self
     {
@@ -165,6 +210,11 @@ class HtmlElement extends AbstractBaseBean implements
         return implode(' ', $attributes);
     }
 
+    /**
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
     protected function handleInlineStyles()
     {
         $styles = "";
@@ -179,24 +229,6 @@ class HtmlElement extends AbstractBaseBean implements
         }
     }
 
-    protected function unnormalizeArray(array $data, string $name = null)
-    {
-        $result = [];
-        foreach ($data as $key => $value) {
-            if (null !== $name) {
-                $arrKey = "{$name}[$key]";
-            } else {
-                $arrKey = $key;
-            }
-            if (is_array($value)) {
-                $result = array_replace($result, $this->unnormalizeArray($value, $arrKey));
-            } else {
-                $result[$arrKey] = $value;
-            }
-        }
-        return $result;
-    }
-
     /**
      * @param string $str
      * @param BeanInterface $bean
@@ -204,90 +236,21 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function replacePlaceholder(string $str, BeanInterface $bean): string
     {
-        $matches = [];
-        preg_match_all('/\{.*?\}|%7B.*?%7D|%257B.*?%257D/', $str, $matches);
-        $keys = [];
-        $values = [];
-        $this->replacePlaceholderValues($matches, $str, $bean, $keys, $values);
-        return str_replace($keys, $values, $str);
+        $placeholderHelper = new PlaceholderHelper();
+        return $placeholderHelper->replacePlaceholder($str, $bean);
     }
 
     /**
-     * @param array $keys
-     * @param string $subject
-     * @param BeanInterface $bean
-     * @param array $repkeys
-     * @param array $repvalues
-     */
-    private function replacePlaceholderValues(
-        array $keys,
-        string &$subject,
-        BeanInterface $bean,
-        array &$repkeys,
-        array &$repvalues
-    )
-    {
-        foreach ($keys as $key) {
-            if (is_array($key)) {
-                $this->replacePlaceholderValues($key, $subject, $bean, $repkeys, $repvalues);
-            } else {
-                if (strpos($key, ' ') !== false) {
-                    continue;
-                }
-                $value = $key;
-                $name = $key;
-                $name = str_replace('{', '', $name);
-                $name = str_replace('}', '', $name);
-                $name = str_replace('%7B', '', $name);
-                $name = str_replace('%7D', '', $name);
-                $name = str_replace('%257B', '', $name);
-                $name = str_replace('%257D', '', $name);
-                if ($bean->exists($name)) {
-                    $value = $bean->get($name);
-                } else {
-                    $data = $this->unnormalizeArray($bean->toArray(true));
-                    if (isset($data[$name])) {
-                        $value = $data[$name];
-                    } else {
-                        if ($bean instanceof ConverterBeanDecorator) {
-                            $data = $this->unnormalizeArray($bean->toBean()->toArray(true));
-                            if (isset($data[$name])) {
-                                $value = $data[$name];
-                            }
-                        }
-                    }
-                }
-                if (is_string($value)) {
-                    $repkeys[] = "{{$name}}";
-                    $repkeys[] = "%7B{$name}%7D";
-                    $repkeys[] = "%257B{$name}%257D";
-                    $repvalues[] = $value;
-                    $repvalues[] = $value;
-                    $repvalues[] = $value;
-                } else {
-                    $repkeys[] = "{{$name}}";
-                    $repkeys[] = "%7B{$name}%7D";
-                    $repkeys[] = "%257B{$name}%257D";
-                    $repvalues[] = "$name not string";
-                    $repvalues[] = "$name not string";
-                    $repvalues[] = "$name not string";
-                }
-            }
-        }
-    }
-
-
-    /**
-     * @param BeanInterface $bean
+     * @param BeanInterface|null $bean
      * @return string
      */
-    public function getPath(BeanInterface $bean = null)
+    public function getPath(BeanInterface $bean = null): ?string
     {
         return $this->path;
     }
 
     /**
-     * @param string $path
+     * @param string|null $path
      *
      * @return $this
      */
@@ -315,7 +278,7 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-     * @param string $group
+     * @param string|null $group
      *
      * @return $this
      */
@@ -335,7 +298,7 @@ class HtmlElement extends AbstractBaseBean implements
 
 
     /**
-     * @param BeanInterface $bean
+     * @param BeanInterface|null $bean
      * @return string
      */
     public function getContent(BeanInterface $bean = null): string
@@ -344,7 +307,7 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-     * @param string $content
+     * @param string|null $content
      *
      * @return $this
      */
@@ -392,6 +355,11 @@ class HtmlElement extends AbstractBaseBean implements
         return $this->elementList !== null && $this->elementList->count();
     }
 
+    /**
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
     public function handleInitialize()
     {
         if (!$this->initialized) {
@@ -405,6 +373,9 @@ class HtmlElement extends AbstractBaseBean implements
      * @param BeanInterface|null $bean
      * @param bool $placeholders
      * @return string
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function render(BeanInterface $bean = null, bool $placeholders = false): string
     {
@@ -442,10 +413,16 @@ class HtmlElement extends AbstractBaseBean implements
         return $result;
     }
 
+    /**
+     * @param BeanInterface|null $bean
+     */
     protected function beforeRender(BeanInterface $bean = null)
     {
     }
 
+    /**
+     *
+     */
     protected function initialize()
     {
     }
@@ -473,8 +450,8 @@ class HtmlElement extends AbstractBaseBean implements
     /**
      * @param string $role
      * @return $this
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setRole(string $role): self
     {
@@ -486,8 +463,8 @@ class HtmlElement extends AbstractBaseBean implements
      * @param string $key
      * @param string $value
      * @return $this
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setData(string $key, string $value): self
     {
@@ -499,8 +476,8 @@ class HtmlElement extends AbstractBaseBean implements
      * @param string $key
      * @param string $value
      * @return $this
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setAria(string $key, string $value): self
     {
@@ -511,8 +488,8 @@ class HtmlElement extends AbstractBaseBean implements
     /**
      * @param bool $hidden
      * @return $this
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setHidden(bool $hidden): self
     {
@@ -527,8 +504,8 @@ class HtmlElement extends AbstractBaseBean implements
     /**
      * @param string $value
      * @return $this
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
     public function setAccesskey(string $value): self
     {
@@ -551,7 +528,7 @@ class HtmlElement extends AbstractBaseBean implements
      * @param string $name
      * @return $this
      */
-    public function removeInlineStyle(string $name)
+    public function removeInlineStyle(string $name): HtmlElement
     {
         unset($this->inlineStyles[$name]);
         return $this;
@@ -594,6 +571,10 @@ class HtmlElement extends AbstractBaseBean implements
         return $result;
     }
 
+    /**
+     * @param HtmlElement $element
+     * @param BeanInterface|null $bean
+     */
     protected function beforeRenderElement(HtmlElement $element, BeanInterface $bean = null)
     {
     }
@@ -646,27 +627,31 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @return string
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function generateId(): string
     {
-        $this->setId(substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10));
+        $this->setId(
+            substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10)
+        );
         return $this->getId();
     }
 
     /**
-    * @return string
-    */
+     * @return string
+     */
     public function getTarget(): string
     {
         return $this->target;
     }
 
     /**
-    * @param string $target
-    *
-    * @return $this
-    */
+     * @param string $target
+     *
+     * @return $this
+     */
     public function setTarget(string $target): self
     {
         $this->target = $target;
@@ -674,19 +659,20 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-    * @return bool
-    */
+     * @return bool
+     */
     public function hasTarget(): bool
     {
         return isset($this->target);
     }
 
     /**
-     * @param BeanInterface|null $bean
-     * @param bool $placeholders
      * @return string
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->render();
     }
@@ -695,8 +681,11 @@ class HtmlElement extends AbstractBaseBean implements
      * @param BeanInterface|null $bean
      * @param bool $placeholders
      * @return string
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
-    public function __invoke(BeanInterface $bean = null, bool $placeholders = false)
+    public function __invoke(BeanInterface $bean = null, bool $placeholders = false): string
     {
         return $this->render($bean, $placeholders);
     }
@@ -704,8 +693,12 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $id
+     * @return HtmlElement|null
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
-    public function getElementById(string $id)
+    public function getElementById(string $id): ?HtmlElement
     {
         $this->handleInitialize();
         if ($this->hasId() && $this->getId() == $id) {
@@ -722,8 +715,12 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $class
+     * @return HtmlElementList
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
-    public function getElementsByClassName(string $class)
+    public function getElementsByClassName(string $class): HtmlElementList
     {
         $this->handleInitialize();
         $list = new HtmlElementList();
@@ -740,8 +737,12 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $tag
+     * @return HtmlElementList
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
-    public function getElementsByTagName(string $tag)
+    public function getElementsByTagName(string $tag): HtmlElementList
     {
         $this->handleInitialize();
         $list = new HtmlElementList();

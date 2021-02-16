@@ -24,6 +24,9 @@ interface ModelInterface
      */
     public function initialize();
 
+    /**
+     * @return mixed
+     */
     public function initializeDependencies();
 
     /**
@@ -64,5 +67,10 @@ interface ModelInterface
      * @param IdListParameter $idListParameter
      * @param array $attribute_List
      */
-    public function handleSubmit(SubmitParameter $submitParameter, IdParameter $idParameter, IdListParameter $idListParameter, array $attribute_List);
+    public function handleSubmit(
+        SubmitParameter $submitParameter,
+        IdParameter $idParameter,
+        IdListParameter $idListParameter,
+        array $attribute_List
+    );
 }

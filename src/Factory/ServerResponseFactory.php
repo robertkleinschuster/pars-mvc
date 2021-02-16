@@ -8,7 +8,6 @@ use Laminas\Diactoros\Response;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\Response\RedirectResponse;
-use Laminas\Diactoros\Stream;
 use Laminas\Diactoros\UriFactory;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;

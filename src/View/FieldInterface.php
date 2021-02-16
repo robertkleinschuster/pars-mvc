@@ -20,7 +20,7 @@ interface FieldInterface
     public function setTemplate(string $template): self;
 
     /**
-     * @param BeanInterface $bean
+     * @param BeanInterface|null $bean
      * @return string
      */
     public function getLabel(BeanInterface $bean = null): string;

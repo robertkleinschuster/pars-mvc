@@ -21,7 +21,6 @@ use Pars\Helper\Parameter\ParameterInterface;
 use Pars\Helper\Parameter\RedirectParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
-use PHP_CodeSniffer\Tests\Core\File\testFECNNamespacedClass;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
