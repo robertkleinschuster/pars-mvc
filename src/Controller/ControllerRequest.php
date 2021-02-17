@@ -9,6 +9,7 @@ use Niceshops\Core\Attribute\AttributeAwareInterface;
 use Niceshops\Core\Attribute\AttributeAwareTrait;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
 use Pars\Helper\Parameter\IdListParameter;
@@ -31,16 +32,6 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
-
-    public const ATTRIBUTE_SUBMIT = 'submit';
-    public const ATTRIBUTE_ID = 'id';
-    public const ATTRIBUTE_REDIRECT = 'redirect';
-    public const ATTRIBUTE_NAV = 'nav';
-    public const ATTRIBUTE_PAGINATION = 'pagination';
-    public const ATTRIBUTE_SEARCH = 'search';
-    public const ATTRIBUTE_ORDER = 'order';
-    public const ATTRIBUTE_MOVE = 'move';
-
 
     /**
      * @var ServerRequestInterface
@@ -155,6 +146,25 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $redirectParameter = new RedirectParameter();
         $redirectParameter->fromData($this->getAttribute($redirectParameter->name()));
         return $redirectParameter;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function hasContext(): bool
+    {
+        return $this->hasAttribute(ContextParameter::name());
+    }
+
+    /**
+     * @return ContextParameter
+     */
+    public function getContext(): ContextParameter
+    {
+        $parameter = new ContextParameter();
+        $parameter->fromData($this->getAttribute($parameter->name()));
+        return $parameter;
     }
 
     /**

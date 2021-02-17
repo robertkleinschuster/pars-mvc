@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
@@ -369,6 +370,12 @@ abstract class AbstractController implements ControllerInterface
             }
             if ($this->getControllerRequest()->hasEditLocale()) {
                 $this->pathHelper->addParameter($this->getControllerRequest()->getEditLocale());
+            }
+            if ($this->getControllerRequest()->hasContext()) {
+                $this->pathHelper->addParameter($this->getControllerRequest()->getContext());
+            }
+            if ($this->getControllerRequest()->hasNav()) {
+                $this->pathHelper->addParameter($this->getControllerRequest()->getNav());
             }
             return $this->pathHelper;
         }
