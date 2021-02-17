@@ -7,6 +7,7 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
+use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
@@ -209,6 +210,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
             $parent->getView()->getLayout()->set('actionIdAfter', $id);
         }
         foreach ($parent->getActionMap($mode) as $key => $item) {
+            $path = $parent->getPathHelper(true)->addParameter((new NavParameter())->setId($id . '__list')->setIndex($key + 1))->getPath();
+
             if ($active == $key + 1 || !$item['ajax']) {
                 $subController = $this->executeController(
                     $item['controller'],
@@ -220,6 +223,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 if ($subController->hasView() && $subController->getView()->hasLayout()) {
                     $components = $subController->getView()->getLayout()->getComponentList();
                     foreach ($components as $component) {
+                        $component->setPath($path);
                         if (isset($item['name'])) {
                             $component->setName($item['name']);
                         }
@@ -233,6 +237,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 }
             } else {
                 $ajaxTab = new DefaultComponent();
+                $ajaxTab->setPath($path);
                 if (isset($item['name'])) {
                     $ajaxTab->setName($item['name']);
                 }
