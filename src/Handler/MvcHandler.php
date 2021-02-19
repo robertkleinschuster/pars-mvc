@@ -7,6 +7,7 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
+use Pars\Core\Bundles\BundlesMiddleware;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
@@ -174,7 +175,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                     $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
                     $view = $controller->getView();
                     if ($view->hasLayout()) {
-                        $view->getLayout()->setStaticFiles($this->config['bundles']['list']);
+                        $view->getLayout()->setStaticFiles($request->getAttribute(BundlesMiddleware::class)['list']);
                     }
                     $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
                     $controller->getControllerResponse()->setAttribute('component', $elementId);
