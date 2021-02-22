@@ -5,7 +5,6 @@
 
 This library provides MVC implementation for PARS Framework
 
-
 ## Installation
 
 Run the following to install this library:
@@ -23,6 +22,7 @@ $app->any(\Pars\Mvc\Handler\MvcHandler::getRoute(), \Pars\Mvc\Handler\MvcHandler
 Registering Controllers and Models:
 
 Configuration example in your Application
+
 ```php
     'mvc' => [
         'error_controller' => 'index',
@@ -35,18 +35,88 @@ Configuration example in your Application
 
     ],
 ```
+
 This will register `IndexController` under the path `/index`.
 
 Implementing controllers and models:
+
 ```php
 class IndexController extends \Pars\Mvc\Controller\AbstractController {
+    
+    protected function initView(){
+        $view = new MyView();
+        $view->setLayout(new MyLayout());
+        $this->setView($view);
+        
+    }
+    
+    protected function initModel(){
+        $this->getModel()->initialize();
+        $this->getModel()->initializeDependencies();
+    }
+      
     public function indexAction()
     {
+        $this->getView()->set('heading', $this->getModel()->getHeading());
+        $this->getView()->set('text', $this->getModel()->getText());
+        $this->getView()->append(new MyCompontent());
     }
 }
 ```
+
 ```php
 class IndexModel extends \Pars\Mvc\Model\AbstractModel {
+    public function getHeading(): string 
+    {
+        return 'Hello World';
+    }
+    
+      public function getText(): string 
+    {
+        return 'Hello Hello Hello Hello';
+    }
+}
+```
+
+
+Layout and Component
+
+```php
+class MyLayout extends \Pars\Mvc\View\AbstractLayout {
+    protected function initialize() {
+      parent::initialize();
+      $this->setTag('html');
+      $head = new \Pars\Mvc\View\HtmlElement('head');
+      $this->initHead($head);
+      $this->push($head);
+      $body = new \Pars\Mvc\View\HtmlElement('body');
+      $this->initBody($body);
+      $this->push($body);
+    }
+    protected function initHead(\Pars\Mvc\View\HtmlElement $head) {
+       $link = new HtmlElement('link');
+       $link->setAttribute('rel', 'stylesheet');
+       $link->setAttribute('href', 'styles.css');
+       $head->push($link);
+    }
+    
+    protected function initBody(\Pars\Mvc\View\HtmlElement $body) {
+        $heading = new \Pars\Mvc\View\HtmlElement('h1');
+        $heading->setContent('{heading}');
+        $body->push($heading);
+    }
+}
+```
+
+```php
+class MyComponent extends \Pars\Mvc\View\AbstractComponent {
+    
+    protected function initialize() {
+      parent::initialize();
+      $text = new \Pars\Mvc\View\HtmlElement('p');
+      $text->setContent('{text}');
+      $this->push($text);
+    }
     
 }
 ```

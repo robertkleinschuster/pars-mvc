@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
+use Pars\Mvc\Exception\MvcException;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\ViewInterface;
 use Throwable;
@@ -303,7 +303,10 @@ abstract class AbstractController implements ControllerInterface
      *
      * @return bool
      */
-    abstract protected function handleSubmitSecurity(): bool;
+    protected function handleSubmitSecurity(): bool
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
 
     /**
      * handle validation errors from model after submit
@@ -312,7 +315,10 @@ abstract class AbstractController implements ControllerInterface
      * @param ValidationHelper $validationHelper
      * @return mixed
      */
-    abstract protected function handleValidationError(ValidationHelper $validationHelper);
+    protected function handleValidationError(ValidationHelper $validationHelper)
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
 
     /**
      * persist navigation states in session
@@ -320,13 +326,19 @@ abstract class AbstractController implements ControllerInterface
      * @param int $index
      * @return mixed
      */
-    abstract protected function handleNavigationState(string $id, int $index);
+    protected function handleNavigationState(string $id, int $index)
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
 
     /**
      * @param string $id
      * @return int
      */
-    public abstract function getNavigationState(string $id): int;
+    public function getNavigationState(string $id): int
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
 
     /**
      * @return ControllerRequest

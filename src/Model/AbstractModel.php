@@ -194,7 +194,9 @@ abstract class AbstractModel implements
         }
     }
 
-    abstract protected function handlePermissionDenied();
+    protected function handlePermissionDenied() {
+
+    }
 
     /**
      * @param IdParameter $idParameter
