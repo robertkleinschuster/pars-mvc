@@ -19,10 +19,10 @@ class ModelFactory
      * @return mixed
      * @throws ControllerNotFoundException
      */
-    public function __invoke(string $code, array $config)
+    public function __invoke(string $code, array $config, array $appConfig)
     {
         $model = $this->getModelClass($config, $code);
-        return new $model();
+        return new $model($appConfig);
     }
 
     /**

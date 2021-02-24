@@ -32,8 +32,8 @@ class FieldList extends AbstractBaseBeanList
     /**
      * @return FieldIterator
      */
-    public function getIterator(): FieldIterator
+  /*  public function getIterator(): FieldIterator
     {
         return new FieldIterator(parent::getIterator());
-    }
+    }*/
 }

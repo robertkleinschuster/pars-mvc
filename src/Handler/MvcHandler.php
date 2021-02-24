@@ -140,7 +140,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
         $controller = null;
         try {
-            $controller = ($this->controllerFactory)($controllerCode, $request, $config);
+            $controller = ($this->controllerFactory)($controllerCode, $request, $config, $this->config);
             $controller->setParent($parent);
             $controller->getControllerRequest()->setAction($actionCode);
             $controller->getControllerRequest()->setController($controllerCode);

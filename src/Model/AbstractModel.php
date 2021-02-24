@@ -55,6 +55,28 @@ abstract class AbstractModel implements
     public const OPTION_EDIT_ALLOWED = 'edit_allowed';
     public const OPTION_DELETE_ALLOWED = 'delete_allowed';
 
+    /**
+     * @var array
+     */
+    protected array $applicationConfig = [];
+
+    /**
+     * AbstractModel constructor.
+     * @param array $applicationConfig
+     */
+    public function __construct(array $applicationConfig = [])
+    {
+        $this->applicationConfig = $applicationConfig;
+    }
+
+    /**
+     * @return array
+     */
+    public function getApplicationConfig(): array
+    {
+        return $this->applicationConfig;
+    }
+
     public function initializeDependencies()
     {
     }

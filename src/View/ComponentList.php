@@ -14,10 +14,10 @@ class ComponentList extends AbstractBaseBeanList
     /**
      * @return ComponentIterator
      */
-    public function getIterator()
+  /*  public function getIterator()
     {
         return new ComponentIterator(parent::getIterator());
-    }
+    }*/
 
     /**
      * @param ComponentInterface ...$values

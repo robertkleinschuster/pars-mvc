@@ -236,6 +236,9 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function replacePlaceholder(string $str, BeanInterface $bean): string
     {
+        if (!$bean instanceof ConverterBeanDecorator && $this->hasBeanConverter()) {
+            $bean = $this->getBeanConverter()->convert($bean);
+        }
         $placeholderHelper = new PlaceholderHelper();
         return $placeholderHelper->replacePlaceholder($str, $bean);
     }
@@ -382,24 +385,7 @@ class HtmlElement extends AbstractBaseBean implements
         $this->handleInitialize();
         if ($this instanceof BeanAwareInterface && $this->hasBean()) {
             $placeholders = true;
-            if (null !== $bean) {
-                $thisbean = $this->getBean();
-                foreach ($bean as $name => $value) {
-                    if (!$thisbean->exists($name) || $thisbean->empty($name)) {
-                        if ($this->hasBeanConverter()) {
-                            $this->getBeanConverter()->convert($thisbean)->set($name, $value);
-                        } else {
-                            $thisbean->set($name, $value);
-                        }
-                    }
-                }
-                $bean = $thisbean;
-            } else {
-                $bean = $this->getBean();
-            }
-            if ($bean !== null && $this->hasBeanConverter() && !$bean instanceof ConverterBeanDecorator) {
-                $bean = $this->getBeanConverter()->convert($bean);
-            }
+            $bean = $this->getBean();
         }
         $this->beforeRender($bean);
         $result = '';

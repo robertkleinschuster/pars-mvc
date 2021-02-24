@@ -46,7 +46,7 @@ class ControllerFactory
      * @return ControllerInterface
      * @throws ControllerNotFoundException
      */
-    public function __invoke(string $code, ServerRequestInterface $request, array $config): ControllerInterface
+    public function __invoke(string $code, ServerRequestInterface $request, array $config, array $appConfig): ControllerInterface
     {
         $class = $this->getControllerClass($config, $code);
         /**
@@ -55,7 +55,7 @@ class ControllerFactory
         return new $class(
             new ControllerRequest($request),
             new ControllerResponse(),
-            ($this->modelFactory)($code, $config),
+            ($this->modelFactory)($code, $config, $appConfig),
             $this->pathHelper
         );
     }

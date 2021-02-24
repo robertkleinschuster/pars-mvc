@@ -11,8 +11,8 @@ class HtmlElementList extends AbstractBaseBeanList
     /**
      * @return HtmlElementIterator
      */
-    public function getIterator(): HtmlElementIterator
+  /*  public function getIterator(): HtmlElementIterator
     {
         return new HtmlElementIterator(parent::getIterator());
-    }
+    }*/
 }
