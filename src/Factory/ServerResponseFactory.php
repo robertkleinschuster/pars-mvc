@@ -43,6 +43,9 @@ class ServerResponseFactory
                     'attributes' => $controllerResponse->getAttributes(),
                     'inject' => $controllerResponse->getInjector()->toArray(),
                 ];
+                if (DebugHelper::hasDebug()) {
+                    $data['debug'] = DebugHelper::getDebug();
+                }
                 return new JsonResponse($data, $controllerResponse->getStatusCode(), $controllerResponse->getHeaders());
             case ControllerResponse::MODE_REDIRECT:
                 return new RedirectResponse(
