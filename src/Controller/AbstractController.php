@@ -4,6 +4,9 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Niceshops\Core\Exception\AttributeExistsException;
+use Niceshops\Core\Exception\AttributeLockException;
+use Niceshops\Core\Exception\AttributeNotFoundException;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
@@ -22,8 +25,8 @@ use Throwable;
 abstract class AbstractController implements ControllerInterface
 {
 
-    const SUB_ACTION_MODE_TABBED = 'append';
-    const SUB_ACTION_MODE_STANDARD = 'prepend';
+    public const SUB_ACTION_MODE_TABBED = 'append';
+    public const SUB_ACTION_MODE_STANDARD = 'prepend';
 
     /**
      * @var ControllerRequest
@@ -46,7 +49,7 @@ abstract class AbstractController implements ControllerInterface
     private PathHelper $pathHelper;
 
     /**
-     * @var ViewInterface
+     * @var ViewInterface|null
      */
     private ?ViewInterface $view = null;
 
@@ -55,6 +58,9 @@ abstract class AbstractController implements ControllerInterface
      */
     private ?string $template = null;
 
+    /**
+     * @var ControllerInterface|null
+     */
     private ?ControllerInterface $parent = null;
 
     /**
@@ -88,8 +94,13 @@ abstract class AbstractController implements ControllerInterface
      * @param string $mode
      * @param bool $ajax
      */
-    protected function pushAction(string $controller, string $action, string $name, string $mode = self::SUB_ACTION_MODE_TABBED, bool $ajax = true)
-    {
+    protected function pushAction(
+        string $controller,
+        string $action,
+        string $name,
+        string $mode = self::SUB_ACTION_MODE_TABBED,
+        bool $ajax = true
+    ) {
         $this->action_Map[$mode][] = [
             'controller' => $controller,
             'action' => $action,
@@ -150,6 +161,13 @@ abstract class AbstractController implements ControllerInterface
         $this->handleParameter();
     }
 
+    /**
+     * @return mixed|void
+     * @throws MvcException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
     public function finalize()
     {
         $model = $this->getModel();
@@ -184,6 +202,10 @@ abstract class AbstractController implements ControllerInterface
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Unauthorized</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Unauthorized</h1><p>Permission to requested ressource was denied!</p></body></html>");
     }
 
+    /**
+     * @param Throwable $exception
+     * @return mixed|void
+     */
     public function notfound(Throwable $exception)
     {
         if ($this->hasView()) {
@@ -205,9 +227,10 @@ abstract class AbstractController implements ControllerInterface
     abstract protected function initModel();
 
     /**
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws MvcException
      */
     protected function handleParameter()
     {
@@ -300,6 +323,7 @@ abstract class AbstractController implements ControllerInterface
      * handle security checks e.g. csrf token before executing submit in model
      *
      * @return bool
+     * @throws MvcException
      */
     protected function handleSubmitSecurity(): bool
     {
@@ -312,6 +336,7 @@ abstract class AbstractController implements ControllerInterface
      *
      * @param ValidationHelper $validationHelper
      * @return mixed
+     * @throws MvcException
      */
     protected function handleValidationError(ValidationHelper $validationHelper)
     {
@@ -323,6 +348,7 @@ abstract class AbstractController implements ControllerInterface
      * @param string $id
      * @param int $index
      * @return mixed
+     * @throws MvcException
      */
     protected function handleNavigationState(string $id, int $index)
     {
@@ -332,6 +358,7 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @param string $id
      * @return int
+     * @throws MvcException
      */
     public function getNavigationState(string $id): int
     {
@@ -356,11 +383,11 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @param bool $setParameter
+     * @param bool $setParameter import current parameter to path
      * @return PathHelper
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getPathHelper(bool $setParameter = false): PathHelper
     {
@@ -393,15 +420,12 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     *
-     * /**
      * @return ModelInterface
      */
     public function getModel(): ModelInterface
     {
         return $this->model;
     }
-
 
     /**
      * @return ViewInterface
@@ -415,7 +439,7 @@ abstract class AbstractController implements ControllerInterface
      * @param ViewInterface $view
      * @return AbstractController
      */
-    protected function setView(ViewInterface $view)
+    protected function setView(ViewInterface $view): self
     {
         $this->view = $view;
         return $this;

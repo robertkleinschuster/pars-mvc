@@ -20,6 +20,7 @@ class ConfigProvider
 
     public function __invoke()
     {
+        require_once 'global_functions.php';
         return [
             'dependencies' => $this->getDependencies(),
             'mvc' => $this->getMvc(),

@@ -7,6 +7,10 @@ namespace Pars\Mvc\Handler;
 use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
+use Niceshops\Bean\Type\Base\BeanException;
+use Niceshops\Core\Exception\AttributeExistsException;
+use Niceshops\Core\Exception\AttributeLockException;
+use Niceshops\Core\Exception\AttributeNotFoundException;
 use Pars\Core\Bundles\BundlesMiddleware;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
@@ -14,10 +18,12 @@ use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\ActionNotFoundException;
 use Pars\Mvc\Exception\ControllerNotFoundException;
+use Pars\Mvc\Exception\MvcException;
 use Pars\Mvc\Exception\NotFoundException;
 use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\View\DefaultComponent;
+use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewRenderer;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -38,17 +44,17 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     /**
      * @var TemplateRendererInterface
      */
-    private $renderer;
+    private TemplateRendererInterface $renderer;
 
     /**
      * @var ControllerFactory
      */
-    private $controllerFactory;
+    private ControllerFactory $controllerFactory;
 
     /**
      * @var array
      */
-    private $config;
+    private array $appConfig;
 
     /**
      * MvcHandler constructor.
@@ -63,37 +69,26 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     ) {
         $this->renderer = $renderer;
         $this->controllerFactory = $controllerFactory;
-        $this->config = $config;
-    }
-
-    /**
-     * @param $haystack
-     * @param $needle
-     * @return bool
-     */
-    protected function endsWith(string $haystack, string $needle)
-    {
-        $length = strlen($needle);
-        if (!$length) {
-            return true;
-        }
-        return substr($haystack, -$length) === $needle;
+        $this->appConfig = $config;
     }
 
     /**
      * @param ServerRequestInterface $request
      * @return ResponseInterface
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws BeanException
      * @throws ControllerNotFoundException
-     * @throws \Niceshops\Bean\Type\Base\BeanException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
-     * @throws \Pars\Mvc\Exception\MvcException
+     * @throws MvcException
+     * @throws ViewException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
+        $mvcConfig = $this->appConfig['mvc'];
         $controllerCode = $request->getAttribute(self::CONTROLLER_ATTRIBUTE) ?? 'index';
         $actionCode = $request->getAttribute(self::ACTION_ATTRIBUTE) ?? 'index';
         $routeResult = $request->getAttribute(RouteResult::class);
-        $mvcConfig = $this->config['mvc'];
         if (
             is_string($routeResult->getMatchedRouteName())
             && isset($mvcConfig['module'][$routeResult->getMatchedRouteName()])
@@ -117,10 +112,10 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      * @param ControllerInterface|null $parent
      * @return ControllerInterface
      * @throws ControllerNotFoundException
-     * @throws \Niceshops\Bean\Type\Base\BeanException
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Pars\Mvc\View\ViewException
+     * @throws BeanException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws ViewException
      */
     protected function executeController(
         string $controllerCode,
@@ -134,11 +129,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $actionSuffix = $config['action']['suffix'] ?? '';
         $actionPrefix = $config['action']['prefix'] ?? '';
         $actionMethod = $actionPrefix . $actionCode . $actionSuffix;
-        $elementId = isset($request->getQueryParams()['component']) ? $request->getQueryParams()['component'] : null;
-        $componentonly = isset($request->getQueryParams()['componentonly']) ? $request->getQueryParams()['componentonly'] : false;
+        $elementId = $request->getQueryParams()['component'] ?? null;
+        $componentonly = $request->getQueryParams()['componentonly'] ?? false;
         $controller = null;
         try {
-            $controller = ($this->controllerFactory)($controllerCode, $request, $config, $this->config);
+            $controller = ($this->controllerFactory)($controllerCode, $request, $config, $this->appConfig);
             $controller->setParent($parent);
             $controller->getControllerRequest()->setAction($actionCode);
             $controller->getControllerRequest()->setController($controllerCode);
@@ -162,10 +157,24 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         if ($controller->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_RESPONSE)) {
             if ($controller->hasView()) {
                 if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_STANDARD)) {
-                    $this->handleActions(AbstractController::SUB_ACTION_MODE_STANDARD, $controllerCode, $actionCode, $config, $request, $controller);
+                    $this->handleActions(
+                        AbstractController::SUB_ACTION_MODE_STANDARD,
+                        $controllerCode,
+                        $actionCode,
+                        $config,
+                        $request,
+                        $controller
+                    );
                 }
                 if ($controller->hasActions(AbstractController::SUB_ACTION_MODE_TABBED)) {
-                    $this->handleActions(AbstractController::SUB_ACTION_MODE_TABBED, $controllerCode, $actionCode, $config, $request, $controller);
+                    $this->handleActions(
+                        AbstractController::SUB_ACTION_MODE_TABBED,
+                        $controllerCode,
+                        $actionCode,
+                        $config,
+                        $request,
+                        $controller
+                    );
                 }
             }
             if ($parent === null) {
@@ -192,8 +201,27 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         return $controller;
     }
 
-    protected function handleActions(string $mode, string $controller, string $action, array $config, ServerRequestInterface $request, ControllerInterface $parent)
-    {
+    /**
+     * @param string $mode
+     * @param string $controller
+     * @param string $action
+     * @param array $config
+     * @param ServerRequestInterface $request
+     * @param ControllerInterface $parent
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws BeanException
+     * @throws ControllerNotFoundException
+     * @throws ViewException
+     */
+    protected function handleActions(
+        string $mode,
+        string $controller,
+        string $action,
+        array $config,
+        ServerRequestInterface $request,
+        ControllerInterface $parent
+    ) {
         $active = 1;
         if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
             $id = $controller . $action . '-before';
@@ -274,10 +302,10 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      * @return ControllerInterface
      * @throws ControllerNotFoundException
      */
-    private function getErrorController($controller, $errorController, $request, $config)
+    private function getErrorController($controller, $errorController, $request, $config): ControllerInterface
     {
         if (null === $controller) {
-            $controller = ($this->controllerFactory)($errorController, $request, $config);
+            $controller = ($this->controllerFactory)($errorController, $request, $config, $this->appConfig);
         }
         return $controller;
     }

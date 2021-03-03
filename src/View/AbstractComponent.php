@@ -2,14 +2,27 @@
 
 namespace Pars\Mvc\View;
 
+use Niceshops\Bean\Type\Base\BeanException;
 use Niceshops\Bean\Type\Base\BeanInterface;
+use Niceshops\Core\Exception\AttributeExistsException;
+use Niceshops\Core\Exception\AttributeLockException;
 
+/**
+ * Class AbstractComponent
+ * @package Pars\Mvc\View
+ */
 abstract class AbstractComponent extends HtmlElement implements ComponentInterface
 {
 
     public ?string $template = null;
     public ?string $name = null;
 
+    /**
+     * @param BeanInterface|null $bean
+     * @throws BeanException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     */
     protected function beforeRender(BeanInterface $bean = null)
     {
         if ($this->hasName()) {
@@ -61,7 +74,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     }
 
     /**
-     * @param string $name
+     * @param string|null $name
      *
      * @return $this
      */

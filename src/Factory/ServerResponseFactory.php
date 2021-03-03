@@ -9,6 +9,7 @@ use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
 use Laminas\Diactoros\Response\RedirectResponse;
 use Laminas\Diactoros\UriFactory;
+use Pars\Helper\Debug\DebugHelper;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;
 
@@ -26,6 +27,9 @@ class ServerResponseFactory
      */
     public function __invoke(ControllerResponse $controllerResponse)
     {
+        if (DebugHelper::hasDebug()) {
+            $controllerResponse->setBody(DebugHelper::getDebug());
+        }
         switch ($controllerResponse->getMode()) {
             case ControllerResponse::MODE_HTML:
                 return new HtmlResponse(
