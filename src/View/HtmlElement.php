@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;
 use Niceshops\Bean\Converter\BeanConverterAwareTrait;
@@ -587,7 +585,6 @@ class HtmlElement extends AbstractBaseBean implements
                     $tag .= "<a href='{$this->getPath($bean)}'>";
                 }
             }
-
         }
         if (empty($attributes)) {
             $tag .= "<{$this->getTag()}>";

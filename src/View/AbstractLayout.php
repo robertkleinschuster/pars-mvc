@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 abstract class AbstractLayout extends HtmlElement implements LayoutInterface
 {
@@ -63,7 +61,4 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
     {
         return $this->staticFiles;
     }
-
-
-
 }

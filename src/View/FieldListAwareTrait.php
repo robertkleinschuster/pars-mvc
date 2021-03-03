@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 trait FieldListAwareTrait
 {
@@ -28,6 +26,4 @@ trait FieldListAwareTrait
         $this->fieldList = $fieldList;
         return $this;
     }
-
-
 }

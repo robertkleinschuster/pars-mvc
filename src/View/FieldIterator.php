@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 class FieldIterator extends \IteratorIterator
 {
@@ -10,5 +8,4 @@ class FieldIterator extends \IteratorIterator
     {
         return parent::current();
     }
-
 }

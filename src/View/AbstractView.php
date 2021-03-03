@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Pars\Mvc\View;
 
 use Niceshops\Bean\Converter\BeanConverterAwareInterface;

@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 interface LayoutInterface extends HtmlInterface
 {

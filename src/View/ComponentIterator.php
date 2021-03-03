@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 class ComponentIterator extends \IteratorIterator
 {
@@ -13,5 +11,4 @@ class ComponentIterator extends \IteratorIterator
     {
         return parent::current();
     }
-
 }

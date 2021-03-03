@@ -371,8 +371,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function acceptParameter(ParameterInterface $parameter): bool
     {
-       return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
+        return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
            && (!$parameter->hasController() || $parameter->getController() == $this->getController());
     }
-
 }

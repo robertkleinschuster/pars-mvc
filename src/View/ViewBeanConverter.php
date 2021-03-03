@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 use Niceshops\Bean\Converter\AbstractBeanConverter;
 use Niceshops\Bean\Type\Base\AbstractBaseBean;
@@ -152,6 +150,4 @@ class ViewBeanConverter extends AbstractBeanConverter
     {
         return isset($this->timezone);
     }
-
-
 }

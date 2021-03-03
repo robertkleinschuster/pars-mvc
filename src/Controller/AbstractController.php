@@ -69,8 +69,7 @@ abstract class AbstractController implements ControllerInterface
         ControllerResponse $controllerResponse,
         ModelInterface $model,
         PathHelper $pathHelper
-    )
-    {
+    ) {
         $this->model = $model;
         $this->controllerRequest = $controllerRequest;
         $this->controllerResponse = $controllerResponse;

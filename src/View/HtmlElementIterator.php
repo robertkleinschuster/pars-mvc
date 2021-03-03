@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 class HtmlElementIterator extends \IteratorIterator
 {

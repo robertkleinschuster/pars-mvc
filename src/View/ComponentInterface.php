@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Pars\Mvc\View;
-
 
 use Niceshops\Bean\Type\Base\BeanInterface;
 
@@ -36,5 +34,4 @@ interface ComponentInterface
      * @return bool
      */
     public function hasName(): bool;
-
 }

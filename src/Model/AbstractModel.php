@@ -216,8 +216,8 @@ abstract class AbstractModel implements
         }
     }
 
-    protected function handlePermissionDenied() {
-
+    protected function handlePermissionDenied()
+    {
     }
 
     /**

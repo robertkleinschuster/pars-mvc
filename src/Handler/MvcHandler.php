@@ -60,8 +60,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         TemplateRendererInterface $renderer,
         ControllerFactory $controllerFactory,
         array $config
-    )
-    {
+    ) {
         $this->renderer = $renderer;
         $this->controllerFactory = $controllerFactory;
         $this->config = $config;
@@ -129,8 +128,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         array $config,
         ServerRequestInterface $request,
         ControllerInterface $parent = null
-    ): ControllerInterface
-    {
+    ): ControllerInterface {
         $mvcTemplateFolder = $config['template_folder'];
         $errorController = $config['error_controller'];
         $actionSuffix = $config['action']['suffix'] ?? '';
