@@ -289,16 +289,16 @@ abstract class AbstractModel implements
                         $bean = $converter->convert($bean, $data)->toBean();
                     }
                     $beanList->push($bean);
-                }
-                $processor = $this->getBeanProcessor();
-                if ($processor instanceof BeanListAwareInterface) {
-                    $processor->setBeanList($beanList);
-                }
-                $processor->save();
-                if ($processor instanceof ValidationHelperAwareInterface) {
-                    $this->getValidationHelper()->addErrorFieldMap(
-                        $processor->getValidationHelper()->getErrorFieldMap()
-                    );
+                    $processor = $this->getBeanProcessor();
+                    if ($processor instanceof BeanListAwareInterface) {
+                        $processor->setBeanList($beanList);
+                    }
+                    $processor->save();
+                    if ($processor instanceof ValidationHelperAwareInterface) {
+                        $this->getValidationHelper()->addErrorFieldMap(
+                            $processor->getValidationHelper()->getErrorFieldMap()
+                        );
+                    }
                 }
             }
         }
