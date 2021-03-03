@@ -404,6 +404,7 @@ abstract class AbstractModel implements
     {
         if ($this->hasBeanFinder() && $this->getBeanProcessor() && count($idListParameter->getAttribute_List())) {
             $finder = $this->getBeanFinder();
+            $finder->limit($finder->count(), 0);
             $finder->filter($idListParameter->getAttribute_List());
             $processor = $this->getBeanProcessor();
             $beanList = $finder->getBeanList(true);
