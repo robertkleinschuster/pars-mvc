@@ -284,7 +284,6 @@ abstract class AbstractController implements ControllerInterface
             $this->getModel()->handleMove($this->getControllerRequest()->getMove());
         }
 
-
         if ($this->getControllerRequest()->hasSubmit()) {
             if ($this->handleSubmitSecurity()) {
                 if ($this->getControllerRequest()->hasId()) {
