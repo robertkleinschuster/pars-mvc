@@ -413,9 +413,9 @@ abstract class AbstractController implements ControllerInterface
             if ($this->getControllerRequest()->hasNav()) {
                 $this->pathHelper->addParameter($this->getControllerRequest()->getNav());
             }
-            return $this->pathHelper;
+            return clone $this->pathHelper;
         }
-        return $this->pathHelper->reset();
+        return clone $this->pathHelper->reset();
     }
 
     /**
