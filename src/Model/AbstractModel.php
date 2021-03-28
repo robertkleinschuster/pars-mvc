@@ -107,7 +107,7 @@ abstract class AbstractModel implements
      */
     public function handleSearch(SearchParameter $searchParameter)
     {
-        if ($this->hasBeanFinder()) {
+        if ($this->hasBeanFinder() && $searchParameter->hasText()) {
             $text = $searchParameter->getText();
             if (strlen(trim($text))) {
                 $this->getBeanFinder()->search($text);

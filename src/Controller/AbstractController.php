@@ -248,6 +248,9 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasSearch()) {
+            if ($this->getControllerRequest()->isPost()) {
+                $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+            }
             $searchParameter = $this->getControllerRequest()->getSearch();
             $this->getModel()->handleSearch($searchParameter);
         }
@@ -282,6 +285,14 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasMove()) {
             $this->getModel()->handleMove($this->getControllerRequest()->getMove());
+        }
+
+        if ($this->getControllerRequest()->hasFilter()) {
+            $path = $this->getPathHelper(true);
+            $idParameter = new IdParameter();
+            $idParameter->addId_Map($this->getControllerRequest()->getFilter()->getAttributes());
+            $path->addParameter($idParameter);
+            $this->getControllerResponse()->setRedirect($path->getPath());
         }
 
         if ($this->getControllerRequest()->hasSubmit()) {

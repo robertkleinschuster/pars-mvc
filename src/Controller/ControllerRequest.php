@@ -12,6 +12,7 @@ use Niceshops\Core\Option\OptionAwareTrait;
 use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
+use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
@@ -301,6 +302,27 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     /**
      * @return bool
      */
+    public function hasFilter(): bool
+    {
+        return $this->hasAttribute(FilterParameter::name());
+    }
+
+    /**
+     * @return FilterParameter
+     * @throws \Niceshops\Core\Exception\AttributeExistsException
+     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     */
+    public function getFilter(): FilterParameter
+    {
+        $filterParameter = new FilterParameter();
+        $filterParameter->fromData($this->getAttribute($filterParameter->name()));
+        return $filterParameter;
+    }
+
+    /**
+     * @return bool
+     */
     public function hasData(): bool
     {
         return $this->hasAttribute(DataParameter::name());
@@ -373,5 +395,21 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     {
         return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
            && (!$parameter->hasController() || $parameter->getController() == $this->getController());
+    }
+
+    /**
+     * @return bool
+     */
+    public function isPost(): bool
+    {
+        return strtolower($this->getServerRequest()->getMethod()) == 'post';
+    }
+
+    /**
+     * @return bool
+     */
+    public function isGet(): bool
+    {
+        return strtolower($this->getServerRequest()->getMethod()) == 'get';
     }
 }
