@@ -288,11 +288,15 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasFilter()) {
-            $path = $this->getPathHelper(true);
-            $idParameter = new IdParameter();
-            $idParameter->addId_Map($this->getControllerRequest()->getFilter()->getAttributes());
-            $path->addParameter($idParameter);
-            $this->getControllerResponse()->setRedirect($path->getPath());
+            if ($this->getControllerRequest()->isPost()) {
+                $path = $this->getPathHelper(true);
+                $data = $this->getControllerRequest()->getPostData();
+                if (isset($data[$path->getFilter()->name()])) {
+                    $path->getFilter()->fromData($data[$path->getFilter()->name()]);
+                }
+                $this->getControllerResponse()->setRedirect($path->getPath());
+            }
+            $this->getModel()->handleFilter($this->getControllerRequest()->getFilter());
         }
 
         if ($this->getControllerRequest()->hasSubmit()) {
@@ -423,6 +427,9 @@ abstract class AbstractController implements ControllerInterface
             }
             if ($this->getControllerRequest()->hasNav()) {
                 $this->pathHelper->addParameter($this->getControllerRequest()->getNav());
+            }
+            if ($this->getControllerRequest()->hasFilter()) {
+                $this->pathHelper->addParameter($this->getControllerRequest()->getFilter());
             }
             return clone $this->pathHelper;
         }

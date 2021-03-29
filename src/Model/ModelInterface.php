@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Model;
 
+use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
@@ -52,6 +53,12 @@ interface ModelInterface
      * @return mixed
      */
     public function handleId(IdParameter $idParameter);
+
+    /**
+     * @param FilterParameter $filterParameter
+     * @return mixed
+     */
+    public function handleFilter(FilterParameter $filterParameter);
 
     /**
      * @param MoveParameter $moveParameter

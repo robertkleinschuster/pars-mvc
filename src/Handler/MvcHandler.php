@@ -22,7 +22,9 @@ use Pars\Mvc\Exception\MvcException;
 use Pars\Mvc\Exception\NotFoundException;
 use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
+use Pars\Mvc\View\ComponentGroup;
 use Pars\Mvc\View\DefaultComponent;
+use Pars\Mvc\View\HtmlElement;
 use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewRenderer;
 use Psr\Http\Message\ResponseInterface;
@@ -249,17 +251,18 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                 );
                 if ($subController->hasView() && $subController->getView()->hasLayout()) {
                     $components = $subController->getView()->getLayout()->getComponentList();
-                    foreach ($components as $component) {
-                        $component->setPath($path);
-                        if (isset($item['name'])) {
-                            $component->setName($item['name']);
-                        }
-                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
-                            $parent->getView()->getLayout()->getComponentListAfter()->push($component);
-                        }
-                        if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_TABBED) {
-                            $parent->getView()->getLayout()->getComponentListSubAction()->push($component);
-                        }
+                    $group = new ComponentGroup();
+                    $group->addOption('my-2');
+                    $group->setComponentList($components);
+                    $group->setPath($path);
+                    if (isset($item['name'])) {
+                        $group->setName($item['name']);
+                    }
+                    if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
+                        $parent->getView()->getLayout()->getComponentListAfter()->push($group);
+                    }
+                    if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_TABBED) {
+                        $parent->getView()->getLayout()->getComponentListSubAction()->push($group);
                     }
                 }
             } else {

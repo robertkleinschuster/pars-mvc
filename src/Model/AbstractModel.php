@@ -20,6 +20,7 @@ use Niceshops\Core\Exception\AttributeNotFoundException;
 use Niceshops\Core\Exception\CoreException;
 use Niceshops\Core\Option\OptionAwareInterface;
 use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\MoveParameter;
@@ -135,6 +136,14 @@ abstract class AbstractModel implements
         if ($this->hasBeanFinder()) {
             $this->getBeanFinder()->filter($idParameter->getAttribute_List());
         }
+    }
+
+    /**
+     * @param FilterParameter $filterParameter
+     */
+    public function handleFilter(FilterParameter $filterParameter)
+    {
+        $this->handleId($filterParameter);
     }
 
     /**

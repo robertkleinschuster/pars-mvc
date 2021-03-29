@@ -406,10 +406,26 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     }
 
     /**
+     * @return array
+     */
+    public function getPostData(): array
+    {
+        return (array) $this->getServerRequest()->getParsedBody();
+    }
+
+    /**
      * @return bool
      */
     public function isGet(): bool
     {
         return strtolower($this->getServerRequest()->getMethod()) == 'get';
+    }
+
+    /**
+     * @return array
+     */
+    public function getGetData(): array
+    {
+        return (array) $this->getServerRequest()->getQueryParams();
     }
 }
