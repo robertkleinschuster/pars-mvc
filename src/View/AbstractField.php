@@ -20,6 +20,7 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
 
     public ?string $template = null;
     public ?string $label = null;
+    public ?string $labelPath = null;
 
     public ?FieldAcceptInterface $accept = null;
     public ?FieldFormatInterface $format = null;
@@ -145,6 +146,34 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
     {
         return $this->format !== null;
     }
+
+    /**
+    * @return string
+    */
+    public function getLabelPath(): string
+    {
+        return $this->labelPath;
+    }
+
+    /**
+    * @param string $labelPath
+    *
+    * @return $this
+    */
+    public function setLabelPath(string $labelPath): self
+    {
+        $this->labelPath = $labelPath;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasLabelPath(): bool
+    {
+        return isset($this->labelPath);
+    }
+
 
     /**
      * @param BeanInterface|null $bean

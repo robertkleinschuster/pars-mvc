@@ -249,7 +249,12 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasSearch()) {
             if ($this->getControllerRequest()->isPost()) {
-                $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+                $path = $this->getPathHelper(true);
+                $data = $this->getControllerRequest()->getPostData();
+                if (isset($data[$path->getSearch()->name()])) {
+                    $path->getSearch()->fromData($data[$path->getSearch()->name()]);
+                }
+                $this->getControllerResponse()->setRedirect($path->getPath());
             }
             $searchParameter = $this->getControllerRequest()->getSearch();
             $this->getModel()->handleSearch($searchParameter);
@@ -257,7 +262,9 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasOrder()) {
             $orderParameter = $this->getControllerRequest()->getOrder();
-            $this->getModel()->handleOrder($orderParameter);
+            if ($this->getControllerRequest()->acceptParameter($orderParameter)) {
+                $this->getModel()->handleOrder($orderParameter);
+            }
         }
 
         if ($this->getControllerRequest()->hasPagingation()) {

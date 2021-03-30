@@ -34,4 +34,20 @@ interface FieldInterface
      * @return bool
      */
     public function hasLabel(): bool;
+
+    /**
+     * @return string
+     */
+    public function getLabelPath(): string;
+
+    /**
+     * @param string $labelPath
+     *
+     * @return $this
+     */
+    public function setLabelPath(string $labelPath): self;
+    /**
+     * @return bool
+     */
+    public function hasLabelPath(): bool;
 }
