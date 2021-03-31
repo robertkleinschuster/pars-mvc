@@ -38,7 +38,6 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
         $this->content = $content;
     }
 
-
     public function getTemplate(): string
     {
         if (null === $this->template) {

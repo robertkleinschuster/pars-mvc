@@ -105,6 +105,9 @@ class HtmlElement extends AbstractBaseBean implements
                 $this->addOption($str);
             }
         }
+        $type = static::class;
+        $exp = array_slice(explode('\\', $type), -4);
+        $this->addOption(strtolower(implode('-', $exp)));
         $this->tag = $tag;
         $this->group = $group;
         $this->path = $path;
