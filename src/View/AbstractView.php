@@ -2,9 +2,9 @@
 
 namespace Pars\Mvc\View;
 
-use Niceshops\Bean\Converter\BeanConverterAwareInterface;
-use Niceshops\Bean\Converter\BeanConverterAwareTrait;
-use Niceshops\Bean\Type\Base\AbstractBaseBean;
+use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Bean\Converter\BeanConverterAwareTrait;
+use Pars\Bean\Type\Base\AbstractBaseBean;
 
 abstract class AbstractView extends AbstractBaseBean implements ViewInterface, BeanConverterAwareInterface
 {

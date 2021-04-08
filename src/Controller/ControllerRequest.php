@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Mezzio\Router\RouteResult;
-use Niceshops\Core\Attribute\AttributeAwareInterface;
-use Niceshops\Core\Attribute\AttributeAwareTrait;
-use Niceshops\Core\Option\OptionAwareInterface;
-use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Attribute\AttributeAwareTrait;
+use Pars\Pattern\Option\OptionAwareInterface;
+use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
@@ -99,9 +99,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getId(): IdParameter
     {
@@ -120,9 +120,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getIdList(): IdListParameter
     {
@@ -214,9 +214,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return PaginationParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getPagination(): PaginationParameter
     {
@@ -243,9 +243,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return EditLocaleParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getEditLocale(): EditLocaleParameter
     {
@@ -309,9 +309,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return FilterParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getFilter(): FilterParameter
     {
@@ -330,9 +330,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return DataParameter
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getData(): DataParameter
     {
@@ -389,7 +389,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     /**
      * @param ParameterInterface $parameter
      * @return bool
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function acceptParameter(ParameterInterface $parameter): bool
     {

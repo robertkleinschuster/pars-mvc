@@ -2,9 +2,9 @@
 
 namespace Pars\Mvc\View;
 
-use Niceshops\Bean\Converter\AbstractBeanConverter;
-use Niceshops\Bean\Type\Base\AbstractBaseBean;
-use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Bean\Converter\AbstractBeanConverter;
+use Pars\Bean\Type\Base\AbstractBaseBean;
+use Pars\Bean\Type\Base\BeanInterface;
 use Psr\Http\Message\UploadedFileInterface;
 
 class ViewBeanConverter extends AbstractBeanConverter

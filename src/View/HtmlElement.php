@@ -2,20 +2,20 @@
 
 namespace Pars\Mvc\View;
 
-use Niceshops\Bean\Converter\BeanConverterAwareInterface;
-use Niceshops\Bean\Converter\BeanConverterAwareTrait;
-use Niceshops\Bean\Converter\ConverterBeanDecorator;
-use Niceshops\Bean\Type\Base\AbstractBaseBean;
-use Niceshops\Bean\Type\Base\BeanAwareInterface;
-use Niceshops\Bean\Type\Base\BeanException;
-use Niceshops\Bean\Type\Base\BeanInterface;
-use Niceshops\Core\Attribute\AttributeAwareInterface;
-use Niceshops\Core\Attribute\AttributeAwareTrait;
-use Niceshops\Core\Exception\AttributeExistsException;
-use Niceshops\Core\Exception\AttributeLockException;
-use Niceshops\Core\Exception\AttributeNotFoundException;
-use Niceshops\Core\Option\OptionAwareInterface;
-use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Bean\Converter\BeanConverterAwareTrait;
+use Pars\Bean\Converter\ConverterBeanDecorator;
+use Pars\Bean\Type\Base\AbstractBaseBean;
+use Pars\Bean\Type\Base\BeanAwareInterface;
+use Pars\Bean\Type\Base\BeanException;
+use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Attribute\AttributeAwareTrait;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
+use Pars\Pattern\Option\OptionAwareInterface;
+use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Helper\Placeholder\PlaceholderHelper;
 
 class HtmlElement extends AbstractBaseBean implements

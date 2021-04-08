@@ -2,7 +2,7 @@
 
 namespace Pars\Mvc\View;
 
-use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Bean\Type\Base\BeanInterface;
 
 interface FieldInterface
 {

@@ -9,15 +9,15 @@ declare(strict_types=1);
 
 namespace ParsTest\Mvc\View;
 
-use Niceshops\Bean\Type\Base\AbstractBaseBean;
+use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Mvc\View\HtmlElement;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class DefaultTestCaseTest
- * @package Niceshops\Bean
+ * @package Pars\Bean
  */
-class HtmlElementTest extends \Niceshops\Core\PHPUnit\DefaultTestCase
+class HtmlElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
 {
 
 

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Niceshops\Core\Exception\AttributeExistsException;
-use Niceshops\Core\Exception\AttributeLockException;
-use Niceshops\Core\Exception\AttributeNotFoundException;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;

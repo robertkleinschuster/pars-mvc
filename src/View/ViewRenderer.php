@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
-use Niceshops\Bean\Converter\BeanConverterAwareInterface;
-use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Bean\Type\Base\BeanInterface;
 
 /**
  * Class ViewRenderer

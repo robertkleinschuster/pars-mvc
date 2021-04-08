@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Exception;
 
-use Niceshops\Core\Exception\CoreException;
+use Pars\Pattern\Exception\CoreException;
 
 /**
  * Class MvcException

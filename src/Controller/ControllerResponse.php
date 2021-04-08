@@ -4,12 +4,12 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Niceshops\Core\Attribute\AttributeAwareInterface;
-use Niceshops\Core\Attribute\AttributeAwareTrait;
-use Niceshops\Core\Mode\ModeAwareInterface;
-use Niceshops\Core\Mode\ModeAwareTrait;
-use Niceshops\Core\Option\OptionAwareInterface;
-use Niceshops\Core\Option\OptionAwareTrait;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Attribute\AttributeAwareTrait;
+use Pars\Pattern\Mode\ModeAwareInterface;
+use Pars\Pattern\Mode\ModeAwareTrait;
+use Pars\Pattern\Option\OptionAwareInterface;
+use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Mvc\Exception\MvcException;
 
 /**
@@ -198,8 +198,8 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
      * @param string $filename
      * @param string $body
      * @param string $contentType
-     * @throws \Niceshops\Core\Exception\AttributeExistsException
-     * @throws \Niceshops\Core\Exception\AttributeLockException
+     * @throws \Pars\Pattern\Exception\AttributeExistsException
+     * @throws \Pars\Pattern\Exception\AttributeLockException
      */
     public function setDownload(string $filename, string $body, string $contentType)
     {

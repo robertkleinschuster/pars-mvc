@@ -23,7 +23,7 @@ class ServerResponseFactory
      * @param ControllerResponse $controllerResponse
      * @return HtmlResponse|JsonResponse|RedirectResponse|Response
      * @throws MvcException
-     * @throws \Niceshops\Core\Exception\AttributeNotFoundException
+     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function __invoke(ControllerResponse $controllerResponse)
     {

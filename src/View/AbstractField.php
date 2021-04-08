@@ -2,7 +2,7 @@
 
 namespace Pars\Mvc\View;
 
-use Niceshops\Bean\Type\Base\BeanInterface;
+use Pars\Bean\Type\Base\BeanInterface;
 
 /**
  * Class AbstractField
@@ -29,7 +29,7 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
      * AbstractField constructor.
      * @param string|null $content
      * @param string|null $label
-     * @throws \Niceshops\Bean\Type\Base\BeanException
+     * @throws \Pars\Bean\Type\Base\BeanException
      */
     public function __construct(?string $content = null, ?string $label = null)
     {
