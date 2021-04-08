@@ -18,8 +18,6 @@
     "pars/pars-helpers": "dev-master",
     "pars/pars-models": "dev-master"
   },
-  "require-dev": {
-  },
   "autoload": {
     "psr-4": {
       "Pars\\Mvc\\": "src//"
@@ -45,5 +43,8 @@
     "cs-fix": "phpcbf",
     "test": "phpunit --colors=always",
     "test-coverage": "phpunit --colors=always --coverage-clover clover.xml"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^9.5"
   }
 }
