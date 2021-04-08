@@ -14,7 +14,9 @@
   },
   "require": {
     "php": "^7.4",
-    "pars/pars-core": "dev-master"
+    "pars/pars-core": "dev-master",
+    "pars/pars-helpers": "dev-master",
+    "pars/pars-models": "dev-master"
   },
   "require-dev": {
   },
