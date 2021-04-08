@@ -1,7 +1,7 @@
 # pars-mvc
 
-[![Build Status](https://travis-ci.com/pars/pars-mvc.svg?branch=master)](https://travis-ci.com/pars/pars-mvc)
-[![Coverage Status](https://coveralls.io/repos/github/pars/pars-mvc/badge.svg?branch=master)](https://coveralls.io/github/pars/pars-mvc?branch=master)
+[![Build Status](https://travis-ci.com/pars-framework/pars-mvc.svg?branch=master)](https://travis-ci.com/pars-framework/pars-mvc)
+[![Coverage Status](https://coveralls.io/repos/github/pars-framework/pars-mvc/badge.svg?branch=master)](https://coveralls.io/github/pars-framework/pars-mvc?branch=master)
 
 This library provides MVC implementation for PARS Framework
 
