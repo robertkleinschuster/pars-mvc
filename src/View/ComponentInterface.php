@@ -4,7 +4,7 @@ namespace Pars\Mvc\View;
 
 use Pars\Bean\Type\Base\BeanInterface;
 
-interface ComponentInterface
+interface ComponentInterface extends FieldListAwareInterface
 {
     /**
      * @return string

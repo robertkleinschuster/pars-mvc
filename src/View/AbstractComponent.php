@@ -4,6 +4,7 @@ namespace Pars\Mvc\View;
 
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Component\Base\Toolbar\Toolbar;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 
@@ -13,9 +14,112 @@ use Pars\Pattern\Exception\AttributeLockException;
  */
 abstract class AbstractComponent extends HtmlElement implements ComponentInterface
 {
+    use FieldListAwareTrait;
 
     public ?string $template = null;
     public ?string $name = null;
+
+    private ?Toolbar $toolbar = null;
+    protected ?Toolbar $subToolbar = null;
+    private ?HtmlElement $before = null;
+    private ?HtmlElement $after = null;
+
+    /**
+     * @param AbstractField $field
+     * @return $this
+     */
+    public function pushField(AbstractField $field): self
+    {
+        $this->getFieldList()->push($field);
+        return $this;
+    }
+
+    /**
+     * @param AbstractField $field
+     * @return $this
+     */
+    public function unshiftField(AbstractField $field): self
+    {
+        $this->getFieldList()->unshift($field);
+        return $this;
+    }
+
+    protected function onConstruct()
+    {
+        parent::onConstruct();
+        $this->initName();
+        $this->initTemplate();
+    }
+
+    protected function initialize()
+    {
+        parent::initialize();
+        $this->initAdditionalBefore();
+        $this->handleAdditionalBefore();
+        $this->initFieldsBefore();
+        $this->initFields();
+        $this->initFieldsAfter();
+        $this->handleFields();
+        $this->initAdditionalAfter();
+        $this->handleAdditionalAfter();
+    }
+
+    protected function initName()
+    {
+
+    }
+
+    protected function initTemplate()
+    {
+
+    }
+
+    protected function initAdditionalBefore()
+    {
+
+    }
+
+    protected function handleAdditionalBefore()
+    {
+        $this->push($this->getBefore());
+        if ($this->hasToolbar()) {
+            $this->push($this->getToolbar());
+        }
+        if ($this->hasSubToolbar()) {
+            $this->push($this->getSubToolbar());
+        }
+    }
+
+    protected function initFieldsBefore()
+    {
+
+    }
+
+    protected function initFields()
+    {
+
+    }
+
+
+    protected function initFieldsAfter()
+    {
+
+    }
+
+    protected function handleFields() {
+
+    }
+
+    protected function initAdditionalAfter()
+    {
+
+    }
+
+    protected function handleAdditionalAfter()
+    {
+        $this->push($this->getAfter());
+    }
+
 
     /**
      * @param BeanInterface|null $bean
@@ -91,4 +195,53 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     {
         return $this->name !== null;
     }
+
+    public function getToolbar(): Toolbar
+    {
+        if (null === $this->toolbar) {
+            $this->toolbar = new Toolbar();
+        }
+        return $this->toolbar;
+    }
+
+    public function getBefore(): HtmlElement
+    {
+        if (null === $this->before) {
+            $this->before = new HtmlElement();
+        }
+        return $this->before;
+    }
+
+    public function getAfter(): HtmlElement
+    {
+        if (null === $this->after) {
+            $this->after = new HtmlElement();
+        }
+        return $this->after;
+    }
+
+    public function hasToolbar(): bool
+    {
+        return isset($this->toolbar);
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSubToolbar(): bool
+    {
+        return isset($this->subToolbar);
+    }
+
+    /**
+     * @return Toolbar|null
+     */
+    public function getSubToolbar(): Toolbar
+    {
+        if (null == $this->subToolbar) {
+            $this->subToolbar = new Toolbar();
+        }
+        return $this->subToolbar;
+    }
+
 }

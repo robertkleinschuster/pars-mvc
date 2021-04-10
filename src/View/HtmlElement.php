@@ -117,6 +117,13 @@ class HtmlElement extends AbstractBaseBean implements
                 $this->setAttribute($key, $value);
             }
         }
+        $this->onConstruct();
+    }
+
+
+    protected function onConstruct()
+    {
+
     }
 
 
