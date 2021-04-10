@@ -37,4 +37,13 @@ class ComponentGroup extends AbstractComponent
         $this->componentList = $componentList;
         return $this;
     }
+
+    /**
+     * @param ComponentInterface $component
+     * @return $this
+     */
+    public function pushComponent(ComponentInterface $component) {
+        $this->getComponentList()->push($component);
+        return $this;
+    }
 }
