@@ -11,7 +11,6 @@ use Pars\Bean\Type\Base\BeanException;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
-use Pars\Core\Bundles\BundlesMiddleware;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
@@ -24,7 +23,6 @@ use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\View\ComponentGroup;
 use Pars\Mvc\View\DefaultComponent;
-use Pars\Mvc\View\HtmlElement;
 use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewRenderer;
 use Psr\Http\Message\ResponseInterface;
@@ -42,7 +40,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
 
     public const CONTROLLER_ATTRIBUTE = 'controller';
     public const ACTION_ATTRIBUTE = 'action';
-
+    public const STATIC_FILES_ATTRIBUTE = 'static_files';
     /**
      * @var TemplateRendererInterface
      */
@@ -186,7 +184,7 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
                     $viewRenderer = new ViewRenderer($this->renderer, $mvcTemplateFolder);
                     $view = $controller->getView();
                     if ($view->hasLayout()) {
-                        $view->getLayout()->setStaticFiles($request->getAttribute(BundlesMiddleware::class)['list']);
+                        $view->getLayout()->setStaticFiles($request->getAttribute(self::STATIC_FILES_ATTRIBUTE, []));
                     }
                     $renderedOutput = $viewRenderer->render($view, $elementId, boolval($componentonly));
                     $controller->getControllerResponse()->setAttribute('component', $elementId);

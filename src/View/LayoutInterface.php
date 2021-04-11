@@ -15,5 +15,5 @@ interface LayoutInterface extends HtmlInterface
      * @param array $data
      * @return $this
      */
-    public function setStaticFiles(array $data): self;
+    public function setStaticFiles(?array $data): self;
 }
