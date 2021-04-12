@@ -511,4 +511,14 @@ abstract class AbstractController implements ControllerInterface
     {
         return true;
     }
+
+    /**
+     * @param string $name
+     * @param null $default
+     * @return mixed
+     */
+    protected function getMiddlewareAttribute(string $name, $default = null)
+    {
+        return $this->getControllerRequest()->getMiddlewareAttribute($name, $default);
+    }
 }

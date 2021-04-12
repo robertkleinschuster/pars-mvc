@@ -428,4 +428,14 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     {
         return (array) $this->getServerRequest()->getQueryParams();
     }
+
+    /**
+     * @param string $name
+     * @param $default
+     * @return mixed
+     */
+    public function getMiddlewareAttribute(string $name, $default = null)
+    {
+        return $this->getServerRequest()->getAttribute($name, $default);
+    }
 }
