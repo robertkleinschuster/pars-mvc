@@ -105,9 +105,7 @@ class HtmlElement extends AbstractBaseBean implements
                 $this->addOption($str);
             }
         }
-        $type = static::class;
-        $exp = array_slice(explode('\\', $type), -4);
-        $this->addOption(strtolower(implode('-', $exp)));
+        $this->addOption($this->getElementClass());
         $this->tag = $tag;
         $this->group = $group;
         $this->path = $path;
@@ -120,6 +118,12 @@ class HtmlElement extends AbstractBaseBean implements
         $this->onConstruct();
     }
 
+    public function getElementClass(): string
+    {
+        $type = static::class;
+        $exp = array_slice(explode('\\', $type), -4);
+        return strtolower(implode('-', $exp));
+    }
 
     protected function onConstruct()
     {
@@ -577,7 +581,7 @@ class HtmlElement extends AbstractBaseBean implements
      * @param BeanInterface|null $bean
      * @return string
      */
-    protected function renderOpenTag(BeanInterface $bean = null): string
+    public function renderOpenTag(BeanInterface $bean = null): string
     {
         $tag = '';
         $attributes = $this->getHtmlAttributes($bean, true);
@@ -608,7 +612,7 @@ class HtmlElement extends AbstractBaseBean implements
      * @param BeanInterface|null $bean
      * @return string
      */
-    protected function renderCloseTag(BeanInterface $bean = null): string
+    public function renderCloseTag(BeanInterface $bean = null): string
     {
         $tag = '';
         $tag .= "</{$this->getTag()}>";
