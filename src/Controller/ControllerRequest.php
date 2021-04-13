@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Mezzio\Router\RouteResult;
+use Pars\Helper\Parameter\CollapseParameter;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Option\OptionAwareInterface;
@@ -202,6 +203,24 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $navParameter = new NavParameter();
         $navParameter->fromData($this->getAttribute($navParameter->name()));
         return $navParameter;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasCollapse(): bool
+    {
+        return $this->hasAttribute(CollapseParameter::name());
+    }
+
+    /**
+     * @return CollapseParameter
+     */
+    public function getCollapse(): CollapseParameter
+    {
+        $collapseParameter = new CollapseParameter();
+        $collapseParameter->fromData($this->getAttribute($collapseParameter->name()));
+        return $collapseParameter;
     }
 
     /**

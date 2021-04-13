@@ -241,10 +241,22 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasNav()) {
             $navParameter = $this->getControllerRequest()->getNav();
-            $this->handleNavigationState(
-                $navParameter->getId(),
-                $navParameter->getIndex()
-            );
+            if($navParameter->hasId() && $navParameter->hasIndex()) {
+                $this->handleNavigationState(
+                    $navParameter->getId(),
+                    $navParameter->getIndex()
+                );
+            }
+        }
+
+        if ($this->getControllerRequest()->hasCollapse()) {
+            $collapseParameter = $this->getControllerRequest()->getCollapse();
+            if($collapseParameter->hasId() && $collapseParameter->hasExpanded()) {
+                $this->handleCollapsableState(
+                    $collapseParameter->getId(),
+                    $collapseParameter->isExpanded()
+                );
+            }
         }
 
         if ($this->getControllerRequest()->hasSearch()) {
@@ -377,11 +389,33 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
+     * persist collapsable states in session
+     * @param string $id
+     * @param bool $expanded
+     * @return mixed
+     * @throws MvcException
+     */
+    protected function handleCollapsableState(string $id, bool $expanded)
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
+
+    /**
      * @param string $id
      * @return int
      * @throws MvcException
      */
     public function getNavigationState(string $id): int
+    {
+        throw new MvcException(__METHOD__ . ' not implemented');
+    }
+
+    /**
+     * @param string $id
+     * @return bool|null
+     * @throws MvcException
+     */
+    public function getCollapsableState(string $id): ?bool
     {
         throw new MvcException(__METHOD__ . ' not implemented');
     }
