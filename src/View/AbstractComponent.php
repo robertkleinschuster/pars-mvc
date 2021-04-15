@@ -106,7 +106,8 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     }
 
-    protected function handleFields() {
+    protected function handleFields()
+    {
 
     }
 
