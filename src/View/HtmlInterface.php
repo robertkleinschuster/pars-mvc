@@ -182,4 +182,20 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
      * @param string $tag
      */
     public function getElementsByTagName(string $tag);
+
+    /**
+     * @return HtmlElementEvent
+     */
+    public function getEvent(): HtmlElementEvent;
+
+    /**
+     * @param HtmlElementEvent $event
+     * @return $this
+     */
+    public function setEvent(HtmlElementEvent $event): self;
+
+    /**
+     * @return bool
+     */
+    public function hasEvent(): bool;
 }

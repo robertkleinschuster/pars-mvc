@@ -9,6 +9,7 @@ use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Helper\Placeholder\PlaceholderHelper;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Exception\AttributeExistsException;
@@ -16,7 +17,6 @@ use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
 use Pars\Pattern\Option\OptionAwareInterface;
 use Pars\Pattern\Option\OptionAwareTrait;
-use Pars\Helper\Placeholder\PlaceholderHelper;
 
 class HtmlElement extends AbstractBaseBean implements
     HtmlInterface,
@@ -73,6 +73,8 @@ class HtmlElement extends AbstractBaseBean implements
      */
     private bool $initialized = false;
 
+    protected ?HtmlElementEvent $event = null;
+
     /**
      * HtmlElement constructor.
      * @param string|null $tag
@@ -90,7 +92,8 @@ class HtmlElement extends AbstractBaseBean implements
         ?array $attributes = null,
         ?string $path = null,
         ?string $group = null
-    ) {
+    )
+    {
         parent::__construct();
         $exp = explode('.', $tag);
         if (count($exp) > 1) {
@@ -416,6 +419,15 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function beforeRender(BeanInterface $bean = null)
     {
+        if ($this->hasEvent()) {
+            if ($this->getEvent()->isset('path') && !$this->hasPath()) {
+                $this->setPath($this->getEvent()->get('path'));
+            }
+            if (!$this->getEvent()->isset('path') && $this->hasPath()) {
+                $this->getEvent()->path = $this->getPath($bean);
+            }
+            $this->setData('event', json_encode($this->getEvent()));
+        }
     }
 
     /**
@@ -752,4 +764,33 @@ class HtmlElement extends AbstractBaseBean implements
         }
         return $list;
     }
+
+    /**
+     * @return HtmlElementEvent
+     */
+    public function getEvent(): HtmlElementEvent
+    {
+        return $this->event;
+    }
+
+    /**
+     * @param HtmlElementEvent $event
+     *
+     * @return $this
+     */
+    public function setEvent(HtmlElementEvent $event): self
+    {
+        $this->event = $event;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasEvent(): bool
+    {
+        return isset($this->event);
+    }
+
+
 }

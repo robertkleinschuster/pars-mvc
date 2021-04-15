@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Mezzio\Router\RouteResult;
+use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Parameter\CollapseParameter;
+use Pars\Mvc\View\HtmlElementEvent;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Option\OptionAwareInterface;
@@ -51,6 +53,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     private ?string $action = null;
     private ?string $controller = null;
 
+    protected ?HtmlElementEvent $event = null;
+
     /**
      * ControllerRequestProperties constructor.
      * @param ServerRequestInterface $serverRequest
@@ -72,7 +76,39 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         foreach ($serverRequest->getUploadedFiles() as $key => $value) {
             $this->setAttribute($key, $value);
         }
+        $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
+        if ($event) {
+            $this->event = new HtmlElementEvent($event);
+        }
     }
+
+    /**
+    * @return HtmlElementEvent
+    */
+    public function getEvent(): HtmlElementEvent
+    {
+        return $this->event;
+    }
+
+    /**
+    * @param HtmlElementEvent $event
+    *
+    * @return $this
+    */
+    public function setEvent(HtmlElementEvent $event): self
+    {
+        $this->event = $event;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasEvent(): bool
+    {
+        return isset($this->event);
+    }
+
 
     /**
      * @return ServerRequestInterface

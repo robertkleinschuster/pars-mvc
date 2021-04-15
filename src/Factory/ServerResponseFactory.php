@@ -43,6 +43,9 @@ class ServerResponseFactory
                     'attributes' => $controllerResponse->getAttributes(),
                     'inject' => $controllerResponse->getInjector()->toArray(),
                 ];
+                if ($controllerResponse->hasEvent()) {
+                    $data['event'] = $controllerResponse->getEvent()->toArray(true);
+                }
                 if (DebugHelper::hasDebug()) {
                     $data['debug'] = DebugHelper::getDebug();
                 }

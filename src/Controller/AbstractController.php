@@ -238,6 +238,9 @@ abstract class AbstractController implements ControllerInterface
         if ($this->getControllerRequest()->isAjax()) {
             $this->getControllerResponse()->setMode(ControllerResponse::MODE_JSON);
         }
+        if ($this->getControllerRequest()->hasEvent()) {
+            $this->getControllerResponse()->setEvent($this->getControllerRequest()->getEvent());
+        }
 
         if ($this->getControllerRequest()->hasNav()) {
             $navParameter = $this->getControllerRequest()->getNav();

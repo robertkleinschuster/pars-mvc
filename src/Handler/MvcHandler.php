@@ -131,6 +131,11 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         $actionMethod = $actionPrefix . $actionCode . $actionSuffix;
         $elementId = $request->getQueryParams()['component'] ?? null;
         $componentonly = $request->getQueryParams()['componentonly'] ?? false;
+        $event = json_decode($request->getHeaderLine('X-EVENT'), true);
+        if (is_array($event) && isset($event['target'])) {
+            $componentonly = '1';
+            $elementId = str_replace('#', '', $event['target']);
+        }
         $controller = null;
         try {
             $controller = ($this->controllerFactory)($controllerCode, $request, $config, $this->appConfig);
