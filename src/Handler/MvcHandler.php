@@ -339,6 +339,6 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      */
     public static function getRoute(string $basePath = ''): string
     {
-        return $basePath . '[/[{' . self::CONTROLLER_ATTRIBUTE . '}[/[{' . self::ACTION_ATTRIBUTE . '}[/]]]]]';
+        return $basePath . '[/[{' . self::CONTROLLER_ATTRIBUTE . '}[/[{' . self::ACTION_ATTRIBUTE . '}]]]]';
     }
 }
