@@ -448,7 +448,7 @@ class HtmlElement extends AbstractBaseBean implements
                 }
             }
             if ($this->getEvent()->isset('path') && !$this->hasPath()) {
-                $this->setPath($this->getEvent()->get('path'));
+                #$this->setPath($this->getEvent()->get('path'));
             }
             $this->setData('event', json_encode($this->getEvent()));
         }
