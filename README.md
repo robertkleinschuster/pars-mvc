@@ -86,22 +86,22 @@ class MyLayout extends \Pars\Mvc\View\AbstractLayout {
     protected function initialize() {
       parent::initialize();
       $this->setTag('html');
-      $head = new \Pars\Mvc\View\HtmlElement('head');
+      $head = new \Pars\Mvc\View\ViewElement('head');
       $this->initHead($head);
       $this->push($head);
-      $body = new \Pars\Mvc\View\HtmlElement('body');
+      $body = new \Pars\Mvc\View\ViewElement('body');
       $this->initBody($body);
       $this->push($body);
     }
-    protected function initHead(\Pars\Mvc\View\HtmlElement $head) {
-       $link = new HtmlElement('link');
+    protected function initHead(\Pars\Mvc\View\ViewElement $head) {
+       $link = new \Pars\Mvc\View\ViewElement('link');
        $link->setAttribute('rel', 'stylesheet');
        $link->setAttribute('href', 'styles.css');
        $head->push($link);
     }
     
-    protected function initBody(\Pars\Mvc\View\HtmlElement $body) {
-        $heading = new \Pars\Mvc\View\HtmlElement('h1');
+    protected function initBody(\Pars\Mvc\View\ViewElement $body) {
+        $heading = new \Pars\Mvc\View\ViewElement('h1');
         $heading->setContent('{heading}');
         $body->push($heading);
     }
@@ -113,7 +113,7 @@ class MyComponent extends \Pars\Mvc\View\AbstractComponent {
     
     protected function initialize() {
       parent::initialize();
-      $text = new \Pars\Mvc\View\HtmlElement('p');
+      $text = new \Pars\Mvc\View\ViewElement('p');
       $text->setContent('{text}');
       $this->push($text);
     }

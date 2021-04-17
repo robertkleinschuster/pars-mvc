@@ -5,8 +5,7 @@ namespace Pars\Mvc\View\Event;
 
 
 use Pars\Bean\Type\Base\AbstractBaseBean;
-use Pars\Bean\Type\Base\AbstractBaseBeanList;
-use Pars\Mvc\View\HtmlElement;
+use Pars\Mvc\View\ViewElement;
 
 class ViewEvent extends AbstractBaseBean
 {
@@ -43,10 +42,10 @@ class ViewEvent extends AbstractBaseBean
     }
 
     /**
-     * @param HtmlElement $element
+     * @param ViewElement $element
      * @return $this
      */
-    public function execute(HtmlElement $element)
+    public function execute(ViewElement $element)
     {
         if ($this->callback) {
             return ($this->callback)($element);
@@ -64,13 +63,64 @@ class ViewEvent extends AbstractBaseBean
         return $this;
     }
 
+    public function hasPath(): bool
+    {
+        return $this->isset('path');
+    }
+
+    public function setPath(string $path) {
+        $this->set('path', $path);
+        return $this;
+    }
+
     /**
-     * @param string $path
-     * @param string $id
-     * @param callable $callback
-     * @return static
+     * @param string $target target selector
      */
-    public static function createCallback(string $path, string $id, callable $callback): self
+    public function setTarget(string $target)
+    {
+        $this->set('target', $target);
+        return $this;
+    }
+
+    public function hasTarget(): bool
+    {
+        return $this->isset('target');
+    }
+
+    public function getTarget()
+    {
+        return $this->get('target');
+    }
+
+
+    /**
+     * @param string $targetId
+     * @return $this
+     */
+    public function setTargetId(string $targetId)
+    {
+        $this->setTarget("#$targetId");
+        return $this;
+    }
+
+    /**
+     * @param string $delegate subelement selector
+     * @throws \Pars\Bean\Type\Base\BeanException
+     */
+    public function setDelegate(string $delegate)
+    {
+        $this->set('delegate', $delegate);
+        return $this;
+    }
+
+    /**
+     * @param callable $callback
+     * @param string|null $path
+     * @param string|null $id
+     * @return static
+     * @throws \Pars\Bean\Type\Base\BeanException
+     */
+    public static function createCallback(callable $callback, string $path = null, string $id = null): self
     {
         return (new static([
             'type' => self::TYPE_CALLBACK,

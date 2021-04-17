@@ -7,6 +7,8 @@ namespace Pars\Mvc\Controller;
 use Pars\Helper\Path\PathHelper;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\ViewInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
 /**
@@ -54,6 +56,11 @@ interface ControllerInterface
     public function getControllerResponse(): ControllerResponse;
 
     /**
+     * @return ResponseFactoryInterface
+     */
+    public function getResponseFactory(): ResponseFactoryInterface;
+
+    /**
      * @return PathHelper
      */
     public function getPathHelper(): PathHelper;
@@ -74,24 +81,28 @@ interface ControllerInterface
     public function hasView(): bool;
 
     /**
-     * @return string
-     */
-    public function getTemplate(): string;
-
-    /**
-     * @param string $template
-     *
-     * @return $this
-     */
-    public function setTemplate(string $template): self;
-
-    /**
-     * @return bool
-     */
-    public function hasTemplate(): bool;
-
-    /**
      * @return bool
      */
     public function isAuthorized(): bool;
+
+    /**
+     * @param Throwable|null $throwable
+     * @return ResponseInterface
+     */
+    public function execute(Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface;
+
+    /**
+     * @return ControllerInterface|null
+     */
+    public function getParent(): ?ControllerInterface;
+
+    /**
+     * @param ControllerInterface|null $parent
+     */
+    public function setParent(?ControllerInterface $parent): self;
+
+    /**
+     * @return bool
+     */
+    public function hasParent(): bool;
 }

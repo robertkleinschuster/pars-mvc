@@ -2,34 +2,33 @@
 
 namespace Pars\Mvc\View;
 
-use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Converter\BeanConverterAwareTrait;
 use Pars\Bean\Converter\ConverterBeanDecorator;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Bean\Type\Base\BeanAwareInterface;
+use Pars\Bean\Type\Base\BeanAwareTrait;
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Placeholder\PlaceholderHelper;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;
-use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
-use Pars\Pattern\Option\OptionAwareInterface;
 use Pars\Pattern\Option\OptionAwareTrait;
 
-class HtmlElement extends AbstractBaseBean implements
-    HtmlInterface,
-    OptionAwareInterface,
-    AttributeAwareInterface,
-    BeanConverterAwareInterface
+/**
+ * Class HtmlElement
+ * @package Pars\Mvc\View
+ */
+class ViewElement extends AbstractBaseBean implements HtmlInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
     use BeanConverterAwareTrait;
+    use BeanAwareTrait;
 
     /**
      *
@@ -67,9 +66,9 @@ class HtmlElement extends AbstractBaseBean implements
     public ?array $inlineStyles = [];
 
     /**
-     * @var HtmlElementList|null
+     * @var ViewElementList|null
      */
-    public ?HtmlElementList $elementList = null;
+    public ?ViewElementList $elementList = null;
 
     /**
      * @var bool
@@ -90,6 +89,11 @@ class HtmlElement extends AbstractBaseBean implements
      * @var ViewStatePersistenceInterface|null
      */
     protected ?ViewStatePersistenceInterface $statePersistence = null;
+
+    /**
+     * @var ViewRenderer|null
+     */
+    protected ?ViewRenderer $renderer;
 
     /**
      * HtmlElement constructor.
@@ -147,6 +151,24 @@ class HtmlElement extends AbstractBaseBean implements
     protected function onConstruct()
     {
 
+    }
+
+    /**
+     * @return bool
+     */
+    public function isInitialized(): bool
+    {
+        return $this->initialized;
+    }
+
+    /**
+     * @param bool $initialized
+     * @return ViewElement
+     */
+    public function setInitialized(bool $initialized): ViewElement
+    {
+        $this->initialized = $initialized;
+        return $this;
     }
 
 
@@ -360,22 +382,22 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-     * @return HtmlElementList
+     * @return ViewElementList
      */
-    public function getElementList(): HtmlElementList
+    public function getElementList(): ViewElementList
     {
         if (null === $this->elementList) {
-            $this->elementList = new HtmlElementList();
+            $this->elementList = new ViewElementList();
         }
         return $this->elementList;
     }
 
     /**
-     * @param HtmlElementList $elementList
+     * @param ViewElementList $elementList
      *
      * @return $this
      */
-    public function setElementList(HtmlElementList $elementList): self
+    public function setElementList(ViewElementList $elementList): self
     {
         $this->elementList = $elementList;
         return $this;
@@ -396,14 +418,21 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function handleInitialize()
     {
-        if (!$this->initialized) {
+        if (!$this->isInitialized()) {
             if ($this->hasState()) {
                 $this->getState()->init();
             }
+            $this->initEvent();
+            $this->handleEvent();
             $this->initialize();
-            $this->initialized = true;
             $this->handleInlineStyles();
+            $this->setInitialized(true);
         }
+    }
+
+    protected function initEvent()
+    {
+
     }
 
     /**
@@ -430,6 +459,7 @@ class HtmlElement extends AbstractBaseBean implements
         if ($bean !== null && $placeholders) {
             $result = $this->replacePlaceholder($result, $bean);
         }
+        $this->handleState();
         return $result;
     }
 
@@ -438,20 +468,26 @@ class HtmlElement extends AbstractBaseBean implements
      */
     protected function beforeRender(BeanInterface $bean = null)
     {
+    }
+
+    protected function handleEvent()
+    {
         if ($this->hasEvent()) {
             if (!$this->getEvent()->isset('path') && $this->hasPath()) {
-                $this->getEvent()->path = $this->getPath($bean);
+                $this->getEvent()->path = $this->getPath();
             }
             foreach (ViewEvent::getQueue() as $event) {
                 if ($this->getEvent()->isset('id') && $this->getEvent()->id === $event->id) {
                     $this->getEvent()->execute($this);
                 }
             }
-            if ($this->getEvent()->isset('path') && !$this->hasPath()) {
-                #$this->setPath($this->getEvent()->get('path'));
-            }
             $this->setData('event', json_encode($this->getEvent()));
         }
+    }
+
+
+    protected function handleState()
+    {
         if ($this->hasState()) {
             $this->getState()->finalize();
         }
@@ -565,7 +601,7 @@ class HtmlElement extends AbstractBaseBean implements
      * @param string $name
      * @return $this
      */
-    public function removeInlineStyle(string $name): HtmlElement
+    public function removeInlineStyle(string $name): ViewElement
     {
         unset($this->inlineStyles[$name]);
         return $this;
@@ -593,8 +629,8 @@ class HtmlElement extends AbstractBaseBean implements
         $result = '';
         if ($this->hasElementList()) {
             foreach ($this->getElementList() as $element) {
-                $this->injectDependencies($element);
                 try {
+                    $this->injectDependencies($element, false);
                     $this->beforeRenderElement($element, $bean);
                     $result .= $element->render($bean);
                 } catch (\Throwable $error) {
@@ -607,9 +643,9 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /***
-     * @param HtmlElement $element
+     * @param ViewElement $element
      */
-    protected function injectDependencies(HtmlElement $element)
+    protected function injectDependencies(ViewElement $element, bool $injectBean = true)
     {
         if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
             $element->setBeanConverter($this->getBeanConverter());
@@ -617,13 +653,19 @@ class HtmlElement extends AbstractBaseBean implements
         if (!$element->hasPersistence() && $this->hasPersistence()) {
             $element->setPersistence($this->getPersistence());
         }
+        if ($injectBean && !$element->hasBean() && $this->hasBean()) {
+            $element->setBean($this->getBean());
+        }
+        if (!$element->hasRenderer() && $this->hasRenderer()) {
+            $element->setRenderer($this->getRenderer());
+        }
     }
 
     /**
-     * @param HtmlElement $element
+     * @param ViewElement $element
      * @param BeanInterface|null $bean
      */
-    protected function beforeRenderElement(HtmlElement $element, BeanInterface $bean = null)
+    protected function beforeRenderElement(ViewElement $element, BeanInterface $bean = null)
     {
     }
 
@@ -740,12 +782,12 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $id
-     * @return HtmlElement|null
+     * @return ViewElement|null
      * @throws AttributeExistsException
      * @throws AttributeLockException
      * @throws AttributeNotFoundException
      */
-    public function getElementById(string $id): ?HtmlElement
+    public function getElementById(string $id): ?ViewElement
     {
         $this->handleInitialize();
         if ($this->hasId() && $this->getId() == $id) {
@@ -763,15 +805,15 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $class
-     * @return HtmlElementList
+     * @return ViewElementList
      * @throws AttributeExistsException
      * @throws AttributeLockException
      * @throws AttributeNotFoundException
      */
-    public function getElementsByClassName(string $class): HtmlElementList
+    public function getElementsByClassName(string $class): ViewElementList
     {
         $this->handleInitialize();
-        $list = new HtmlElementList();
+        $list = new ViewElementList();
         if ($this->hasOption($class)) {
             $list->push($this);
         }
@@ -786,15 +828,15 @@ class HtmlElement extends AbstractBaseBean implements
 
     /**
      * @param string $tag
-     * @return HtmlElementList
+     * @return ViewElementList
      * @throws AttributeExistsException
      * @throws AttributeLockException
      * @throws AttributeNotFoundException
      */
-    public function getElementsByTagName(string $tag): HtmlElementList
+    public function getElementsByTagName(string $tag): ViewElementList
     {
         $this->handleInitialize();
-        $list = new HtmlElementList();
+        $list = new ViewElementList();
         if ($this->getTag() == $tag) {
             $list->push($this);
         }
@@ -821,6 +863,12 @@ class HtmlElement extends AbstractBaseBean implements
      */
     public function setEvent(ViewEvent $event): self
     {
+        if (!$event->hasPath() && $this->hasPath()) {
+            $event->setPath($this->getPath());
+        }
+        if (!$event->hasId() && $this->hasId()) {
+            $event->setId($this->getId());
+        }
         $this->event = $event;
         return $this;
     }
@@ -895,5 +943,32 @@ class HtmlElement extends AbstractBaseBean implements
         return isset($this->statePersistence);
     }
 
+
+    /**
+     * @return ViewRenderer
+     */
+    public function getRenderer(): ViewRenderer
+    {
+        return $this->renderer;
+    }
+
+    /**
+     * @param ViewRenderer $renderer
+     *
+     * @return $this
+     */
+    public function setRenderer(ViewRenderer $renderer): self
+    {
+        $this->renderer = $renderer;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRenderer(): bool
+    {
+        return isset($this->renderer);
+    }
 
 }

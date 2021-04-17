@@ -12,7 +12,7 @@ use Pars\Pattern\Exception\AttributeLockException;
  * Class AbstractComponent
  * @package Pars\Mvc\View
  */
-abstract class AbstractComponent extends HtmlElement implements ComponentInterface
+abstract class AbstractComponent extends ViewElement implements ComponentInterface
 {
     use FieldListAwareTrait;
 
@@ -21,8 +21,8 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     private ?Toolbar $toolbar = null;
     protected ?Toolbar $subToolbar = null;
-    private ?HtmlElement $before = null;
-    private ?HtmlElement $after = null;
+    private ?ViewElement $before = null;
+    private ?ViewElement $after = null;
 
     /**
      * @param AbstractField $field
@@ -132,7 +132,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     protected function beforeRender(BeanInterface $bean = null)
     {
         if ($this->hasName()) {
-            $this->unshift(new HtmlElement('h3.mb-1.modal-hidden', $this->getName()));
+            $this->unshift(new ViewElement('h3.mb-1.modal-hidden', $this->getName()));
         }
         parent::beforeRender($bean);
     }
@@ -206,18 +206,18 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
         return $this->toolbar;
     }
 
-    public function getBefore(): HtmlElement
+    public function getBefore(): ViewElement
     {
         if (null === $this->before) {
-            $this->before = new HtmlElement();
+            $this->before = new ViewElement();
         }
         return $this->before;
     }
 
-    public function getAfter(): HtmlElement
+    public function getAfter(): ViewElement
     {
         if (null === $this->after) {
-            $this->after = new HtmlElement();
+            $this->after = new ViewElement();
         }
         return $this->after;
     }

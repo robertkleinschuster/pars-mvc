@@ -2,12 +2,22 @@
 
 namespace Pars\Mvc\View;
 
+use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Option\OptionAwareInterface;
 
-interface HtmlInterface extends RenderableInterface, BeanInterface
+interface HtmlInterface extends
+    RenderableInterface,
+    BeanInterface,
+    OptionAwareInterface,
+    AttributeAwareInterface,
+    BeanConverterAwareInterface,
+    BeanAwareInterface
 {
 
     /**
@@ -108,16 +118,16 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
     public function hasGroup(): bool;
 
     /**
-     * @return HtmlElementList
+     * @return ViewElementList
      */
-    public function getElementList(): HtmlElementList;
+    public function getElementList(): ViewElementList;
 
     /**
-     * @param HtmlElementList $elementList
+     * @param ViewElementList $elementList
      *
      * @return $this
      */
-    public function setElementList(HtmlElementList $elementList): self;
+    public function setElementList(ViewElementList $elementList): self;
 
     /**
      * @return bool
@@ -171,9 +181,9 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
 
     /**
      * @param string $id
-     * @return mixed
+     * @return ViewElement
      */
-    public function getElementById(string $id);
+    public function getElementById(string $id): ?ViewElement;
 
     /**
      * @param string $class
@@ -235,4 +245,21 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
      * @return bool
      */
     public function hasPersistence(): bool;
+
+    /**
+     * @return ViewRenderer
+     */
+    public function getRenderer(): ViewRenderer;
+
+    /**
+     * @param ViewRenderer $renderer
+     *
+     * @return $this
+     */
+    public function setRenderer(ViewRenderer $renderer): self;
+
+    /**
+     * @return bool
+     */
+    public function hasRenderer(): bool;
 }

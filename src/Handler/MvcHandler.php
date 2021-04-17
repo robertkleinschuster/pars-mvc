@@ -8,13 +8,12 @@ use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Type\Base\BeanException;
-use Pars\Pattern\Exception\AttributeExistsException;
-use Pars\Pattern\Exception\AttributeLockException;
-use Pars\Pattern\Exception\AttributeNotFoundException;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerResponse;
+use Pars\Mvc\Controller\ControllerRunner;
+use Pars\Mvc\Controller\ControllerRunnerFactory;
 use Pars\Mvc\Exception\ActionNotFoundException;
 use Pars\Mvc\Exception\ControllerNotFoundException;
 use Pars\Mvc\Exception\MvcException;
@@ -25,6 +24,10 @@ use Pars\Mvc\View\ComponentGroup;
 use Pars\Mvc\View\DefaultComponent;
 use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewRenderer;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
+use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 use Psr\Http\Server\MiddlewareInterface;
@@ -41,6 +44,12 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     public const CONTROLLER_ATTRIBUTE = 'controller';
     public const ACTION_ATTRIBUTE = 'action';
     public const STATIC_FILES_ATTRIBUTE = 'static_files';
+
+    /**
+     * @var ContainerInterface
+     */
+    protected ContainerInterface $container;
+
     /**
      * @var TemplateRendererInterface
      */
@@ -58,18 +67,22 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
 
     /**
      * MvcHandler constructor.
-     * @param TemplateRendererInterface $renderer
-     * @param ControllerFactory $controllerFactory
-     * @param array $config
+     * @param ContainerInterface $container
      */
-    public function __construct(
-        TemplateRendererInterface $renderer,
-        ControllerFactory $controllerFactory,
-        array $config
-    ) {
-        $this->renderer = $renderer;
-        $this->controllerFactory = $controllerFactory;
-        $this->appConfig = $config;
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+        $this->renderer = $container->get(TemplateRendererInterface::class);
+        $this->controllerFactory = $container->get(ControllerFactory::class);
+        $this->appConfig = $container->get('config');
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
     }
 
     /**
@@ -77,31 +90,19 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
      * @return ResponseInterface
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws AttributeNotFoundException
-     * @throws BeanException
      * @throws ControllerNotFoundException
-     * @throws MvcException
-     * @throws ViewException
      */
     public function handle(ServerRequestInterface $request): ResponseInterface
     {
-        $mvcConfig = $this->appConfig['mvc'];
-        $controllerCode = $request->getAttribute(self::CONTROLLER_ATTRIBUTE) ?? 'index';
-        $actionCode = $request->getAttribute(self::ACTION_ATTRIBUTE) ?? 'index';
-        $routeResult = $request->getAttribute(RouteResult::class);
-        if (
-            is_string($routeResult->getMatchedRouteName())
-            && isset($mvcConfig['module'][$routeResult->getMatchedRouteName()])
-        ) {
-            $config = array_replace_recursive(
-                $mvcConfig,
-                $mvcConfig['module'][$routeResult->getMatchedRouteName()]
-            );
-        } else {
-            $config = $mvcConfig;
-        }
-        $controller = $this->executeController($controllerCode, $actionCode, $config, $request);
-        return (new ServerResponseFactory())($controller->getControllerResponse());
+        return $this->getRunner()->run($request);
+    }
+
+    /**
+     * @return ControllerRunner
+     */
+    protected function getRunner(): ControllerRunner
+    {
+        return $this->getContainer()->get(ControllerRunner::class);
     }
 
     /**
@@ -123,7 +124,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         array $config,
         ServerRequestInterface $request,
         ControllerInterface $parent = null
-    ): ControllerInterface {
+    ): ControllerInterface
+    {
         $mvcTemplateFolder = $config['template_folder'];
         $errorController = $config['error_controller'];
         $actionSuffix = $config['action']['suffix'] ?? '';
@@ -228,7 +230,8 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
         array $config,
         ServerRequestInterface $request,
         ControllerInterface $parent
-    ) {
+    )
+    {
         $active = 1;
         if ($parent->getView()->hasLayout() && $mode == AbstractController::SUB_ACTION_MODE_STANDARD) {
             $id = $controller . $action . '-before';

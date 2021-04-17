@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Factory;
 
+use Pars\Mvc\Controller\ControllerRequest;
 use Pars\Mvc\Exception\ControllerNotFoundException;
+use Pars\Mvc\Handler\MvcHandler;
+use Pars\Mvc\Model\ModelInterface;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class ModelFactory
@@ -13,16 +18,36 @@ use Pars\Mvc\Exception\ControllerNotFoundException;
 class ModelFactory
 {
 
+
+    protected ContainerInterface $container;
+
     /**
-     * @param string $code
-     * @param array $config
+     * ControllerFactory constructor.
+     * @param ContainerInterface $container
+     */
+    public function __construct(ContainerInterface $container)
+    {
+        $this->container = $container;
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+    /**
+     * @param ControllerRequest $request
      * @return mixed
      * @throws ControllerNotFoundException
      */
-    public function __invoke(string $code, array $config, array $appConfig)
+    public function createModel(ControllerRequest $request): ModelInterface
     {
-        $model = $this->getModelClass($config, $code);
-        return new $model($appConfig);
+        $config = $this->getContainer()->get('config');
+        $mvcConfig = $config['mvc'];
+        $model = $this->getModelClass($mvcConfig, $request->getController());
+        return new $model($this->getContainer());
     }
 
     /**

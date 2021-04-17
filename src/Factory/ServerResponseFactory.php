@@ -12,20 +12,68 @@ use Laminas\Diactoros\UriFactory;
 use Pars\Helper\Debug\DebugHelper;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;
+use Pars\Pattern\Exception\CoreException;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ServerResponseFactory
  * @package Pars\Mvc\Factory
  */
-class ServerResponseFactory
+class ServerResponseFactory implements ResponseFactoryInterface
 {
+
+    protected ?ControllerResponse $controllerResponse = null;
+
+
+    /**
+    * @return ControllerResponse
+    */
+    public function getControllerResponse(): ControllerResponse
+    {
+        return $this->controllerResponse;
+    }
+
+    /**
+    * @param ControllerResponse $controllerResponse
+    *
+    * @return $this
+    */
+    public function setControllerResponse(ControllerResponse $controllerResponse): self
+    {
+        $this->controllerResponse = $controllerResponse;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasControllerResponse(): bool
+    {
+        return isset($this->controllerResponse);
+    }
+
+    /**
+     * @param int $code
+     * @param string $reasonPhrase
+     * @return ResponseInterface
+     * @throws MvcException
+     */
+    public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
+    {
+        if ($this->hasControllerResponse()) {
+            return $this->createServerResponse($this->controllerResponse)->withStatus($code, $reasonPhrase);
+        }
+        return (new Response())->withStatus($code, $reasonPhrase);
+    }
+
     /**
      * @param ControllerResponse $controllerResponse
-     * @return HtmlResponse|JsonResponse|RedirectResponse|Response
+     * @return HtmlResponse|JsonResponse|RedirectResponse|Response\TextResponse|\Psr\Http\Message\MessageInterface
      * @throws MvcException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
-    public function __invoke(ControllerResponse $controllerResponse)
+    protected function createServerResponse(ControllerResponse $controllerResponse)
     {
         if (DebugHelper::hasDebug()) {
             $controllerResponse->setBody(DebugHelper::getDebug());

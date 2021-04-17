@@ -32,6 +32,7 @@ use Pars\Helper\Validation\ValidationHelperAwareInterface;
 use Pars\Helper\Validation\ValidationHelperAwareTrait;
 use Pars\Mvc\Exception\MvcException;
 use Pars\Mvc\Exception\NotFoundException;
+use Psr\Container\ContainerInterface;
 
 /**
  * Class AbstractModel
@@ -56,6 +57,8 @@ abstract class AbstractModel implements
     public const OPTION_EDIT_ALLOWED = 'edit_allowed';
     public const OPTION_DELETE_ALLOWED = 'delete_allowed';
 
+    private ContainerInterface $container;
+
     /**
      * @var array
      */
@@ -63,11 +66,12 @@ abstract class AbstractModel implements
 
     /**
      * AbstractModel constructor.
-     * @param array $applicationConfig
+     * @param ContainerInterface $container
      */
-    public function __construct(array $applicationConfig = [])
+    public function __construct(ContainerInterface $container)
     {
-        $this->applicationConfig = $applicationConfig;
+        $this->container = $container;
+        $this->applicationConfig = $container->get('config');
     }
 
     /**

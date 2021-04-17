@@ -7,12 +7,12 @@ use Pars\Bean\Type\Base\AbstractBaseBeanList;
 /**
  * Class HtmlElementList
  * @package Pars\Mvc\View
- * @method HtmlElementIterator getIterator()
+ * @method ViewElementIterator getIterator()
  */
-class HtmlElementList extends AbstractBaseBeanList
+class ViewElementList extends AbstractBaseBeanList
 {
     /**
-     * @return HtmlElementIterator
+     * @return ViewElementIterator
      */
   /*  public function getIterator(): HtmlElementIterator
     {

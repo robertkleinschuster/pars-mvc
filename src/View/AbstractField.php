@@ -8,7 +8,7 @@ use Pars\Bean\Type\Base\BeanInterface;
  * Class AbstractField
  * @package Pars\Mvc\View
  */
-abstract class AbstractField extends HtmlElement implements FieldInterface
+abstract class AbstractField extends ViewElement implements FieldInterface
 {
 
     public const OPTION_RESET_COLOR = 'text-reset';

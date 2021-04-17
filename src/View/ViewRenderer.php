@@ -6,7 +6,6 @@ namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
-use Pars\Bean\Type\Base\BeanInterface;
 
 /**
  * Class ViewRenderer
@@ -14,6 +13,9 @@ use Pars\Bean\Type\Base\BeanInterface;
  */
 class ViewRenderer
 {
+
+    public const HTML_START = '<!DOCTYPE html>';
+
     /**
      * @var TemplateRendererInterface
      */
@@ -54,11 +56,10 @@ class ViewRenderer
     /**
      * @param ViewInterface $view
      * @param string|null $id
-     * @param bool $onlyelement
      * @return string
      * @throws ViewException
      */
-    public function render(ViewInterface $view, ?string $id = null, bool $onlyelement = false): string
+    public function render(ViewInterface $view, ?string $id = null): string
     {
         $this->getTemplateRenderer()->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
@@ -76,51 +77,18 @@ class ViewRenderer
         if ($view->hasTemplate()) {
             return $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
         } elseif ($view->hasLayout()) {
-            $layout = $view->getLayout();
-            if (
-                $view instanceof BeanConverterAwareInterface &&
-                $layout instanceof BeanConverterAwareInterface
-            ) {
-                if ($view->hasBeanConverter()) {
-                    if (!$layout->hasBeanConverter()) {
-                        $layout->setBeanConverter($view->getBeanConverter());
-                    }
-                }
-            }
-            $result = '<!DOCTYPE html>';
-            if ($view instanceof BeanInterface) {
-                if ($view->hasBeanConverter()) {
-                    $bean = $view->getBeanConverter()->convert($view);
-                } else {
-                    $bean = $view;
-                }
-                if ($id !== null) {
-                    $result = '';
-                    $layout = $view->getLayout();
-                    $renderable = new $layout();
-                    $element = $view->getLayout()->getElementById($id);
-                    if ($renderable instanceof BeanConverterAwareInterface && $element !== null) {
-                        if ($view->hasBeanConverter()) {
-                            $renderable->setBeanConverter($view->getBeanConverter());
-                            $element->setBeanConverter($view->getBeanConverter());
-                        } else {
-                            $renderable->setBeanConverter(new ViewBeanConverter());
-                            $element->setBeanConverter(new ViewBeanConverter());
-                        }
-                    }
-                    if ($onlyelement) {
-                        $renderable = $element;
-                    } else {
-                        $renderable->getComponentList()->push($element);
-                    }
-                } else {
-                    $renderable = $view->getLayout();
-                }
-                if ($renderable instanceof RenderableInterface) {
-                    $result .= $renderable->render($bean, true);
-                }
+            $result = self::HTML_START;
+            $bean = $view->hasBeanConverter() ? $view->getBeanConverter()->convert($view) : $view;
+            if ($id !== null) {
+                $id = str_replace('#', '', $id);
+                $result = '';
+                $renderable = $view->getLayout()->getElementById($id);
             } else {
-                $result .= $view->getLayout()->render();
+                $renderable = $view->getLayout();
+            }
+            if ($renderable instanceof RenderableInterface) {
+                $renderable->setRenderer($this);
+                $result .= $renderable->render($bean, true);
             }
             return $result;
         } else {

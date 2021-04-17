@@ -10,19 +10,19 @@ declare(strict_types=1);
 namespace ParsTest\Mvc\View;
 
 use Pars\Bean\Type\Base\AbstractBaseBean;
-use Pars\Mvc\View\HtmlElement;
+use Pars\Mvc\View\ViewElement;
 use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * Class DefaultTestCaseTest
  * @package Pars\Bean
  */
-class HtmlElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
+class ViewElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
 {
 
 
     /**
-     * @var HtmlElement|MockObject
+     * @var ViewElement|MockObject
      */
     protected $object;
 
@@ -34,13 +34,13 @@ class HtmlElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
      */
     protected function setUp(): void
     {
-        $this->object = $this->getMockBuilder(HtmlElement::class)->disableOriginalConstructor()->getMockForAbstractClass();
+        $this->object = $this->getMockBuilder(ViewElement::class)->disableOriginalConstructor()->getMockForAbstractClass();
     }
 
 
     public function mockElement()
     {
-        return $this->getMockBuilder(HtmlElement::class)->disableOriginalConstructor()->getMockForAbstractClass();
+        return $this->getMockBuilder(ViewElement::class)->disableOriginalConstructor()->getMockForAbstractClass();
     }
 
     public function mockBean()
@@ -63,8 +63,8 @@ class HtmlElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
      */
     public function testTestClassExists()
     {
-        $this->assertTrue(class_exists(HtmlElement::class), "Class Exists");
-        $this->assertTrue(is_a($this->object, HtmlElement::class), "Mock Object is set");
+        $this->assertTrue(class_exists(ViewElement::class), "Class Exists");
+        $this->assertTrue(is_a($this->object, ViewElement::class), "Mock Object is set");
     }
 
     /**

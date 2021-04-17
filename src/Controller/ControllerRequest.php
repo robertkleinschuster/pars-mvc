@@ -5,13 +5,7 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Mezzio\Router\RouteResult;
-use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Parameter\CollapseParameter;
-use Pars\Mvc\View\Event\ViewEvent;
-use Pars\Pattern\Attribute\AttributeAwareInterface;
-use Pars\Pattern\Attribute\AttributeAwareTrait;
-use Pars\Pattern\Option\OptionAwareInterface;
-use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
@@ -26,16 +20,28 @@ use Pars\Helper\Parameter\ParameterInterface;
 use Pars\Helper\Parameter\RedirectParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
+use Pars\Helper\Path\PathHelper;
+use Pars\Helper\Path\PathHelperAwareInterface;
+use Pars\Helper\Path\PathHelperAwareTrait;
+use Pars\Mvc\Handler\MvcHandler;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Attribute\AttributeAwareTrait;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Option\OptionAwareInterface;
+use Pars\Pattern\Option\OptionAwareTrait;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class ControllerRequest
  * @package Pars\Mvc\Controller
  */
-class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
+class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface, PathHelperAwareInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
+    use PathHelperAwareTrait;
 
     /**
      * @var ServerRequestInterface
@@ -51,41 +57,81 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @var string|null
      */
     private ?string $action = null;
+
+    /**
+     * @var string|null
+     */
     private ?string $controller = null;
 
     protected ?ViewEvent $event = null;
 
     /**
-     * ControllerRequestProperties constructor.
+     * ControllerRequest constructor.
      * @param ServerRequestInterface $serverRequest
+     * @param PathHelper $pathHelper
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      */
-    public function __construct(ServerRequestInterface $serverRequest)
+    public function __construct(ServerRequestInterface $serverRequest, PathHelper $pathHelper)
     {
         $this->serverRequest = $serverRequest;
         $this->routeResult = $serverRequest->getAttribute(RouteResult::class);
+        $this->setController($serverRequest->getAttribute(MvcHandler::CONTROLLER_ATTRIBUTE, 'index'));
+        $this->setAction($serverRequest->getAttribute(MvcHandler::ACTION_ATTRIBUTE, 'index'));
         // POST Params
         foreach ($serverRequest->getParsedBody() as $key => $value) {
             $this->setAttribute($key, $value);
         }
-
         // GET Params
         foreach ($serverRequest->getQueryParams() as $key => $value) {
             $this->setAttribute($key, $value);
         }
-
+        // Files
         foreach ($serverRequest->getUploadedFiles() as $key => $value) {
             $this->setAttribute($key, $value);
         }
+        $this->setPathHelper($this->initPathHelper($pathHelper));
         $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
         if ($event) {
             $this->event = new ViewEvent($event);
         }
     }
 
+    protected function initPathHelper(PathHelper $pathHelper)
+    {
+        $pathHelper->setController($this->getController());
+        $pathHelper->setAction($this->getAction());
+        if ($this->hasId()) {
+            $pathHelper->setId($this->getId());
+        }
+        if ($this->hasPagingation()) {
+            $pathHelper->addParameter($this->getPagination());
+        }
+        if ($this->hasOrder()) {
+            $pathHelper->addParameter($this->getOrder());
+        }
+        if ($this->hasSearch()) {
+            $pathHelper->addParameter($this->getSearch());
+        }
+        if ($this->hasEditLocale()) {
+            $pathHelper->addParameter($this->getEditLocale());
+        }
+        if ($this->hasContext()) {
+            $pathHelper->addParameter($this->getContext());
+        }
+        if ($this->hasNav()) {
+            $pathHelper->addParameter($this->getNav());
+        }
+        if ($this->hasFilter()) {
+            $pathHelper->addParameter($this->getFilter());
+        }
+        return $pathHelper;
+    }
+
     /**
-    * @return ViewEvent
-    */
-    public function getEvent(): ViewEvent
+     * @return ViewEvent|null
+     */
+    public function getEvent(): ?ViewEvent
     {
         return $this->event;
     }
@@ -136,8 +182,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getId(): IdParameter
@@ -157,8 +203,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getIdList(): IdListParameter
@@ -269,8 +315,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return PaginationParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getPagination(): PaginationParameter
@@ -298,8 +344,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return EditLocaleParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getEditLocale(): EditLocaleParameter
@@ -364,8 +410,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return FilterParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getFilter(): FilterParameter
@@ -385,8 +431,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return DataParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
      * @throws \Pars\Pattern\Exception\AttributeNotFoundException
      */
     public function getData(): DataParameter
@@ -419,6 +465,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function setAction(?string $action): ControllerRequest
     {
+        $this->serverRequest = $this->serverRequest->withAttribute(MvcHandler::ACTION_ATTRIBUTE, $action);
         $this->action = $action;
         return $this;
     }
@@ -437,6 +484,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function setController(?string $controller): ControllerRequest
     {
+        $this->serverRequest = $this->serverRequest->withAttribute(MvcHandler::CONTROLLER_ATTRIBUTE, $controller);
         $this->controller = $controller;
         return $this;
     }
@@ -449,7 +497,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function acceptParameter(ParameterInterface $parameter): bool
     {
         return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
-           && (!$parameter->hasController() || $parameter->getController() == $this->getController());
+            && (!$parameter->hasController() || $parameter->getController() == $this->getController());
     }
 
     /**
@@ -465,7 +513,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function getPostData(): array
     {
-        return (array) $this->getServerRequest()->getParsedBody();
+        return (array)$this->getServerRequest()->getParsedBody();
     }
 
     /**
@@ -481,7 +529,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function getGetData(): array
     {
-        return (array) $this->getServerRequest()->getQueryParams();
+        return (array)$this->getServerRequest()->getQueryParams();
     }
 
     /**

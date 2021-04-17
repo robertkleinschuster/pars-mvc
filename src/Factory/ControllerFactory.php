@@ -10,7 +10,12 @@ use Pars\Mvc\Controller\ControllerInterface;
 use Pars\Mvc\Controller\ControllerRequest;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\ControllerNotFoundException;
+use Pars\Mvc\Handler\MvcHandler;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\CoreException;
 use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
@@ -19,15 +24,8 @@ use Psr\Http\Message\ServerRequestInterface;
  */
 class ControllerFactory
 {
-    /**
-     * @var ModelFactory
-     */
-    private $modelFactory;
 
-    /**
-     * @var PathHelper
-     */
-    private $pathHelper;
+    protected ContainerInterface $container;
 
     /**
      * ControllerFactory constructor.
@@ -35,29 +33,39 @@ class ControllerFactory
      */
     public function __construct(ContainerInterface $container)
     {
-        $this->modelFactory = $container->get(ModelFactory::class);
-        $this->pathHelper = $container->get(PathHelper::class);
+        $this->container = $container;
     }
 
     /**
-     * @param string $code
-     * @param ServerRequestInterface $request
-     * @param array $config
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * @param ControllerRequest $request
      * @return ControllerInterface
      * @throws ControllerNotFoundException
      */
-    public function __invoke(string $code, ServerRequestInterface $request, array $config, array $appConfig): ControllerInterface
+    public function createController(ControllerRequest $request): ControllerInterface
     {
-        $class = $this->getControllerClass($config, $code);
-        /**
-         * @var AbstractController $controller
-         */
-        return new $class(
-            new ControllerRequest($request),
-            new ControllerResponse(),
-            ($this->modelFactory)($code, $config, $appConfig),
-            $this->pathHelper
-        );
+        $config = $this->getContainer()->get('config');
+        $mvcConfig = $config['mvc'];
+        $controllerClass = $this->getControllerClass($mvcConfig, $request->getController());
+        return new $controllerClass($this->getContainer(), $request);
+    }
+
+    /**
+     * @param ServerRequestInterface $request
+     * @return ControllerRequest
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     */
+    public function createControllerRequest(ServerRequestInterface $request): ControllerRequest
+    {
+        return new ControllerRequest($request, $this->getContainer()->get(PathHelper::class));
     }
 
     /**

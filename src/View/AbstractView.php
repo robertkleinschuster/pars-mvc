@@ -5,11 +5,15 @@ namespace Pars\Mvc\View;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Converter\BeanConverterAwareTrait;
 use Pars\Bean\Type\Base\AbstractBaseBean;
+use Pars\Helper\Path\PathHelperAwareTrait;
 
-abstract class AbstractView extends AbstractBaseBean implements ViewInterface, BeanConverterAwareInterface
+abstract class AbstractView extends AbstractBaseBean implements ViewInterface
 {
     use BeanConverterAwareTrait;
+    use PathHelperAwareTrait;
 
+    protected array $cssFiles = [];
+    protected array $jsFiles = [];
     protected ?LayoutInterface $layout = null;
     public ?string $template = null;
 
@@ -18,6 +22,12 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface, B
      */
     public function getLayout(): LayoutInterface
     {
+        if (
+             !$this->layout->hasBeanConverter()
+            && $this->hasBeanConverter()
+        ) {
+            $this->layout->setBeanConverter($this->getBeanConverter());
+        }
         return $this->layout;
     }
 
@@ -27,6 +37,7 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface, B
      */
     public function setLayout(LayoutInterface $layout): ViewInterface
     {
+        $layout->setView($this);
         $this->layout = $layout;
         return $this;
     }
@@ -72,8 +83,9 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface, B
 
     /**
      * @param ComponentInterface $component
+     * @return $this
      */
-    public function append(ComponentInterface $component): self
+    public function pushComponent(ComponentInterface $component): self
     {
         if ($this->hasLayout()) {
             $this->getLayout()->getComponentList()->push($component);
@@ -85,11 +97,49 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface, B
      * @param ComponentInterface $component
      * @return mixed|void
      */
-    public function prepend(ComponentInterface $component): self
+    public function unshiftComponent(ComponentInterface $component): self
     {
         if ($this->hasLayout()) {
             $this->getLayout()->getComponentList()->unshift($component);
         }
         return $this;
     }
+
+    /**
+     * @param array $files
+     * @return $this
+     */
+    public function setStylesheets(array $files)
+    {
+        $this->cssFiles = $files;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getStylesheets(): array
+    {
+        return $this->cssFiles;
+    }
+
+    /**
+     * @param array $files
+     * @return $this
+     */
+    public function setJavascript(array $files)
+    {
+        $this->jsFiles = $files;
+        return $this;
+    }
+
+    /**
+     * @return array
+     */
+    public function getJavascript(): array
+    {
+        return $this->jsFiles;
+    }
+
+
 }
