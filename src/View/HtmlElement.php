@@ -443,7 +443,7 @@ class HtmlElement extends AbstractBaseBean implements
                 $this->getEvent()->path = $this->getPath($bean);
             }
             foreach (ViewEvent::getQueue() as $event) {
-                if ($this->getEvent()->id === $event->id) {
+                if ($this->getEvent()->isset('id') && $this->getEvent()->id === $event->id) {
                     $this->getEvent()->execute($this);
                 }
             }
