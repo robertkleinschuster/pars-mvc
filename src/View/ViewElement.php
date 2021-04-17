@@ -425,6 +425,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
             $this->getState()->init();
             $this->initEvent();
             $this->handleEvent();
+            $this->handleState();
             $this->initialize();
             $this->handleInlineStyles();
             $this->setInitialized(true);
@@ -460,7 +461,6 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         if ($bean !== null && $placeholders) {
             $result = $this->replacePlaceholder($result, $bean);
         }
-        $this->handleState();
         return $result;
     }
 
