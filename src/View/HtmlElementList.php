@@ -4,6 +4,11 @@ namespace Pars\Mvc\View;
 
 use Pars\Bean\Type\Base\AbstractBaseBeanList;
 
+/**
+ * Class HtmlElementList
+ * @package Pars\Mvc\View
+ * @method HtmlElementIterator getIterator()
+ */
 class HtmlElementList extends AbstractBaseBeanList
 {
     /**

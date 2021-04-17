@@ -3,6 +3,9 @@
 namespace Pars\Mvc\View;
 
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\State\ViewState;
+use Pars\Mvc\View\State\ViewStatePersistenceInterface;
 
 interface HtmlInterface extends RenderableInterface, BeanInterface
 {
@@ -184,18 +187,52 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
     public function getElementsByTagName(string $tag);
 
     /**
-     * @return HtmlElementEvent
+     * @return ViewEvent
      */
-    public function getEvent(): HtmlElementEvent;
+    public function getEvent(): ViewEvent;
 
     /**
-     * @param HtmlElementEvent $event
+     * @param ViewEvent $event
      * @return $this
      */
-    public function setEvent(HtmlElementEvent $event): self;
+    public function setEvent(ViewEvent $event): self;
 
     /**
      * @return bool
      */
     public function hasEvent(): bool;
+
+    /**
+     * @return ViewState
+     */
+    public function getState(): ViewState;
+
+    /**
+     * @param ViewState $state
+     *
+     * @return $this
+     */
+    public function setState(ViewState $state): self;
+
+    /**
+     * @return bool
+     */
+    public function hasState(): bool;
+
+    /**
+     * @return ViewStatePersistenceInterface
+     */
+    public function getPersistence(): ViewStatePersistenceInterface;
+
+    /**
+     * @param ViewStatePersistenceInterface $persistence
+     *
+     * @return $this
+     */
+    public function setPersistence(ViewStatePersistenceInterface $persistence): self;
+
+    /**
+     * @return bool
+     */
+    public function hasPersistence(): bool;
 }

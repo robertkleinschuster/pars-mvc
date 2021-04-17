@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
@@ -240,6 +241,7 @@ abstract class AbstractController implements ControllerInterface
         }
         if ($this->getControllerRequest()->hasEvent()) {
             $this->getControllerResponse()->setEvent($this->getControllerRequest()->getEvent());
+            ViewEvent::getQueue()->push($this->getControllerRequest()->getEvent());
         }
 
         if ($this->getControllerRequest()->hasNav()) {

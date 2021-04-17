@@ -7,7 +7,7 @@ namespace Pars\Mvc\Controller;
 use Mezzio\Router\RouteResult;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Parameter\CollapseParameter;
-use Pars\Mvc\View\HtmlElementEvent;
+use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Option\OptionAwareInterface;
@@ -53,7 +53,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     private ?string $action = null;
     private ?string $controller = null;
 
-    protected ?HtmlElementEvent $event = null;
+    protected ?ViewEvent $event = null;
 
     /**
      * ControllerRequestProperties constructor.
@@ -78,24 +78,24 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         }
         $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
         if ($event) {
-            $this->event = new HtmlElementEvent($event);
+            $this->event = new ViewEvent($event);
         }
     }
 
     /**
-    * @return HtmlElementEvent
+    * @return ViewEvent
     */
-    public function getEvent(): HtmlElementEvent
+    public function getEvent(): ViewEvent
     {
         return $this->event;
     }
 
     /**
-    * @param HtmlElementEvent $event
+    * @param ViewEvent $event
     *
     * @return $this
     */
-    public function setEvent(HtmlElementEvent $event): self
+    public function setEvent(ViewEvent $event): self
     {
         $this->event = $event;
         return $this;

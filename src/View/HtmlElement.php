@@ -10,6 +10,9 @@ use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Placeholder\PlaceholderHelper;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\State\ViewState;
+use Pars\Mvc\View\State\ViewStatePersistenceInterface;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Exception\AttributeExistsException;
@@ -73,7 +76,20 @@ class HtmlElement extends AbstractBaseBean implements
      */
     private bool $initialized = false;
 
-    protected ?HtmlElementEvent $event = null;
+    /**
+     * @var ViewEvent|null
+     */
+    protected ?ViewEvent $event = null;
+
+    /**
+     * @var ViewState|null
+     */
+    protected ?ViewState $state = null;
+
+    /**
+     * @var ViewStatePersistenceInterface|null
+     */
+    protected ?ViewStatePersistenceInterface $statePersistence = null;
 
     /**
      * HtmlElement constructor.
@@ -381,6 +397,9 @@ class HtmlElement extends AbstractBaseBean implements
     public function handleInitialize()
     {
         if (!$this->initialized) {
+            if ($this->hasState()) {
+                $this->getState()->init();
+            }
             $this->initialize();
             $this->initialized = true;
             $this->handleInlineStyles();
@@ -420,13 +439,21 @@ class HtmlElement extends AbstractBaseBean implements
     protected function beforeRender(BeanInterface $bean = null)
     {
         if ($this->hasEvent()) {
-            if ($this->getEvent()->isset('path') && !$this->hasPath()) {
-                $this->setPath($this->getEvent()->get('path'));
-            }
             if (!$this->getEvent()->isset('path') && $this->hasPath()) {
                 $this->getEvent()->path = $this->getPath($bean);
             }
+            foreach (ViewEvent::getQueue() as $event) {
+                if ($this->getEvent()->id === $event->id) {
+                    $this->getEvent()->execute($this);
+                }
+            }
+            if ($this->getEvent()->isset('path') && !$this->hasPath()) {
+                $this->setPath($this->getEvent()->get('path'));
+            }
             $this->setData('event', json_encode($this->getEvent()));
+        }
+        if ($this->hasState()) {
+            $this->getState()->finalize();
         }
     }
 
@@ -566,9 +593,7 @@ class HtmlElement extends AbstractBaseBean implements
         $result = '';
         if ($this->hasElementList()) {
             foreach ($this->getElementList() as $element) {
-                if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
-                    $element->setBeanConverter($this->getBeanConverter());
-                }
+                $this->injectDependencies($element);
                 try {
                     $this->beforeRenderElement($element, $bean);
                     $result .= $element->render($bean);
@@ -579,6 +604,19 @@ class HtmlElement extends AbstractBaseBean implements
             }
         }
         return $result;
+    }
+
+    /***
+     * @param HtmlElement $element
+     */
+    protected function injectDependencies(HtmlElement $element)
+    {
+        if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
+            $element->setBeanConverter($this->getBeanConverter());
+        }
+        if (!$element->hasPersistence() && $this->hasPersistence()) {
+            $element->setPersistence($this->getPersistence());
+        }
     }
 
     /**
@@ -714,6 +752,7 @@ class HtmlElement extends AbstractBaseBean implements
             return $this;
         }
         foreach ($this->getElementList() as $element) {
+            $this->injectDependencies($element);
             $found = $element->getElementById($id);
             if ($found !== null) {
                 return $found;
@@ -737,6 +776,7 @@ class HtmlElement extends AbstractBaseBean implements
             $list->push($this);
         }
         foreach ($this->getElementList() as $element) {
+            $this->injectDependencies($element);
             $found = $element->getElementsByClassName($class);
             $list->push(...$found);
         }
@@ -759,6 +799,7 @@ class HtmlElement extends AbstractBaseBean implements
             $list->push($this);
         }
         foreach ($this->getElementList() as $element) {
+            $this->injectDependencies($element);
             $found = $element->getElementsByTagName($tag);
             $list->push(...$found);
         }
@@ -766,19 +807,19 @@ class HtmlElement extends AbstractBaseBean implements
     }
 
     /**
-     * @return HtmlElementEvent
+     * @return ViewEvent
      */
-    public function getEvent(): HtmlElementEvent
+    public function getEvent(): ViewEvent
     {
         return $this->event;
     }
 
     /**
-     * @param HtmlElementEvent $event
+     * @param ViewEvent $event
      *
      * @return $this
      */
-    public function setEvent(HtmlElementEvent $event): self
+    public function setEvent(ViewEvent $event): self
     {
         $this->event = $event;
         return $this;
@@ -790,6 +831,68 @@ class HtmlElement extends AbstractBaseBean implements
     public function hasEvent(): bool
     {
         return isset($this->event);
+    }
+
+
+    /**
+     * @return ViewState
+     */
+    public function getState(): ViewState
+    {
+        return $this->state;
+    }
+
+    /**
+     * @param ViewState $state
+     *
+     * @return $this
+     */
+    public function setState(ViewState $state): self
+    {
+        if ($this->hasPersistence() && !$state->hasPersistence()) {
+            $state->setPersistence($this->getPersistence());
+            $state->init();
+        }
+        $this->state = $state;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasState(): bool
+    {
+        return isset($this->state);
+    }
+
+    /**
+     * @return ViewStatePersistenceInterface
+     */
+    public function getPersistence(): ViewStatePersistenceInterface
+    {
+        return $this->statePersistence;
+    }
+
+    /**
+     * @param ViewStatePersistenceInterface $persistence
+     *
+     * @return $this
+     */
+    public function setPersistence(ViewStatePersistenceInterface $persistence): self
+    {
+        $this->statePersistence = $persistence;
+        if ($this->hasState()) {
+            $this->getState()->setPersistence($persistence);
+        }
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasPersistence(): bool
+    {
+        return isset($this->statePersistence);
     }
 
 

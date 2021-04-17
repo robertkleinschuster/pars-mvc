@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Pars\Mvc\View\HtmlElementEvent;
+use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Mode\ModeAwareInterface;
@@ -58,9 +58,9 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     private $injector;
 
     /**
-     * @var HtmlElementEvent
+     * @var ViewEvent
      */
-    private ?HtmlElementEvent $event = null;
+    private ?ViewEvent $event = null;
 
     /**
      * ControllerResponseProperties constructor.
@@ -75,19 +75,19 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     }
 
     /**
-    * @return HtmlElementEvent
+    * @return ViewEvent
     */
-    public function getEvent(): HtmlElementEvent
+    public function getEvent(): ViewEvent
     {
         return $this->event;
     }
 
     /**
-    * @param HtmlElementEvent $event
+    * @param ViewEvent $event
     *
     * @return $this
     */
-    public function setEvent(HtmlElementEvent $event): self
+    public function setEvent(ViewEvent $event): self
     {
         $this->event = $event;
         return $this;

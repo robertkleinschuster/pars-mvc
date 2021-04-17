@@ -51,6 +51,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
         $this->initTemplate();
     }
 
+
     protected function initialize()
     {
         parent::initialize();
