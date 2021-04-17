@@ -8,6 +8,7 @@ use Pars\Mvc\Factory\ControllerFactory;
 use Pars\Mvc\Handler\MvcHandler;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\CoreException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
@@ -93,8 +94,7 @@ class ControllerRunner
      */
     protected function createErrorRequest($request, string $errorController): ControllerRequest
     {
-        return $this->getControllerFactory()
-            ->createControllerRequest($request)
+        return $this->createControllerRequest($request)
             ->setController($errorController)
             ->setAction('error');
     }
@@ -109,17 +109,22 @@ class ControllerRunner
      */
     protected function createController($request): ControllerInterface
     {
+        $controllerRequest = $this->createControllerRequest($request);
+        return $this->getControllerFactory()->createController($controllerRequest);
+    }
+
+    protected function createControllerRequest($request)
+    {
         switch (true) {
             case $request instanceof ControllerRequest:
-                $controllerRequest = $request;
+                return $request;
                 break;
             case $request instanceof ServerRequestInterface:
-                $controllerRequest = $this->getControllerFactory()->createControllerRequest($request);
+                return $this->getControllerFactory()->createControllerRequest($request);
                 break;
             default:
                 throw new MvcException('Invalid request type');
         }
-        return $this->getControllerFactory()->createController($controllerRequest);
     }
 
     /**

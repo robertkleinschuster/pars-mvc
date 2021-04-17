@@ -9,6 +9,7 @@ use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanAwareTrait;
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Helper\Path\PathHelperAwareTrait;
 use Pars\Helper\Placeholder\PlaceholderHelper;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
@@ -23,12 +24,13 @@ use Pars\Pattern\Option\OptionAwareTrait;
  * Class HtmlElement
  * @package Pars\Mvc\View
  */
-class ViewElement extends AbstractBaseBean implements HtmlInterface
+class ViewElement extends AbstractBaseBean implements ViewElementInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
     use BeanConverterAwareTrait;
     use BeanAwareTrait;
+    use PathHelperAwareTrait;
 
     /**
      *
@@ -206,7 +208,7 @@ class ViewElement extends AbstractBaseBean implements HtmlInterface
      */
     public function getId(BeanInterface $bean = null): string
     {
-        return $this->getAttribute(self::ATTRIBUTE_ID);
+        return $this->getAttribute(self::ATTRIBUTE_ID, true, '');
     }
 
     /**
@@ -419,9 +421,8 @@ class ViewElement extends AbstractBaseBean implements HtmlInterface
     public function handleInitialize()
     {
         if (!$this->isInitialized()) {
-            if ($this->hasState()) {
-                $this->getState()->init();
-            }
+            $this->setState(new ViewState($this->getId()));
+            $this->getState()->init();
             $this->initEvent();
             $this->handleEvent();
             $this->initialize();
@@ -502,9 +503,9 @@ class ViewElement extends AbstractBaseBean implements HtmlInterface
 
     /**
      * @param mixed ...$element
-     * @return $this|HtmlInterface
+     * @return $this|ViewElementInterface
      */
-    public function push(...$element): HtmlInterface
+    public function push(...$element): ViewElementInterface
     {
         $this->getElementList()->push(...$element);
         return $this;
@@ -512,9 +513,9 @@ class ViewElement extends AbstractBaseBean implements HtmlInterface
 
     /**
      * @param mixed ...$element
-     * @return $this|HtmlInterface
+     * @return $this|ViewElementInterface
      */
-    public function unshift(...$element): HtmlInterface
+    public function unshift(...$element): ViewElementInterface
     {
         $this->getElementList()->unshift(...$element);
         return $this;
@@ -658,6 +659,9 @@ class ViewElement extends AbstractBaseBean implements HtmlInterface
         }
         if (!$element->hasRenderer() && $this->hasRenderer()) {
             $element->setRenderer($this->getRenderer());
+        }
+        if (!$element->hasPathHelper() && $this->hasPathHelper()) {
+            $element->setPathHelper($this->getPathHelper(false));
         }
     }
 

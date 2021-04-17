@@ -28,6 +28,12 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
         ) {
             $this->layout->setBeanConverter($this->getBeanConverter());
         }
+        if (
+            !$this->layout->hasPathHelper()
+            && $this->hasPathHelper()
+        ) {
+            $this->layout->setPathHelper($this->getPathHelper(false));
+        }
         return $this->layout;
     }
 
@@ -37,6 +43,9 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
      */
     public function setLayout(LayoutInterface $layout): ViewInterface
     {
+        if (!$layout->hasPathHelper() && $this->hasPathHelper()) {
+            $layout->setPathHelper($this->getPathHelper(false));
+        }
         $layout->setView($this);
         $this->layout = $layout;
         return $this;

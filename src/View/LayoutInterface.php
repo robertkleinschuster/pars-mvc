@@ -2,7 +2,7 @@
 
 namespace Pars\Mvc\View;
 
-interface LayoutInterface extends HtmlInterface
+interface LayoutInterface extends ViewElementInterface
 {
     public function setView(ViewInterface $view);
     public function getView(): ViewInterface;

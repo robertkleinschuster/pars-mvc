@@ -18,7 +18,6 @@ use Pars\Mvc\Factory\ModelFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
-use Pars\Mvc\View\HtmlElement;
 use Pars\Mvc\View\ViewElement;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
@@ -527,6 +526,9 @@ abstract class AbstractController implements ControllerInterface
     protected function setView(ViewInterface $view): self
     {
         $this->view = $view;
+        if (!$view->hasPathHelper()) {
+            $this->getView()->setPathHelper($this->getPathHelper(true));
+        }
         return $this;
     }
 

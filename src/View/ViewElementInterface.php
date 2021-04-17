@@ -5,19 +5,21 @@ namespace Pars\Mvc\View;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Helper\Path\PathHelperAwareInterface;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Option\OptionAwareInterface;
 
-interface HtmlInterface extends
+interface ViewElementInterface extends
     RenderableInterface,
     BeanInterface,
     OptionAwareInterface,
     AttributeAwareInterface,
     BeanConverterAwareInterface,
-    BeanAwareInterface
+    BeanAwareInterface,
+    PathHelperAwareInterface
 {
 
     /**
@@ -136,7 +138,7 @@ interface HtmlInterface extends
 
 
     /**
-     * @param HtmlInterface ...$element
+     * @param ViewElementInterface ...$element
      * @return $this
      */
     public function push(...$element): self;
