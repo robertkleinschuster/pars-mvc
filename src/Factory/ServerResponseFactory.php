@@ -62,7 +62,7 @@ class ServerResponseFactory implements ResponseFactoryInterface
     public function createResponse(int $code = 200, string $reasonPhrase = ''): ResponseInterface
     {
         if ($this->hasControllerResponse()) {
-            return $this->createServerResponse($this->controllerResponse)->withStatus($code, $reasonPhrase);
+            return $this->createServerResponse($this->controllerResponse);
         }
         return (new Response())->withStatus($code, $reasonPhrase);
     }
