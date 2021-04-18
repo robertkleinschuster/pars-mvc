@@ -867,10 +867,12 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      */
     public function setEvent(ViewEvent $event): self
     {
-        if (!$event->hasPath() && $this->hasPath()) {
-            $event->setPath($this->getPath());
-        } else if ($this->hasPathHelper()) {
-            $event->setPath($this->getPathHelper()->getPath());
+        if (!$event->hasPath()) {
+            if ($this->hasPath()) {
+                $event->setPath($this->getPath());
+            } elseif ($this->hasPathHelper()) {
+                $event->setPath($this->getPathHelper(false)->getPath());
+            }
         }
         if (!$event->hasId() && $this->hasId()) {
             $event->setId($this->getId());

@@ -16,7 +16,7 @@ export class ViewBean {
      * @param  {string|object} data
      * @return {this}
      */
-    static factory(data): ViewBean {
+    static factory(data): this {
         if (typeof data === 'string') {
             data = JSON.parse(data);
         }

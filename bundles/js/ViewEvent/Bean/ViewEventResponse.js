@@ -8,13 +8,13 @@ export class ViewEventResponse extends ViewBean {
      *
      * @type {ViewEvent}
      */
-    event = null
+    event = new ViewEvent()
 
     /**
      *
      * @type {ViewEventInject}
      */
-    inject = null;
+    inject = new ViewEventInject();
 
     /**
      *
