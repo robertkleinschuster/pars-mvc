@@ -17,7 +17,6 @@ use Pars\Mvc\Handler\MvcHandler;
 use Pars\Mvc\Handler\MvcHandlerFactory;
 use Pars\Mvc\View\ViewRenderer;
 use Pars\Mvc\View\ViewRendererFactory;
-use Psr\Http\Message\ResponseFactoryInterface;
 
 /**
  * Class ConfigProvider
@@ -32,6 +31,11 @@ class ConfigProvider
         return [
             'dependencies' => $this->getDependencies(),
             'mvc' => $this->getMvc(),
+            'bundles' => [
+                'entrypoints' => [
+                    'mvc'
+                ],
+            ]
         ];
     }
 

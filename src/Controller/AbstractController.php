@@ -625,8 +625,8 @@ abstract class AbstractController implements ControllerInterface
                 $parentCss = $this->getParent()->getView()->getStylesheets();
                 $actionJs = $this->getView()->getJavascript();
                 $actionCss = $this->getView()->getStylesheets();
-                $this->getParent()->getView()->setStylesheets(array_merge($parentCss, $actionCss));
-                $this->getParent()->getView()->setJavascript(array_merge($parentJs, $actionJs));
+                $this->getParent()->getView()->setStylesheets(array_unique(array_merge($parentCss, $actionCss)));
+                $this->getParent()->getView()->setJavascript(array_unique(array_merge($parentJs, $actionJs)));
 
                 $parentLayout = $this->getParent()->getView()->getLayout();
                 $sourceLayout = $this->getView()->getLayout();

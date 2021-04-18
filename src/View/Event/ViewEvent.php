@@ -16,15 +16,15 @@ class ViewEvent extends AbstractBaseBean
 
     public const TRIGGER_CLICK = 'click';
 
-    public ?string $id = null;
     public string $type = self::TYPE_LINK;
+    public ?string $id = null;
     public string $trigger = self::TRIGGER_CLICK;
-    public ?string $path = null;
     public ?string $target = '#components';
+    public ?string $delegate = null;
+    public ?string $path = null;
     public bool $deleteCache = true;
     public bool $history = true;
     public ?string $form = null;
-    public ?string $delegate = null;
 
     private $callback = null;
 
