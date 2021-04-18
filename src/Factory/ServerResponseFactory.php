@@ -75,11 +75,11 @@ class ServerResponseFactory implements ResponseFactoryInterface
      */
     protected function createServerResponse(ControllerResponse $controllerResponse)
     {
-        if (DebugHelper::hasDebug()) {
-            $controllerResponse->setBody(DebugHelper::getDebug());
-        }
         switch ($controllerResponse->getMode()) {
             case ControllerResponse::MODE_HTML:
+                if (DebugHelper::hasDebug()) {
+                    $controllerResponse->setBody(DebugHelper::getDebug() . $controllerResponse->getBody());
+                }
                 return new HtmlResponse(
                     $controllerResponse->getBody(),
                     $controllerResponse->getStatusCode(),
@@ -95,7 +95,10 @@ class ServerResponseFactory implements ResponseFactoryInterface
                     $data['event'] = $controllerResponse->getEvent()->toArray(true);
                 }
                 if (DebugHelper::hasDebug()) {
-                    $data['debug'] = DebugHelper::getDebug();
+                    $data['debug'] = [
+                      'data' => DebugHelper::getDebugList(),
+                      'trace' => DebugHelper::getDebug(),
+                    ];
                 }
                 return new JsonResponse($data, $controllerResponse->getStatusCode(), $controllerResponse->getHeaders());
             case ControllerResponse::MODE_REDIRECT:

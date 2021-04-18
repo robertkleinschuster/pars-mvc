@@ -3,6 +3,7 @@ import {OverlayHelper} from "../Helper/OverlayHelper";
 import {ViewEvent} from "../Bean/ViewEvent";
 import {ViewInjector} from "../Injector/ViewInjector";
 import {ViewEventInjectHtml} from "../Bean/ViewEventInjectHtml";
+
 export class AbstractHandler {
 
     _event: ViewEvent = null;
@@ -21,8 +22,7 @@ export class AbstractHandler {
         return this.#injector;
     }
 
-    trigger(): void
-    {
+    trigger(): void {
         console.debug('Trigger event: ', this._event);
         this._triggerDefault(this._event);
     }
@@ -52,10 +52,33 @@ export class AbstractHandler {
                 .then(data => {
                     const response = ViewEventResponse.factory(data);
                     console.debug('Handle response:', response);
+                    this._handleDebug(response);
                     this._handle(response)
                     this.#overlay.hide();
                 })
-                .catch(err => {this.#overlay.hide();console.error(err);})
+                .catch(err => {
+                    this.#overlay.hide();
+                    console.error(err);
+                })
+        }
+    }
+
+    _handleDebug(response) {
+        if (response.error) {
+            console.error(response.error.type, response.error.message, response.error);
+            const transformed = response.error.trace.reduce((acc, {file, ...x}) => { acc[file] = x; return acc}, {})
+            console.table(transformed, ['file', 'line', 'function', 'class']);
+        }
+        if (response.debug) {
+            if (Array.isArray(response.debug.data)) {
+                response.debug.data.forEach(debug => {
+                    console.warn('DEBUG:', debug.object);
+                    const transformed = debug.trace.reduce((acc, {file, ...x}) => { acc[file] = x; return acc}, {})
+                    console.table(transformed, ['file', 'line', 'function', 'class']);
+                });
+            } else {
+                console.warn(response.debug.data);
+            }
         }
     }
 
