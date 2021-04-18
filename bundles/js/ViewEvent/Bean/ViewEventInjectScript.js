@@ -6,7 +6,7 @@ export class ViewEventInjectScript extends ViewBean {
      *
      * @type {string}
      */
-    script = '';
+    src = '';
 
     /**
      *

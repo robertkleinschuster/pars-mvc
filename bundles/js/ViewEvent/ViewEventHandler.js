@@ -10,6 +10,8 @@ export class ViewEventHandler {
     #_initialized = false;
     #overlay = null;
 
+    listeners = [];
+
     constructor(root) {
         this.#overlay = new OverlayHelper();
         this.#root = root;
@@ -17,19 +19,19 @@ export class ViewEventHandler {
 
     init() {
         this.#_initialized = true;
-        this.#root.querySelectorAll('[data-event]').forEach(this.#attatchEvents.bind(this));
+        this.#root.querySelectorAll('[data-event]')
+            .forEach(this.#attachEvents.bind(this));
         return this;
     }
-
 
     get isInitialized() {
         return this.#_initialized;
     }
 
-    #attatchEvents(element) {
+    #attachEvents(element: HTMLElement) {
         if (element && element.matches('[data-event]')) {
-            const viewEvent = ViewEvent.factory(element.dataset.event);
-            console.debug('Attatched event: ', viewEvent);
+            const viewEvent: ViewEvent = ViewEvent.factory(element.dataset.event);
+            console.debug('Attached event: ', viewEvent);
             this.triggerListener = (event) => {
                 if (viewEvent.delegate === null || event.target.closest(viewEvent.delegate)) {
                     event.preventDefault();
@@ -45,7 +47,7 @@ export class ViewEventHandler {
      *
      * @param {ViewEvent} viewEvent
      */
-    #triggerEvent(viewEvent) {
+    #triggerEvent(viewEvent: ViewEvent) {
         console.debug('Trigger event: ', viewEvent)
         switch (viewEvent.type) {
             case ViewEvent.TYPE_SUBMIT:
@@ -95,7 +97,7 @@ export class ViewEventHandler {
      *
      * @param {ViewEvent} viewEvent
      */
-    #triggerLink(viewEvent) {
+    #triggerLink(viewEvent: ViewEvent) {
         let url = new URL(viewEvent.path, document.baseURI);
         this.#fetchEvent(url.toString(), {
             headers: {
@@ -109,7 +111,7 @@ export class ViewEventHandler {
         this.#triggerLink(viewEvent);
     }
 
-    #fetchEvent(url, options) {
+    #fetchEvent(url, options): void {
         if (!this.#overlay.isVisible()) {
             this.#overlay.show();
             fetch(url, options)
@@ -127,13 +129,13 @@ export class ViewEventHandler {
     }
 
 
-    #handleEvent(data) {
+    #handleEvent(data): ViewEventResponse {
         if (data && data.event) {
             if (data.event.deleteCache === true) {
                 window.caches.delete('pars-helper');
                 console.debug('Deleted cache');
             }
-            console.log('Handle event:', data.event);
+            console.debug('Handle event:', data.event);
             switch (data.event.type) {
                 case ViewEvent.TYPE_LINK:
                     return this.#handleLink(data);
@@ -164,7 +166,7 @@ export class ViewEventHandler {
     }
 
 
-    #handleModal(data) {
+    #handleModal(data): ViewEventResponse {
         return this.#handleLink(data);
         if (data.event.path && data.event.target && data.html) {
             if (data.event.history === true) {
@@ -180,7 +182,7 @@ export class ViewEventHandler {
         return data;
     }
 
-    #handleLink(data) {
+    #handleLink(data): ViewEventResponse {
         if (data.event.path && data.event.target && data.html) {
             if (data.event.history === true) {
                 history.replaceState(data, null, data.event.path);
@@ -196,7 +198,7 @@ export class ViewEventHandler {
         return data;
     }
 
-    #handleAttributes(data) {
+    #handleAttributes(data: ViewEventResponse) {
         if (data && data.attributes) {
             console.debug('Handle attributes:', data.attributes);
             if (data.attributes.redirect_url) {
@@ -205,7 +207,7 @@ export class ViewEventHandler {
         }
     }
 
-    #inject(data) {
+    #inject(data: ViewEventResponse) {
         if (data && data.inject) {
             console.debug('Inject:', data.inject)
             if (data.inject.html) {
@@ -224,19 +226,21 @@ export class ViewEventHandler {
                                 break;
                         }
                         if (newElement.matches('[data-event]')) {
-                            this.#attatchEvents(newElement);
+                            this.#attachEvents(newElement);
                         }
                         newElement.querySelectorAll('[data-event]').forEach(newSubElement => {
-                                this.#attatchEvents(newSubElement);
+                                this.#attachEvents(newSubElement);
                             }
                         );
+                        this.listeners.forEach(listener => listener(newElement));
                     });
                 })
             }
             if (data.inject.script) {
                 data.inject.script.forEach(script => {
-                    if (!script.unique || document.querySelectorAll('script[src=' + script.script + ']').length === 0) {
-                        document.querySelectorAll('body').forEach(element => element.append(HtmlHelper.createElementFromHTML('<script src="' + script.script + '"></script>')));
+                    if (!script.unique || document.querySelectorAll('script[src="' + script.src + '"]').length === 0) {
+                        const scriptElement = HtmlHelper.createScript(script.src);
+                        document.body.append(scriptElement);
                     }
                 });
             }

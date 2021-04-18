@@ -70,7 +70,7 @@ class ControllerResponseInjector
     public function addScript(string $script, bool $unique = true)
     {
         $this->script[] = [
-            'script' => $script,
+            'src' => $script,
             'unique' => $unique
         ];
     }
