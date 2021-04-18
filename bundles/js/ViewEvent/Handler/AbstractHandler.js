@@ -23,7 +23,8 @@ export class AbstractHandler {
     }
 
     trigger(): void {
-        console.debug('Trigger event: ', this._event);
+        console.debug('%cTrigger event: ', 'color: lime; font-weight: bold;font-size: 16px', this._event);
+        console.time("Trigger");
         this._triggerDefault(this._event);
     }
 
@@ -47,13 +48,17 @@ export class AbstractHandler {
     _fetch(url: string, options: RequestInit): void {
         if (!this.#overlay.isVisible()) {
             this.#overlay.show();
+            console.debug('%cFetch:','color: green;font-weight: bold;font-size: 16px;', url, options)
+            console.time("Fetch");
             fetch(url, options)
                 .then(response => response.headers.get('Content-Type') === 'application/json' ? response.json() : response.text())
                 .then(data => {
+                    console.timeEnd("Fetch");
                     const response = ViewEventResponse.factory(data);
                     console.debug('Handle response:', response);
                     this._handleDebug(response);
-                    this._handle(response)
+                    this._handle(response);
+                    console.timeEnd("Trigger");
                     this.#overlay.hide();
                 })
                 .catch(err => {
@@ -104,7 +109,7 @@ export class AbstractHandler {
 
     _handleHistory(response: ViewEventResponse) {
         if (response.event.history === true) {
-            console.debug('History:', response.event.path, response)
+            console.debug('%cHistory:','color: DarkRed; font-weight: bold', response.event.path, response)
             history.replaceState(response, null, response.event.path);
             history.pushState(response, null, response.event.path);
         }
@@ -113,7 +118,7 @@ export class AbstractHandler {
     _handleCache(response: ViewEventResponse): void {
         if (response.event.deleteCache === true) {
             window.caches.delete('pars-helper');
-            console.debug('Deleted cache');
+            console.debug('%cDeleted cache', 'color: red; font-weight: bold;');
         }
     }
 

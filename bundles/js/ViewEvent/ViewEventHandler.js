@@ -30,7 +30,7 @@ export class ViewEventHandler {
     #attachEvents(element: HTMLElement) {
         if (element && element.matches('[data-event]')) {
             const viewEvent: ViewEvent = ViewEvent.factory(element.dataset.event);
-            console.debug('Attached event: ', viewEvent);
+            console.debug('%cAttached event: ', 'color: lightgrey;', viewEvent);
             this.triggerListener = (event) => {
                 if (viewEvent.delegate === null || event.target.closest(viewEvent.delegate)) {
                     event.preventDefault();

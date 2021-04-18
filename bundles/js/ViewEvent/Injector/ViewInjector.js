@@ -16,7 +16,7 @@ export class ViewInjector {
             data.html.forEach(html => {
                 this.#root.querySelectorAll(html.selector).forEach(element => {
                     const newElement = HtmlHelper.createElementFromHTML(html.html);
-                    console.debug('Inject element:', {
+                    console.debug('%cInject element:','color: DarkMagenta; font-weight: bold;', {
                         mode: html.mode,
                         element: newElement,
                     })
@@ -47,7 +47,7 @@ export class ViewInjector {
             data.script.forEach(script => {
                 if (!script.unique || this.#root.querySelectorAll('script[src="' + script.src + '"]').length === 0) {
                     const scriptElement = HtmlHelper.createScript(script.src);
-                    console.debug('Inject script:', scriptElement)
+                    console.debug('%cInject script:','color: Indigo;font-weight: bold', scriptElement)
                     if (this.#root.body) {
                         this.#root.body.append(scriptElement);
                     } else {
