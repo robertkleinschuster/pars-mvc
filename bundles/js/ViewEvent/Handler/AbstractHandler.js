@@ -81,6 +81,7 @@ export class AbstractHandler {
 
     _handleHistory(response: ViewEventResponse) {
         if (response.event.history === true) {
+            console.debug('History:', response.event.path, response)
             history.replaceState(response, null, response.event.path);
             history.pushState(response, null, response.event.path);
         }
@@ -103,6 +104,6 @@ export class AbstractHandler {
     }
 
     _handleInject(response: ViewEventResponse): void {
-        this.injector.inject(response.inject);
+        this.injector.inject(response.inject, response.event);
     }
 }
