@@ -22,7 +22,7 @@ class ViewEvent extends AbstractBaseBean
     public ?string $target = '#components';
     public ?string $delegate = null;
     public ?string $path = null;
-    public bool $deleteCache = true;
+    public bool $deleteCache = false;
     public bool $history = true;
     public ?string $form = null;
 
