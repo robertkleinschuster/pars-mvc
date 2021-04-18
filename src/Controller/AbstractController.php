@@ -149,6 +149,13 @@ abstract class AbstractController implements ControllerInterface
         bool $ajax = true
     )
     {
+
+        $childRequest = clone $this->getControllerRequest();
+        $childRequest->setController($controller);
+        $childRequest->setAction($action);
+        $this->getSubActionContainer()->add(
+            new ControllerSubAction($childRequest, $controller, $name)
+        );
         $this->action_Map[$mode][] = [
             'controller' => $controller,
             'action' => $action,

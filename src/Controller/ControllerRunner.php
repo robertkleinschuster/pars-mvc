@@ -62,7 +62,7 @@ class ControllerRunner
      * @throws ControllerNotFoundException
      * @throws MvcException
      */
-    public function runSubAction(ControllerSubActionContainer $subActionContainer)
+    public function runSubAction(ControllerSubActionContainer $subActionContainer): void
     {
         $config = $this->getContainer()->get('config');
         $mvcConfig = $config['mvc'];
@@ -73,16 +73,15 @@ class ControllerRunner
              * @var $action ControllerSubAction
              */
             try {
-                return $this->createController($action->getControllerRequest())
+                $this->createController($action->getControllerRequest())
                     ->setParent($subActionContainer->getParent())
                     ->execute(null, $action);
             } catch (\Throwable $exception) {
-                return $this->createController($this->createErrorRequest($action->getControllerRequest(), $errorController))
+                 $this->createController($this->createErrorRequest($action->getControllerRequest(), $errorController))
                     ->setParent($subActionContainer->getParent())
                     ->execute($exception, $action);
             }
         }
-        return null;
     }
 
     /**
