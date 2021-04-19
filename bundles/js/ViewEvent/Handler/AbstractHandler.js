@@ -23,8 +23,10 @@ export class AbstractHandler {
     }
 
     trigger(): void {
-        console.debug('%cTrigger event: ', 'color: lime; font-weight: bold;font-size: 16px', this._event);
-        console.time("Trigger");
+        if (window.debug) {
+            console.debug('%cTrigger event: ', 'color: lime; font-weight: bold;font-size: 16px', this._event);
+            console.time("Trigger");
+        }
         this._triggerDefault(this._event);
     }
 
@@ -48,37 +50,60 @@ export class AbstractHandler {
     _fetch(url: string, options: RequestInit): void {
         if (!this.#overlay.isVisible()) {
             this.#overlay.show();
-            console.debug('%cFetch:','color: green;font-weight: bold;font-size: 16px;', url, options)
-            console.time("Fetch");
+            if (window.debug) {
+                console.debug('%cFetch:', 'color: green;font-weight: bold;font-size: 16px;', url, options)
+                console.time("Fetch");
+            }
+
             fetch(url, options)
                 .then(response => response.headers.get('Content-Type') === 'application/json' ? response.json() : response.text())
                 .then(data => {
-                    console.timeEnd("Fetch");
+                    if (window.debug) {
+                        console.timeEnd("Fetch");
+
+                    }
                     const response = ViewEventResponse.factory(data);
-                    console.debug('Handle response:', response);
-                    this._handleDebug(response);
+                    if (window.debug) {
+                        console.debug('Handle response:', response);
+
+                    }
+                    if (window.debug) {
+                        this._handleDebug(response);
+                    }
                     this._handle(response);
-                    console.timeEnd("Trigger");
+                    if (window.debug) {
+                        console.timeEnd("Trigger");
+
+                    }
                     this.#overlay.hide();
                 })
                 .catch(err => {
                     this.#overlay.hide();
-                    console.error(err);
+                    if (window.debug) {
+                        console.error(err);
+                    }
                 })
         }
     }
 
     _handleDebug(response) {
         if (response.error) {
+
             console.error(response.error.type, response.error.message, response.error);
-            const transformed = response.error.trace.reduce((acc, {file, ...x}) => { acc[file] = x; return acc}, {})
+            const transformed = response.error.trace.reduce((acc, {file, ...x}) => {
+                acc[file] = x;
+                return acc
+            }, {})
             console.table(transformed, ['file', 'line', 'function', 'class']);
         }
         if (response.debug) {
             if (Array.isArray(response.debug.data)) {
                 response.debug.data.forEach(debug => {
                     console.warn('DEBUG:', debug.object);
-                    const transformed = debug.trace.reduce((acc, {file, ...x}) => { acc[file] = x; return acc}, {})
+                    const transformed = debug.trace.reduce((acc, {file, ...x}) => {
+                        acc[file] = x;
+                        return acc
+                    }, {})
                     console.table(transformed, ['file', 'line', 'function', 'class']);
                 });
             } else {
@@ -88,7 +113,10 @@ export class AbstractHandler {
     }
 
     _handle(response: ViewEventResponse): void {
+        if (window.debug) {
         console.debug('Handle event:', response.event);
+
+        }
         this._handleHtml(response);
         this._handleHistory(response);
         this._handleCache(response);
@@ -109,7 +137,10 @@ export class AbstractHandler {
 
     _handleHistory(response: ViewEventResponse) {
         if (response.event.history === true) {
-            console.debug('%cHistory:','color: DarkRed; font-weight: bold', response.event.path, response)
+            if (window.debug) {
+            console.debug('%cHistory:', 'color: DarkRed; font-weight: bold', response.event.path, response)
+
+            }
             history.replaceState(response, null, response.event.path);
             history.pushState(response, null, response.event.path);
         }
@@ -118,13 +149,19 @@ export class AbstractHandler {
     _handleCache(response: ViewEventResponse): void {
         if (response.event.deleteCache === true) {
             window.caches.delete('pars-helper');
+            if (window.debug) {
+
             console.debug('%cDeleted cache', 'color: red; font-weight: bold;');
+            }
         }
     }
 
     _handleAttributes(respone: ViewEventResponse): void {
         if (respone && respone.attributes) {
+            if (window.debug) {
             console.debug('Handle attributes:', respone.attributes);
+
+            }
             if (respone.attributes.redirect_url) {
                 window.location = respone.attributes.redirect_url;
             }

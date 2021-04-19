@@ -11,15 +11,20 @@ export class ViewInjector {
     }
 
     inject(data: ViewEventInject, event: ViewEvent): void {
-        console.debug('Inject:', data)
+        if (window.debug) {
+            console.debug('Inject:', data)
+        }
         if (data.html) {
             data.html.forEach(html => {
                 this.#root.querySelectorAll(html.selector).forEach(element => {
                     const newElement = HtmlHelper.createElementFromHTML(html.html);
-                    console.debug('%cInject element:','color: DarkMagenta; font-weight: bold;', {
-                        mode: html.mode,
-                        element: newElement,
-                    })
+                    if (window.debug) {
+                        console.debug('%cInject element:', 'color: DarkMagenta; font-weight: bold;', {
+                            mode: html.mode,
+                            element: newElement,
+                        });
+                    }
+
                     switch (html.mode) {
                         case 'replace':
                             element.replaceWith(newElement);
@@ -33,11 +38,13 @@ export class ViewInjector {
                     }
                     this.listeners.forEach(listener => {
                         if (newElement) {
-                            console.debug('Execute listener:', listener.name, {
-                                listener: listener,
-                                element: newElement,
-                                event: event,
-                            });
+                            if (window.debug) {
+                                console.debug('Execute listener:', listener.name, {
+                                    listener: listener,
+                                    element: newElement,
+                                    event: event,
+                                });
+                            }
                             listener(newElement, event);
                         }
                     });
@@ -49,7 +56,9 @@ export class ViewInjector {
             data.script.forEach(script => {
                 if (!script.unique || this.#root.querySelectorAll('script[src="' + script.src + '"]').length === 0) {
                     const scriptElement = HtmlHelper.createScript(script.src);
-                    console.debug('%cInject script:','color: Indigo;font-weight: bold', scriptElement)
+                    if (window.debug) {
+                        console.debug('%cInject script:', 'color: Indigo;font-weight: bold', scriptElement)
+                    }
                     if (this.#root.body) {
                         this.#root.body.append(scriptElement);
                     } else {
