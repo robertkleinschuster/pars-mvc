@@ -314,6 +314,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      */
     public function setPath(?string $path): self
     {
+        $this->addOption('text-decoration-none');
         $this->path = $path;
         return $this;
     }
