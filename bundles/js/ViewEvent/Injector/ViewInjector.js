@@ -32,12 +32,14 @@ export class ViewInjector {
                             break;
                     }
                     this.listeners.forEach(listener => {
-                        console.debug('Execute listener:', listener.name, {
-                            listener: listener,
-                            element: newElement,
-                            event: event,
-                        });
-                        listener(newElement, event);
+                        if (newElement) {
+                            console.debug('Execute listener:', listener.name, {
+                                listener: listener,
+                                element: newElement,
+                                event: event,
+                            });
+                            listener(newElement, event);
+                        }
                     });
                 });
             })

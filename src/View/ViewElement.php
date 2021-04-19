@@ -98,6 +98,11 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     protected ?ViewRenderer $renderer;
 
     /**
+     * @var ViewInterface|null
+     */
+    protected ?ViewInterface $view;
+
+    /**
      * HtmlElement constructor.
      * @param string|null $tag
      * @param string|null $content
@@ -661,6 +666,9 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         if (!$element->hasRenderer() && $this->hasRenderer()) {
             $element->setRenderer($this->getRenderer());
         }
+        if (!$element->hasView() && $this->hasView()) {
+            $element->setView($this->getView());
+        }
         if (!$element->hasPathHelper() && $this->hasPathHelper()) {
             $element->setPathHelper($this->getPathHelper(false));
         }
@@ -981,4 +989,30 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         return isset($this->renderer);
     }
 
+    /**
+     * @return ViewInterface
+     */
+    public function getView(): ViewInterface
+    {
+        return $this->view;
+    }
+
+    /**
+     * @param ViewInterface $view
+     *
+     * @return $this
+     */
+    public function setView(ViewInterface $view): self
+    {
+        $this->view = $view;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasView(): bool
+    {
+        return isset($this->view);
+    }
 }

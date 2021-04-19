@@ -76,4 +76,9 @@ interface ViewInterface extends BeanInterface, BeanConverterAwareInterface, Path
      * @return $this
      */
     public function unshiftComponent(ComponentInterface $component): self;
+
+    /**
+     * @return ViewInjector
+     */
+    public function getInjector(): ViewInjector;
 }

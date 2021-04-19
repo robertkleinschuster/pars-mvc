@@ -6,6 +6,10 @@ namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
+use Pars\Pattern\Exception\CoreException;
 
 /**
  * Class ViewRenderer
@@ -58,6 +62,9 @@ class ViewRenderer
      * @param string|null $id
      * @return string
      * @throws ViewException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function render(ViewInterface $view, ?string $id = null): string
     {
@@ -88,6 +95,7 @@ class ViewRenderer
             }
             if ($renderable instanceof RenderableInterface) {
                 $renderable->setRenderer($this);
+                $renderable->setView($view);
                 $result .= $renderable->render($bean, true);
             }
             return $result;

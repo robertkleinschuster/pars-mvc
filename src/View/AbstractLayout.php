@@ -8,7 +8,6 @@ abstract class AbstractLayout extends ViewElement implements LayoutInterface
     private ?ComponentList $componentListBefore = null;
     private ?ComponentList $componentListAfter = null;
     protected ?array $staticFiles = [];
-    protected ?ViewInterface $view = null;
     /**
      * @return ComponentList
      */
@@ -62,31 +61,6 @@ abstract class AbstractLayout extends ViewElement implements LayoutInterface
         return $this->staticFiles ?? [];
     }
 
-    /**
-    * @return ViewInterface
-    */
-    public function getView(): ViewInterface
-    {
-        return $this->view;
-    }
 
-    /**
-    * @param ViewInterface $view
-    *
-    * @return $this
-    */
-    public function setView(ViewInterface $view): self
-    {
-        $this->view = $view;
-        return $this;
-    }
-
-    /**
-    * @return bool
-    */
-    public function hasView(): bool
-    {
-        return isset($this->view);
-    }
 
 }

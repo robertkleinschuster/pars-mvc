@@ -19,6 +19,7 @@ use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\ViewElement;
+use Pars\Mvc\View\ViewInjector;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Exception\AttributeExistsException;
@@ -643,7 +644,9 @@ abstract class AbstractController implements ControllerInterface
                     $source->setId($subAction->getId());
                     if ($this->getControllerRequest()->isAjax()) {
                         $this->getParent()->getControllerResponse()->getInjector()->addHtml(
-                            $source->render(), "#{$subAction->getTargetId()}", ControllerResponseInjector::MODE_APPEND
+                            $this->getViewRenderer()->render($this->getView(), $subAction->getId()),
+                            "#{$subAction->getTargetId()}",
+                            ControllerResponseInjector::MODE_APPEND
                         );
                     } else {
                         $target->push($source);
@@ -662,6 +665,15 @@ abstract class AbstractController implements ControllerInterface
                     $id = $this->getControllerRequest()->getEvent()->getTarget();
                 }
                 $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
+                foreach ($this->getView()->getInjector()->getItemList() as $item) {
+                    if ($item->getElement()->hasId()) {
+                        $this->getControllerResponse()->getInjector()->addHtml(
+                            $item->getElement()->render($this->getView()),
+                            $item->getSelector(),
+                            $item->getMode()
+                        );
+                    }
+                }
             }
         }
 

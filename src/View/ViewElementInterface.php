@@ -264,4 +264,8 @@ interface ViewElementInterface extends
      * @return bool
      */
     public function hasRenderer(): bool;
+
+    public function setView(ViewInterface $view);
+    public function getView(): ViewInterface;
+    public function hasView(): bool;
 }

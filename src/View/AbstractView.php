@@ -16,7 +16,7 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
     protected array $jsFiles = [];
     protected ?LayoutInterface $layout = null;
     public ?string $template = null;
-
+    protected ViewInjector $injector;
     /**
      * @return LayoutInterface
      */
@@ -148,6 +148,17 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
     public function getJavascript(): array
     {
         return $this->jsFiles;
+    }
+
+    /**
+     * @return ViewInjector
+     */
+    public function getInjector(): ViewInjector
+    {
+        if (!isset($this->injector)) {
+            $this->injector = new ViewInjector();
+        }
+        return $this->injector;
     }
 
 
