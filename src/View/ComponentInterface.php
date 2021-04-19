@@ -34,4 +34,10 @@ interface ComponentInterface extends ViewElementInterface, FieldListAwareInterfa
      * @return bool
      */
     public function hasName(): bool;
+
+    public function getBefore(): ViewElement;
+
+    public function getAfter(): ViewElement;
+
+    public function getMain(): ViewElement;
 }

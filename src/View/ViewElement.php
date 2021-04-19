@@ -684,15 +684,15 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         if ($this->hasPath()) {
             if ($this->hasTarget()) {
                 if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                    $tag .= "<a class='text-decoration-none text-reset' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
                 } else {
-                    $tag .= "<a href='{$this->getPath($bean)}' target='{$this->getTarget()}>";
+                    $tag .= "<a class='text-reset' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
                 }
             } else {
                 if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none' href='{$this->getPath($bean)}'>";
+                    $tag .= "<a class='text-decoration-none text-reset' href='{$this->getPath($bean)}'>";
                 } else {
-                    $tag .= "<a href='{$this->getPath($bean)}'>";
+                    $tag .= "<a class='text-reset' href='{$this->getPath($bean)}'>";
                 }
             }
         }

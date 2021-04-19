@@ -23,6 +23,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     protected ?Toolbar $subToolbar = null;
     private ?ViewElement $before = null;
     private ?ViewElement $after = null;
+    private ?ViewElement $main = null;
 
     /**
      * @param AbstractField $field
@@ -55,14 +56,23 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     protected function initialize()
     {
         parent::initialize();
+        $this->handleName();
         $this->initAdditionalBefore();
         $this->handleAdditionalBefore();
+        $this->initToolbar();
+        $this->handleToolbar();
         $this->initFieldsBefore();
         $this->initFields();
         $this->initFieldsAfter();
         $this->handleFields();
+        $this->handleMain();
         $this->initAdditionalAfter();
         $this->handleAdditionalAfter();
+    }
+
+    protected function handleMain()
+    {
+        $this->push($this->getMain());
     }
 
     protected function initName()
@@ -83,11 +93,20 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     protected function handleAdditionalBefore()
     {
         $this->push($this->getBefore());
+    }
+
+    protected function initToolbar()
+    {
+
+    }
+
+    protected function handleToolbar()
+    {
         if ($this->hasToolbar()) {
-            $this->push($this->getToolbar());
+            $this->getMain()->push($this->getToolbar());
         }
         if ($this->hasSubToolbar()) {
-            $this->push($this->getSubToolbar());
+            $this->getMain()->push($this->getSubToolbar());
         }
     }
 
@@ -122,6 +141,12 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
         $this->push($this->getAfter());
     }
 
+    protected function handleName()
+    {
+        if ($this->hasName()) {
+            $this->getBefore()->unshift(new ViewElement('h3.mb-1.modal-hidden', $this->getName()));
+        }
+    }
 
     /**
      * @param BeanInterface|null $bean
@@ -131,9 +156,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
      */
     protected function beforeRender(BeanInterface $bean = null)
     {
-        if ($this->hasName()) {
-            $this->unshift(new ViewElement('h3.mb-1.modal-hidden', $this->getName()));
-        }
+
         parent::beforeRender($bean);
     }
 
@@ -201,7 +224,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     public function getToolbar(): Toolbar
     {
         if (null === $this->toolbar) {
-            $this->toolbar = new Toolbar();
+            $this->toolbar = new Toolbar('div.component-toolbar');
         }
         return $this->toolbar;
     }
@@ -209,7 +232,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     public function getBefore(): ViewElement
     {
         if (null === $this->before) {
-            $this->before = new ViewElement();
+            $this->before = new ViewElement('div.component-before');
         }
         return $this->before;
     }
@@ -217,9 +240,17 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     public function getAfter(): ViewElement
     {
         if (null === $this->after) {
-            $this->after = new ViewElement();
+            $this->after = new ViewElement('div.component-after');
         }
         return $this->after;
+    }
+
+    public function getMain(): ViewElement
+    {
+        if (null === $this->main) {
+            $this->main = new ViewElement('div.component-main');
+        }
+        return $this->main;
     }
 
     public function hasToolbar(): bool
@@ -241,7 +272,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     public function getSubToolbar(): Toolbar
     {
         if (null == $this->subToolbar) {
-            $this->subToolbar = new Toolbar();
+            $this->subToolbar = new Toolbar('div.component-subtoolbar');
         }
         return $this->subToolbar;
     }
