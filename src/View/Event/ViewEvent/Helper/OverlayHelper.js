@@ -1,5 +1,5 @@
 import {HtmlHelper} from "./HtmlHelper";
-import "../../../scss/overlay.scss"
+import "./OverlayHelper.scss"
 export class OverlayHelper {
 
     constructor() {

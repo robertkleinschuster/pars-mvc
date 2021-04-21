@@ -1,0 +1,10 @@
+{
+  "name": "pars-mvc",
+  "version": "1.0.0",
+  "main": "index.js",
+  "author": "robertkleinschuster",
+  "license": "MIT",
+  "devDependencies": {
+    "pell": "^1.0.6"
+  }
+}
