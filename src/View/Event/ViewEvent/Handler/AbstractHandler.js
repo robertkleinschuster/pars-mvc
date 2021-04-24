@@ -60,22 +60,21 @@ export class AbstractHandler {
                 .then(data => {
                     if (window.debug) {
                         console.timeEnd("Fetch");
-
                     }
                     const response = ViewEventResponse.factory(data);
                     if (window.debug) {
                         console.debug('Handle response:', response);
-
                     }
                     if (window.debug) {
                         this._handleDebug(response);
                     }
+                    this._handleAttributes(response);
                     this._handle(response);
                     if (window.debug) {
                         console.timeEnd("Trigger");
-
                     }
                     this.#overlay.hide();
+
                 })
                 .catch(err => {
                     this.#overlay.hide();
@@ -114,14 +113,12 @@ export class AbstractHandler {
 
     _handle(response: ViewEventResponse): void {
         if (window.debug) {
-        console.debug('Handle event:', response.event);
-
+            console.debug('Handle event:', response.event);
         }
         this._handleHtml(response);
         this._handleHistory(response);
         this._handleCache(response);
         this._handleInject(response);
-        this._handleAttributes(response);
     }
 
 
@@ -138,7 +135,7 @@ export class AbstractHandler {
     _handleHistory(response: ViewEventResponse) {
         if (response.event.history === true) {
             if (window.debug) {
-            console.debug('%cHistory:', 'color: DarkRed; font-weight: bold', response.event.path, response)
+                console.debug('%cHistory:', 'color: DarkRed; font-weight: bold', response.event.path, response)
 
             }
             history.replaceState(response, null, response.event.path);
@@ -151,24 +148,31 @@ export class AbstractHandler {
             window.caches.delete('pars-helper');
             if (window.debug) {
 
-            console.debug('%cDeleted cache', 'color: red; font-weight: bold;');
+                console.debug('%cDeleted cache', 'color: red; font-weight: bold;');
             }
         }
     }
 
-    _handleAttributes(respone: ViewEventResponse): void {
-        if (respone && respone.attributes) {
+    _handleAttributes(response: ViewEventResponse): void {
+        if (response && response.attributes) {
             if (window.debug) {
-            console.debug('Handle attributes:', respone.attributes);
-
+                console.debug('Handle attributes:', response.attributes);
             }
-            if (respone.attributes.redirect_url) {
-                window.location = respone.attributes.redirect_url;
+            if (response.attributes.redirect_url) {
+                this.#overlay.hide();
+                response.inject = null;
+                const event = response.event;
+                event.type = ViewEvent.TYPE_LINK;
+                event.path = response.attributes.redirect_url;
+                this._event = event;
+                this.trigger();
             }
         }
     }
 
     _handleInject(response: ViewEventResponse): void {
-        this.injector.inject(response.inject, response.event);
+        if (response.inject) {
+            this.injector.inject(response.inject, response.event);
+        }
     }
 }
