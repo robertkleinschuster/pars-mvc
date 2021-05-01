@@ -10,6 +10,7 @@ export class AbstractHandler {
     #overlay: OverlayHelper = null;
     #injector: ViewInjector = null;
     _root: ParentNode = null;
+    redirect = null;
 
     constructor(root: ParentNode, event: ViewEvent) {
         this._event = event;
@@ -68,13 +69,13 @@ export class AbstractHandler {
                     if (window.debug) {
                         this._handleDebug(response);
                     }
-                    this._handleAttributes(response);
-                    this._handle(response);
-                    if (window.debug) {
-                        console.timeEnd("Trigger");
+                    if (this._handleAttributes(response)) {
+                        this._handle(response);
+                        if (window.debug) {
+                            console.timeEnd("Trigger");
+                        }
+                        this.#overlay.hide();
                     }
-                    this.#overlay.hide();
-
                 })
                 .catch(err => {
                     this.#overlay.hide();
@@ -153,7 +154,7 @@ export class AbstractHandler {
         }
     }
 
-    _handleAttributes(response: ViewEventResponse): void {
+    _handleAttributes(response: ViewEventResponse): boolean {
         if (response && response.attributes) {
             if (window.debug) {
                 console.debug('Handle attributes:', response.attributes);
@@ -162,12 +163,16 @@ export class AbstractHandler {
                 this.#overlay.hide();
                 response.inject = null;
                 const event = response.event;
+                event.form = null;
                 event.type = ViewEvent.TYPE_LINK;
                 event.path = response.attributes.redirect_url;
-                this._event = event;
-                this.trigger();
+                if (this.redirect) {
+                    this.redirect(event);
+                }
+                return false;
             }
         }
+        return true;
     }
 
     _handleInject(response: ViewEventResponse): void {

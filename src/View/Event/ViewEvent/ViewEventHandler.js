@@ -51,6 +51,7 @@ export class ViewEventHandler {
      */
     #triggerEvent(viewEvent: ViewEvent) {
         const handler = HandlerFactory.create(this.#root, viewEvent);
+        handler.redirect = this.#triggerEvent.bind(this);
         handler.injector.listeners = this.listeners;
         handler.trigger();
     }
