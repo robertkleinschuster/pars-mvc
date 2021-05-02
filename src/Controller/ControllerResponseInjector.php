@@ -8,7 +8,7 @@ namespace Pars\Mvc\Controller;
  * Class ControllerResponseInjector
  * @package Pars\Mvc\Controller
  */
-class ControllerResponseInjector
+class ControllerResponseInjector implements \JsonSerializable
 {
 
     public const MODE_PREPEND = 'prepend';
@@ -83,4 +83,11 @@ class ControllerResponseInjector
             'template' => $this->template,
         ];
     }
+
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+
 }

@@ -103,6 +103,11 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     protected ?ViewInterface $view;
 
     /**
+     * @var ViewElement|null
+     */
+    protected ?ViewElement $parent = null;
+
+    /**
      * HtmlElement constructor.
      * @param string|null $tag
      * @param string|null $content
@@ -430,6 +435,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
             $this->setState(new ViewState($this->getId()));
             $this->getState()->init();
             $this->initEvent();
+            $this->injectEventDependencies();
             $this->handleEvent();
             $this->handleState();
             $this->initialize();
@@ -484,11 +490,13 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
                 $this->getEvent()->path = $this->getPath();
             }
             foreach (ViewEvent::getQueue() as $event) {
-                if ($this->getEvent()->isset('id') && $this->getEvent()->id === $event->id) {
+                if ($this->hasEvent() && $this->getEvent()->isset('id') && $this->getEvent()->id === $event->id) {
                     $this->getEvent()->execute($this);
                 }
             }
-            $this->setData('event', json_encode($this->getEvent()));
+            if ($this->hasEvent()) {
+                $this->setData('event', json_encode($this->getEvent()));
+            }
         }
     }
 
@@ -637,6 +645,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         if ($this->hasElementList()) {
             foreach ($this->getElementList() as $element) {
                 try {
+                    $element->setParent($this);
                     $this->injectDependencies($element, false);
                     $this->beforeRenderElement($element, $bean);
                     $result .= $element->render($bean);
@@ -671,6 +680,23 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         }
         if (!$element->hasPathHelper() && $this->hasPathHelper()) {
             $element->setPathHelper($this->getPathHelper(false));
+        }
+    }
+
+    protected function injectEventDependencies()
+    {
+        if ($this->hasEvent()) {
+            if (!$this->getEvent()->hasPath()) {
+                if ($this->hasPath()) {
+                    $this->getEvent()->setPath($this->getPath());
+                } elseif ($this->hasPathHelper()) {
+                    $this->getEvent()->setPath($this->getPathHelper(false)->getPath());
+                }
+            }
+            if (!$this->getEvent()->hasId() && $this->hasId()) {
+                $this->getEvent()->setId($this->getId());
+                $this->getEvent()->setTargetId($this->getId());
+            }
         }
     }
 
@@ -874,20 +900,10 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      *
      * @return $this
      */
-    public function setEvent(ViewEvent $event): self
+    public function setEvent(?ViewEvent $event): self
     {
-        if (!$event->hasPath()) {
-            if ($this->hasPath()) {
-                $event->setPath($this->getPath());
-            } elseif ($this->hasPathHelper()) {
-                $event->setPath($this->getPathHelper(false)->getPath());
-            }
-        }
-        if (!$event->hasId() && $this->hasId()) {
-            $event->setId($this->getId());
-            $event->setTargetId($this->getId());
-        }
         $this->event = $event;
+        $this->injectEventDependencies();
         return $this;
     }
 
@@ -1015,4 +1031,32 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     {
         return isset($this->view);
     }
+
+    /**
+     * @return ViewElement
+     */
+    public function getParent(): ViewElement
+    {
+        return $this->parent;
+    }
+
+    /**
+     * @param ViewElement $parent
+     *
+     * @return $this
+     */
+    public function setParent(ViewElement $parent): self
+    {
+        $this->parent = $parent;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasParent(): bool
+    {
+        return isset($this->parent);
+    }
+
 }

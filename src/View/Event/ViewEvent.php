@@ -5,6 +5,7 @@ namespace Pars\Mvc\View\Event;
 
 
 use Pars\Bean\Type\Base\AbstractBaseBean;
+use Pars\Mvc\Controller\ControllerResponseInjector;
 use Pars\Mvc\View\ViewElement;
 
 class ViewEvent extends AbstractBaseBean
@@ -158,7 +159,7 @@ class ViewEvent extends AbstractBaseBean
      * @param string|null $path
      * @return static
      */
-    public static function createSubmit(string $path, string $form): self
+    public static function createSubmit(?string $path = null, ?string $form = null): self
     {
         return new static([
             'type' => self::TYPE_SUBMIT,
