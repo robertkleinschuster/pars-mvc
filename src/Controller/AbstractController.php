@@ -19,7 +19,6 @@ use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\ViewElement;
-use Pars\Mvc\View\ViewInjector;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Exception\AttributeExistsException;
@@ -36,10 +35,6 @@ use Throwable;
  */
 abstract class AbstractController implements ControllerInterface
 {
-
-    public const SUB_ACTION_MODE_TABBED = 'append';
-    public const SUB_ACTION_MODE_STANDARD = 'prepend';
-
     private ContainerInterface $container;
 
     /**
@@ -73,7 +68,7 @@ abstract class AbstractController implements ControllerInterface
     private ?ControllerInterface $parent = null;
 
     /**
-     * @var ControllerSubActionContainer
+     * @var ControllerSubActionContainer|null
      */
     private ?ControllerSubActionContainer $subActionContainer = null;
 
@@ -131,57 +126,24 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @var array
-     */
-    private array $action_Map = [];
-
-    /**
      * @param string $controller
      * @param string $action
      * @param string $name
-     * @param string $mode
-     * @param bool $ajax
      */
     protected function pushAction(
         string $controller,
         string $action,
-        string $name,
-        string $mode = self::SUB_ACTION_MODE_TABBED,
-        bool $ajax = true
+        string $name
     )
     {
-
         $childRequest = clone $this->getControllerRequest();
         $childRequest->setController($controller);
         $childRequest->setAction($action);
         $this->getSubActionContainer()->add(
             new ControllerSubAction($childRequest, $controller, $name)
         );
-        $this->action_Map[$mode][] = [
-            'controller' => $controller,
-            'action' => $action,
-            'name' => $name,
-            'ajax' => $ajax,
-        ];
     }
 
-    /**
-     * @param string $mode
-     * @return array
-     */
-    public function getActionMap(string $mode): array
-    {
-        return $this->action_Map[$mode];
-    }
-
-    /**
-     * @param string $mode
-     * @return bool
-     */
-    public function hasActions(string $mode): bool
-    {
-        return isset($this->action_Map[$mode]) && count($this->action_Map[$mode]) > 0;
-    }
 
     /**
      * @return ControllerInterface|null
@@ -193,6 +155,7 @@ abstract class AbstractController implements ControllerInterface
 
     /**
      * @param ControllerInterface|null $parent
+     * @return AbstractController
      */
     public function setParent(?ControllerInterface $parent): self
     {
@@ -219,10 +182,7 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @return mixed|void
-     * @throws AttributeExistsException
-     * @throws AttributeLockException
-     * @throws AttributeNotFoundException
+     * @return void
      * @throws MvcException
      */
     public function finalize()
@@ -236,7 +196,7 @@ abstract class AbstractController implements ControllerInterface
 
     /**
      * @param Throwable $exception
-     * @return mixed|void
+     * @return void
      */
     public function error(Throwable $exception)
     {
@@ -248,7 +208,7 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @return mixed|void
+     * @return void
      */
     public function unauthorized()
     {
@@ -261,7 +221,7 @@ abstract class AbstractController implements ControllerInterface
 
     /**
      * @param Throwable $exception
-     * @return mixed|void
+     * @return void
      */
     public function notfound(Throwable $exception)
     {
@@ -664,7 +624,9 @@ abstract class AbstractController implements ControllerInterface
                 ) {
                     $id = $this->getControllerRequest()->getEvent()->getTarget();
                 }
-                $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
+                if (!$this->getControllerResponse()->getBody()) {
+                    $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
+                }
                 foreach ($this->getView()->getInjector()->getItemList() as $item) {
                     if ($item->getElement()->hasId()) {
                         $this->getControllerResponse()->getInjector()->addHtml(
