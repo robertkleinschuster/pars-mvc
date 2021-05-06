@@ -72,7 +72,9 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
 
     protected function handleMain()
     {
-        $this->push($this->getMain());
+        if ($this->hasMain()) {
+            $this->push($this->getMain());
+        }
     }
 
     protected function initName()
@@ -92,7 +94,9 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
 
     protected function handleAdditionalBefore()
     {
-        $this->push($this->getBefore());
+        if ($this->hasBefore()) {
+            $this->push($this->getBefore());
+        }
     }
 
     protected function initToolbar()
@@ -138,7 +142,10 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
 
     protected function handleAdditionalAfter()
     {
-        $this->push($this->getAfter());
+        if ($this->hasAfter()) {
+
+            $this->push($this->getAfter());
+        }
     }
 
     protected function handleName()
@@ -237,6 +244,11 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
         return $this->before;
     }
 
+    public function hasBefore()
+    {
+        return isset($this->before);
+    }
+
     public function getAfter(): ViewElement
     {
         if (null === $this->after) {
@@ -245,12 +257,22 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
         return $this->after;
     }
 
+    public function hasAfter()
+    {
+        return isset($this->after);
+    }
+
     public function getMain(): ViewElement
     {
         if (null === $this->main) {
             $this->main = new ViewElement('div.component-main');
         }
         return $this->main;
+    }
+
+    public function hasMain()
+    {
+        return isset($this->main);
     }
 
     public function hasToolbar(): bool

@@ -715,27 +715,31 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     public function renderOpenTag(BeanInterface $bean = null): string
     {
         $tag = '';
-        $attributes = $this->getHtmlAttributes($bean, true);
         if ($this->hasPath()) {
-            if ($this->hasTarget()) {
-                if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none text-reset' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
-                } else {
-                    $tag .= "<a class='text-reset' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
-                }
-            } else {
-                if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none text-reset' href='{$this->getPath($bean)}'>";
-                } else {
-                    $tag .= "<a class='text-reset' href='{$this->getPath($bean)}'>";
-                }
-            }
+            $this->addOption('position-relative');
         }
+        $attributes = $this->getHtmlAttributes($bean, true);
         if (empty($attributes)) {
             $tag .= "<{$this->getTag()}>";
         } else {
             $tag .= "<{$this->getTag()} {$attributes}>";
         }
+        if ($this->hasPath()) {
+            if ($this->hasTarget()) {
+                if ($this->hasOption('text-decoration-none')) {
+                    $tag .= "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                } else {
+                    $tag .= "<a class='text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                }
+            } else {
+                if ($this->hasOption('text-decoration-none')) {
+                    $tag .= "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}'>";
+                } else {
+                    $tag .= "<a class='text-reset stretched-link' href='{$this->getPath($bean)}'>";
+                }
+            }
+        }
+
         return $tag;
     }
 
@@ -746,10 +750,11 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     public function renderCloseTag(BeanInterface $bean = null): string
     {
         $tag = '';
-        $tag .= "</{$this->getTag()}>";
         if ($this->hasPath()) {
             $tag .= "</a>";
         }
+        $tag .= "</{$this->getTag()}>";
+
         return $tag;
     }
 
