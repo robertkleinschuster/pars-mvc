@@ -19,6 +19,7 @@ use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\ViewElement;
+use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Exception\AttributeExistsException;
@@ -536,25 +537,18 @@ abstract class AbstractController implements ControllerInterface
 
     /**
      * @param Throwable|null $throwable
+     * @param ControllerSubAction|null $subAction
      * @return ResponseInterface
      * @throws ActionNotFoundException
      * @throws AttributeExistsException
      * @throws AttributeLockException
      * @throws AttributeNotFoundException
+     * @throws ControllerNotFoundException
      * @throws MvcException
+     * @throws ViewException
      */
     public function execute(?Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface
     {
-        if ($this->getControllerRequest()->isAjax()) {
-            $this->getControllerResponse()
-                ->getInjector()
-                ->addHtml(
-                    (new ViewElement('div'))
-                        ->setId('subactions')
-                        ->render(), '#subactions',
-                    ControllerResponseInjector::MODE_REPLACE
-                );
-        }
         $this->initialize();
 
         if ($throwable) {
@@ -602,15 +596,8 @@ abstract class AbstractController implements ControllerInterface
                 $source = $sourceLayout->getElementById($subAction->getSourceId());
                 if ($target && $source) {
                     $source->setId($subAction->getId());
-                    if ($this->getControllerRequest()->isAjax()) {
-                        $this->getParent()->getControllerResponse()->getInjector()->addHtml(
-                            $this->getViewRenderer()->render($this->getView(), $subAction->getId()),
-                            "#{$subAction->getTargetId()}",
-                            ControllerResponseInjector::MODE_APPEND
-                        );
-                    } else {
-                        $target->push($source);
-                    }
+                    $source->removeOption('container-fluid');
+                    $target->push($source);
                 }
             }
         } else {

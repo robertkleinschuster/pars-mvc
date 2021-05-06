@@ -8,7 +8,7 @@ class ControllerSubAction
 {
     protected ControllerRequest $controllerRequest;
     protected string $id;
-    protected string $targetId = 'subactions';
+    protected string $targetId = 'components';
     protected string $sourceId = 'components';
     protected string $group;
 
