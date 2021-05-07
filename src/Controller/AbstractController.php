@@ -18,7 +18,6 @@ use Pars\Mvc\Factory\ModelFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
-use Pars\Mvc\View\ViewElement;
 use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
@@ -130,19 +129,24 @@ abstract class AbstractController implements ControllerInterface
      * @param string $controller
      * @param string $action
      * @param string $name
+     * @return ControllerRequest
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     protected function pushAction(
         string $controller,
         string $action,
         string $name
-    )
+    ): ControllerRequest
     {
         $childRequest = clone $this->getControllerRequest();
         $childRequest->setController($controller);
         $childRequest->setAction($action);
         $this->getSubActionContainer()->add(
-            new ControllerSubAction($childRequest, $controller, $name)
+            new ControllerSubAction($childRequest, $childRequest->getHash(), $name)
         );
+        return $childRequest;
     }
 
 
@@ -338,7 +342,10 @@ abstract class AbstractController implements ControllerInterface
                 }
                 $this->getControllerResponse()->setRedirect($path->getPath());
             }
-            $this->getModel()->handleFilter($this->getControllerRequest()->getFilter());
+            $filterParemter = $this->getControllerRequest()->getFilter();
+            if ($this->getControllerRequest()->acceptParameter($filterParemter)) {
+                $this->getModel()->handleFilter($filterParemter);
+            }
         }
 
         if ($this->getControllerRequest()->hasSubmit()) {

@@ -23,12 +23,14 @@ use Pars\Helper\Parameter\SubmitParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Path\PathHelperAwareInterface;
 use Pars\Helper\Path\PathHelperAwareTrait;
+use Pars\Helper\String\StringHelper;
 use Pars\Mvc\Handler\MvcHandler;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
 use Pars\Pattern\Option\OptionAwareInterface;
 use Pars\Pattern\Option\OptionAwareTrait;
 use Psr\Http\Message\ServerRequestInterface;
@@ -97,8 +99,30 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         }
     }
 
+    /**
+     * @param ParameterInterface $parameter
+     * @return ControllerRequest
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    public function setParameter(ParameterInterface $parameter): self
+    {
+        $this->setAttribute($parameter->name(), $parameter->toString());
+        $this->setPathHelper($this->initPathHelper($this->getPathHelper()));
+        return $this;
+    }
+
+    /**
+     * @param PathHelper $pathHelper
+     * @return PathHelper
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
     protected function initPathHelper(PathHelper $pathHelper)
     {
+        $pathHelper->setCurrentPathReal($this->getCurrentPathReal());
         $pathHelper->setController($this->getController());
         $pathHelper->setAction($this->getAction());
         if ($this->hasId()) {
@@ -184,7 +208,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return IdParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getId(): IdParameter
     {
@@ -205,7 +229,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return IdParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getIdList(): IdListParameter
     {
@@ -317,7 +341,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return PaginationParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getPagination(): PaginationParameter
     {
@@ -346,7 +370,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return EditLocaleParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getEditLocale(): EditLocaleParameter
     {
@@ -412,7 +436,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return FilterParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getFilter(): FilterParameter
     {
@@ -433,7 +457,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @return DataParameter
      * @throws AttributeExistsException
      * @throws AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function getData(): DataParameter
     {
@@ -492,12 +516,13 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     /**
      * @param ParameterInterface $parameter
      * @return bool
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function acceptParameter(ParameterInterface $parameter): bool
     {
         return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
-            && (!$parameter->hasController() || $parameter->getController() == $this->getController());
+            && (!$parameter->hasController() || $parameter->getController() == $this->getController())
+            && (!$parameter->hasHash() || $parameter->getHash() == $this->getHash());
     }
 
     /**
@@ -540,5 +565,29 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getMiddlewareAttribute(string $name, $default = null)
     {
         return $this->getServerRequest()->getAttribute($name, $default);
+    }
+
+
+    /**
+     * @return string
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    public function getHash(): string
+    {
+        $string = $this->getController() . $this->getAction();
+        if ($this->hasId()) {
+            $string .= $this->getId()->toString();
+        }
+        return StringHelper::slugify($string);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentPathReal(): string
+    {
+        return $this->getServerRequest()->getUri()->getPath() . '?' . $this->getServerRequest()->getUri()->getQuery();
     }
 }

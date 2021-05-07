@@ -26,20 +26,20 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     private ?ViewElement $main = null;
 
     /**
-     * @param AbstractField $field
+     * @param FieldInterface $field
      * @return $this
      */
-    public function pushField(AbstractField $field): self
+    public function pushField(FieldInterface $field): self
     {
         $this->getFieldList()->push($field);
         return $this;
     }
 
     /**
-     * @param AbstractField $field
+     * @param FieldInterface $field
      * @return $this
      */
-    public function unshiftField(AbstractField $field): self
+    public function unshiftField(FieldInterface $field): self
     {
         $this->getFieldList()->unshift($field);
         return $this;
@@ -56,6 +56,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     protected function initialize()
     {
         parent::initialize();
+        $this->initBase();
         $this->handleName();
         $this->initAdditionalBefore();
         $this->handleAdditionalBefore();
@@ -68,6 +69,11 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
         $this->handleMain();
         $this->initAdditionalAfter();
         $this->handleAdditionalAfter();
+    }
+
+    protected function initBase()
+    {
+
     }
 
     protected function handleMain()

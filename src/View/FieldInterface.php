@@ -50,4 +50,25 @@ interface FieldInterface extends ViewElementInterface
      * @return bool
      */
     public function hasLabelPath(): bool;
+
+    /**
+     * @return int
+     */
+    public function getRow(): int;
+
+    /**
+     * @param int $row
+     * @return AbstractField
+     */
+    public function setRow(?int $row): AbstractField;
+
+    /**
+     * @return int
+     */
+    public function getColumn(): int;
+    /**
+     * @param int $column
+     * @return AbstractField
+     */
+    public function setColumn(?int $column): AbstractField;
 }

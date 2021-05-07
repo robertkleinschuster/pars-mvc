@@ -7,6 +7,7 @@ use Pars\Bean\Type\Base\AbstractBaseBeanList;
 /**
  * Class ComponentList
  * @package Pars\Component
+ * @method FieldIterator getIterator()
  */
 class FieldList extends AbstractBaseBeanList
 {

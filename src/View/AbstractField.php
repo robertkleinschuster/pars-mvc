@@ -21,6 +21,8 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     public ?string $template = null;
     public ?string $label = null;
     public ?string $labelPath = null;
+    public int $row = 1;
+    public int $column = 1;
 
     public ?FieldAcceptInterface $accept = null;
     public ?FieldFormatInterface $format = null;
@@ -147,18 +149,18 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     }
 
     /**
-    * @return string
-    */
+     * @return string
+     */
     public function getLabelPath(): string
     {
         return $this->labelPath;
     }
 
     /**
-    * @param string $labelPath
-    *
-    * @return $this
-    */
+     * @param string $labelPath
+     *
+     * @return $this
+     */
     public function setLabelPath(string $labelPath): self
     {
         $this->labelPath = $labelPath;
@@ -166,8 +168,8 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     }
 
     /**
-    * @return bool
-    */
+     * @return bool
+     */
     public function hasLabelPath(): bool
     {
         return isset($this->labelPath);
@@ -208,4 +210,42 @@ abstract class AbstractField extends ViewElement implements FieldInterface
         }
         return $this;
     }
+
+    /**
+     * @return int
+     */
+    public function getRow(): int
+    {
+        return $this->row;
+    }
+
+    /**
+     * @param int $row
+     * @return AbstractField
+     */
+    public function setRow(?int $row): AbstractField
+    {
+        $this->row = $row ?? 1;
+        return $this;
+    }
+
+    /**
+     * @return int
+     */
+    public function getColumn(): int
+    {
+        return $this->column;
+    }
+
+    /**
+     * @param int $column
+     * @return AbstractField
+     */
+    public function setColumn(?int $column): AbstractField
+    {
+        $this->column = $column ?? 1;
+        return $this;
+    }
+
+
 }
