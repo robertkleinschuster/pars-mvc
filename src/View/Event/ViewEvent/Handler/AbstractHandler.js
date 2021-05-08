@@ -3,6 +3,7 @@ import {OverlayHelper} from "../Helper/OverlayHelper";
 import {ViewEvent} from "../Bean/ViewEvent";
 import {ViewInjector} from "../Injector/ViewInjector";
 import {ViewEventInjectHtml} from "../Bean/ViewEventInjectHtml";
+import fetchProgress from "fetch-progress";
 
 export class AbstractHandler {
 
@@ -50,13 +51,20 @@ export class AbstractHandler {
 
     _fetch(url: string, options: RequestInit): void {
         if (!this.#overlay.isVisible()) {
-            this.#overlay.show();
+            this.#overlay.show(this._event.target);
             if (window.debug) {
                 console.debug('%cFetch:', 'color: green;font-weight: bold;font-size: 16px;', url, options)
                 console.time("Fetch");
             }
 
             fetch(url, options)
+                .then(
+                    fetchProgress({
+                        onProgress(progress) {
+                            this.#overlay.progress(this._event.target, progress);
+                        }
+                    })
+                )
                 .then(response => response.headers.get('Content-Type') === 'application/json' ? response.json() : response.text())
                 .then(data => {
                     if (window.debug) {
@@ -74,11 +82,11 @@ export class AbstractHandler {
                         if (window.debug) {
                             console.timeEnd("Trigger");
                         }
-                        this.#overlay.hide();
+                        this.#overlay.hide(this._event.target);
                     }
                 })
                 .catch(err => {
-                    this.#overlay.hide();
+                    this.#overlay.hide(this._event.target);
                     if (window.debug) {
                         console.error(err);
                     }
@@ -160,7 +168,7 @@ export class AbstractHandler {
                 console.debug('Handle attributes:', response.attributes);
             }
             if (response.attributes.redirect_url) {
-                this.#overlay.hide();
+                this.#overlay.hide(this._event.target);
                 response.inject = null;
                 const event = response.event;
                 event.form = null;
