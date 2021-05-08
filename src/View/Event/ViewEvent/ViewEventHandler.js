@@ -1,6 +1,7 @@
 import {OverlayHelper} from "./Helper/OverlayHelper";
 import {ViewEvent} from "./Bean/ViewEvent";
 import {HandlerFactory} from "./Handler/HandlerFactory";
+import {PathHelper} from "./Helper/PathHelper";
 
 export class ViewEventHandler {
 
@@ -42,6 +43,30 @@ export class ViewEventHandler {
             }
             element.removeEventListener(viewEvent.trigger, this.triggerListener);
             element.addEventListener(viewEvent.trigger, this.triggerListener.bind(this));
+            if (window.debugView) {
+                let debugElement = document.createElement('table');
+                debugElement.classList.add('text-monospace');
+                debugElement.style.fontSize = '8px';
+                let debugElementBody = debugElement.createTBody();
+                for (const [key, value] of Object.entries(viewEvent)) {
+                    let debugElementRow = debugElementBody.insertRow()
+                    debugElementRow.insertCell().innerText = key;
+                    debugElementRow.insertCell().innerText = value;
+                }
+                debugElement.classList.add('pars-debug');
+                this.eventDebugShow = (event) => {
+                    if (viewEvent.delegate === null || event.target.closest(viewEvent.delegate)) {
+                        document.body.append(debugElement);
+                    }
+                }
+                element.removeEventListener('mouseover', this.eventDebugShow);
+                element.addEventListener('mouseover', this.eventDebugShow.bind(this));
+                this.eventDebugHide = (event) => {
+                    document.querySelectorAll('.pars-debug').forEach(element => element.remove());
+                }
+                element.removeEventListener('mouseleave', this.eventDebugHide);
+                element.addEventListener('mouseleave', this.eventDebugHide.bind(this));
+            }
         }
     }
 
