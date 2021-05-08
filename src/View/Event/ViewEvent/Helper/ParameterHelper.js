@@ -19,13 +19,17 @@ export class ParameterHelper {
         let that = this;
         data = decodeURIComponent(data);
         data.split(';').forEach(item => {
-            let key = item.split(':')[0];
-            let value = item.split(':')[1];
-            if (typeof value !== 'undefined' && value.length) {
-                that.setAttributes(key, value);
-            } else {
-                that.setAttributes(key);
+            let split = item.split(':');
+            if (split) {
+                let key = split.shift();
+                let value = split.join('');
+                if (typeof value !== 'undefined' && value.length) {
+                    that.setAttributes(key, value);
+                } else {
+                    that.setAttributes(key);
+                }
             }
+
         });
         return this;
     }

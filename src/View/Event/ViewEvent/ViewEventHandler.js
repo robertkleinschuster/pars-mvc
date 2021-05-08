@@ -1,7 +1,7 @@
 import {OverlayHelper} from "./Helper/OverlayHelper";
 import {ViewEvent} from "./Bean/ViewEvent";
 import {HandlerFactory} from "./Handler/HandlerFactory";
-import {PathHelper} from "./Helper/PathHelper";
+import {ParameterHelper} from "./Helper/ParameterHelper";
 
 export class ViewEventHandler {
 
@@ -49,10 +49,37 @@ export class ViewEventHandler {
                 debugElement.style.fontSize = '8px';
                 let debugElementBody = debugElement.createTBody();
                 for (const [key, value] of Object.entries(viewEvent)) {
-                    let debugElementRow = debugElementBody.insertRow()
-                    debugElementRow.insertCell().innerText = key;
-                    debugElementRow.insertCell().innerText = value;
+                    if (key !== 'path' && key !== '__class') {
+                        let debugElementRow = debugElementBody.insertRow()
+                        debugElementRow.style.borderBottom = '1px black solid'
+                        let cellName = debugElementRow.insertCell();
+                        cellName.innerText = key.toUpperCase();
+                        cellName.style.fontWeight = 500;
+                        cellName.style.borderRight = '1px black solid';
+                        debugElementRow.insertCell().innerText = value;
+                    }
                 }
+                let uri = new URL(viewEvent.path, document.baseURI);
+                uri.searchParams.forEach((param, name) => {
+                    let debugElementRow = debugElementBody.insertRow();
+                    debugElementRow.style.borderBottom = '1px black solid';
+                    let cellName = debugElementRow.insertCell();
+                    cellName.innerText = name.toUpperCase();
+                    cellName.style.verticalAlign = 'top';
+                    cellName.style.borderRight = '1px black solid';
+                    cellName.style.fontWeight = 500;
+                    let parameterHelper = new ParameterHelper(name);
+                    parameterHelper.fromString(param);
+                    let ul = document.createElement('div');
+                    parameterHelper.attributes.forEach(attribute => {
+                        let li = document.createElement('div');
+                        li.innerText = attribute.key + '=' + attribute.value;
+                        let br = document.createElement('br');
+                        li.append(br);
+                        ul.append(li);
+                    });
+                    debugElementRow.insertCell().append(ul);
+                });
                 debugElement.classList.add('pars-debug');
                 this.eventDebugShow = (event) => {
                     if (viewEvent.delegate === null || event.target.closest(viewEvent.delegate)) {
