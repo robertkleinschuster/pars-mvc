@@ -641,6 +641,9 @@ abstract class AbstractController implements ControllerInterface
         return $responseFactory->createResponse();
     }
 
+    /**
+     * @return ControllerRunner
+     */
     protected function getRunner(): ControllerRunner
     {
         return $this->getContainer()->get(ControllerRunner::class);;
