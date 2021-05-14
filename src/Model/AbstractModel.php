@@ -75,6 +75,15 @@ abstract class AbstractModel implements
     }
 
     /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
+
+    /**
      * @return array
      */
     public function getApplicationConfig(): array
