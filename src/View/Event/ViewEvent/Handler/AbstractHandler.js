@@ -65,7 +65,7 @@ export class AbstractHandler {
                         }
                     })
                 )
-                .then(response => response.headers.get('Content-Type') === 'application/json' ? response.json() : response.text())
+                .then(response => response.clone().headers.get('Content-Type') === 'application/json' ? response.clone().json() : response.clone().text())
                 .then(data => {
                     if (window.debug) {
                         console.timeEnd("Fetch");
