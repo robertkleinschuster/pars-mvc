@@ -12,7 +12,6 @@ use Laminas\Diactoros\UriFactory;
 use Pars\Helper\Debug\DebugHelper;
 use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;
-use Pars\Pattern\Exception\CoreException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
 

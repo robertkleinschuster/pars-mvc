@@ -37,7 +37,9 @@ export class AbstractHandler {
     }
 
     _buildFetchUrl(viewEvent: ViewEvent): string {
-        return (new URL(viewEvent.path, document.baseURI)).toString();
+        let url = new URL(viewEvent.path, document.baseURI);
+        url.searchParams.append('event', JSON.stringify(viewEvent));
+        return url.toString();
     }
 
     _buildFetchOptions(viewEvent: ViewEvent): RequestInit {

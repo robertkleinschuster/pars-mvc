@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Mezzio\Router\RouteResult;
+use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Parameter\CollapseParameter;
 use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
@@ -93,9 +94,15 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
             $this->setAttribute($key, $value);
         }
         $this->setPathHelper($this->initPathHelper($pathHelper));
-        $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
+        $queryParams = $serverRequest->getQueryParams();
+        $event = null;
+        if (isset($queryParams['event'])) {
+            $event = json_decode($queryParams['event'], true);
+        } elseif ($serverRequest->hasHeader('X-EVENT')) {
+            $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
+        }
         if ($event) {
-            $this->event = new ViewEvent($event);
+            $this->setEvent(new ViewEvent($event));
         }
     }
 
