@@ -9,7 +9,7 @@ export class SubmitHandler extends AbstractHandler {
         return {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-EVENT': JSON.stringify(this._event)
+                'pars-view-event-data': JSON.stringify(this._event)
             },
             method: form.method,
             body: formData

@@ -38,7 +38,6 @@ export class AbstractHandler {
 
     _buildFetchUrl(viewEvent: ViewEvent): string {
         let url = new URL(viewEvent.path, document.baseURI);
-        url.searchParams.append('event', JSON.stringify(viewEvent));
         return url.toString();
     }
 
@@ -46,7 +45,7 @@ export class AbstractHandler {
         return {
             headers: {
                 'X-Requested-With': 'XMLHttpRequest',
-                'X-EVENT': JSON.stringify(viewEvent)
+                'pars-view-event-data': JSON.stringify(viewEvent)
             },
         };
     }

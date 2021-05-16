@@ -96,10 +96,10 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $this->setPathHelper($this->initPathHelper($pathHelper));
         $queryParams = $serverRequest->getQueryParams();
         $event = null;
-        if (isset($queryParams['event'])) {
-            $event = json_decode($queryParams['event'], true);
-        } elseif ($serverRequest->hasHeader('X-EVENT')) {
-            $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
+        if (isset($queryParams['pars-view-event-data'])) {
+            $event = json_decode($queryParams['pars-view-event-data'], true);
+        } elseif ($serverRequest->hasHeader('pars-view-event-data')) {
+            $event = json_decode($serverRequest->getHeaderLine('pars-view-event-data'), true);
         }
         if ($event) {
             $this->setEvent(new ViewEvent($event));
