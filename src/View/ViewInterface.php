@@ -60,6 +60,10 @@ interface ViewInterface extends BeanInterface, BeanConverterAwareInterface, Path
      */
     public function setJavascript(array $files);
 
+    public function addStylesheet(string $file);
+
+    public function addJavascript(string $file);
+
     /**
      * @return array
      */

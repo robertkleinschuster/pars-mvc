@@ -2,7 +2,6 @@
 
 namespace Pars\Mvc\View;
 
-use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Converter\BeanConverterAwareTrait;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Path\PathHelperAwareTrait;
@@ -17,13 +16,14 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
     protected ?LayoutInterface $layout = null;
     public ?string $template = null;
     protected ViewInjector $injector;
+
     /**
      * @return LayoutInterface
      */
     public function getLayout(): LayoutInterface
     {
         if (
-             !$this->layout->hasBeanConverter()
+            !$this->layout->hasBeanConverter()
             && $this->hasBeanConverter()
         ) {
             $this->layout->setBeanConverter($this->getBeanConverter());
@@ -141,6 +141,22 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
         $this->jsFiles = $files;
         return $this;
     }
+
+    public function addStylesheet(string $file)
+    {
+        if (!in_array($file, $this->cssFiles)) {
+            $this->cssFiles[] = $file;
+        }
+    }
+
+    public function addJavascript(string $file)
+    {
+        if (!in_array($file, $this->jsFiles)) {
+
+            $this->jsFiles[] = $file;
+        }
+    }
+
 
     /**
      * @return array

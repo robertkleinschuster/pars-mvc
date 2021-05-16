@@ -14,9 +14,7 @@
   },
   "require": {
     "php": "^7.4 || ^8.0",
-    "pars/pars-core": "@dev",
     "pars/pars-helpers": "@dev",
-    "pars/pars-models": "@dev",
     "pars/pars-beans": "@dev",
     "pars/pars-patterns": "@dev"
   },
