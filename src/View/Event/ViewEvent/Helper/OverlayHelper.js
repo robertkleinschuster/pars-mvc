@@ -13,6 +13,7 @@ export class OverlayHelper {
             document.querySelectorAll(target).forEach(function (element) {
                 element.style.opacity = 0.5;
                 element.style.transition = '.1s opacity';
+                element.style.pointerEvents = 'none';
             });
         } else {
             if (document.querySelectorAll('.ajax-overlay').length === 0) {
