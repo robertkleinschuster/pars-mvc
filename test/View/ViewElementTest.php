@@ -158,6 +158,6 @@ class ViewElementTest extends \Pars\Pattern\PHPUnit\DefaultTestCase
         $child2->getElementList()->push($child3);
         $this->object->getElementList()->push($child);
         $this->object->getElementList()->push($child2);
-        $this->assertEquals("<a href='/test/bla?id=foo%3Dbar'><div id='myDiv' class='col'>test<p>foo</p><div class='bla'><p>bla</p></div></div></a>", $this->object->render($bean, true));
+        $this->assertEquals("<div id='myDiv' class='col text-decoration-none position-relative'><a class='text-decoration-none text-reset stretched-link' href='/test/bla?id=foo%3Dbar'>test<p>foo</p><div class='bla'><p>bla</p></div></a></div>", $this->object->render($bean, true));
     }
 }
