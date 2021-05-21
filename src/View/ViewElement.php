@@ -695,7 +695,9 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
             }
             if (!$this->getEvent()->hasId() && $this->hasId()) {
                 $this->getEvent()->setId($this->getId());
-                $this->getEvent()->setTargetId($this->getId());
+                if (!$this->getEvent()->hasTarget()) {
+                    $this->getEvent()->setTargetId($this->getId());
+                }
             }
         }
     }

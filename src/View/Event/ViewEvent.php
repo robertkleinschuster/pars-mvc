@@ -14,8 +14,10 @@ class ViewEvent extends AbstractBaseBean
     public const TYPE_MODAL = 'modal';
     public const TYPE_SUBMIT = 'submit';
     public const TYPE_CALLBACK = 'callback';
+    public const TYPE_REFRESH_FORM = 'refresh_form';
 
     public const TRIGGER_CLICK = 'click';
+    public const TRIGGER_CHANGE = 'change';
 
     public string $type = self::TYPE_LINK;
     public ?string $id = null;
@@ -55,6 +57,25 @@ class ViewEvent extends AbstractBaseBean
     }
 
     /**
+     * @return string
+     */
+    public function getTrigger(): string
+    {
+        return $this->trigger;
+    }
+
+    /**
+     * @param string $trigger
+     * @return ViewEvent
+     */
+    public function setTrigger(string $trigger): ViewEvent
+    {
+        $this->trigger = $trigger;
+        return $this;
+    }
+
+
+    /**
      * @param callable $callback
      * @return $this
      */
@@ -85,7 +106,7 @@ class ViewEvent extends AbstractBaseBean
 
     public function hasTarget(): bool
     {
-        return $this->isset('target');
+        return $this->isset('target') && $this->getTarget() != '#';
     }
 
     public function getTarget()
@@ -130,6 +151,17 @@ class ViewEvent extends AbstractBaseBean
             'target' => "#$id",
         ]))->setCallback($callback);
     }
+
+    public static function createRefreshForm(string $form): self
+    {
+        return (new static([
+            'type' => self::TYPE_REFRESH_FORM,
+            'trigger' => self::TRIGGER_CHANGE,
+            'form' => $form,
+            'target'=> "#$form"
+        ]));
+    }
+
 
     /**
      * @param string|null $path

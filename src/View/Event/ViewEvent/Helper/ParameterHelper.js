@@ -1,6 +1,7 @@
 export class ParameterHelper {
     attributes;
     name;
+    allowKeyOnly = false;
 
     constructor(name) {
         this.attributes = [];
@@ -25,7 +26,7 @@ export class ParameterHelper {
                 let value = split.join('');
                 if (typeof value !== 'undefined' && value.length) {
                     that.setAttributes(key, value);
-                } else {
+                } else if (this.allowKeyOnly) {
                     that.setAttributes(key);
                 }
             }
@@ -39,15 +40,15 @@ export class ParameterHelper {
         let length = this.attributes.length;
         this.attributes.forEach((item, index) => {
                 if (item.value.length) {
-                    str += item.key + ':' + item.value;
+                    str += item.key + ':' + encodeURIComponent(item.value);
                     if (index <= length - 2) {
                         str += ';';
                     }
-                } else {
+                } else if(this.allowKeyOnly) {
                     str += item.key;
                 }
             }
         )
-        return encodeURIComponent(str);
+        return str;
     }
 }

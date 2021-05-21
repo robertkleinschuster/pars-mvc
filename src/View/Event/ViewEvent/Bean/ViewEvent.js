@@ -25,6 +25,10 @@ export class ViewEvent extends ViewBean {
     {
         return 'submit';
     }
+    static get TYPE_REFRESH_FORM()
+    {
+        return 'refresh_form';
+    }
 
     static get TYPE_CALLBACK()
     {
