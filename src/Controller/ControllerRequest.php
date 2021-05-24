@@ -116,7 +116,6 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function setParameter(ParameterInterface $parameter): self
     {
         $this->setAttribute($parameter->name(), $parameter->toString());
-        $this->setPathHelper($this->initPathHelper($this->getPathHelper()));
         return $this;
     }
 
