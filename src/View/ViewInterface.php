@@ -6,6 +6,7 @@ use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Path\PathHelperAwareInterface;
 use Pars\Mvc\Controller\ControllerRequest;
+use Pars\Mvc\View\State\ViewStatePersistenceInterface;
 
 /**
  * Interface ViewInterface
@@ -103,4 +104,38 @@ interface ViewInterface extends BeanInterface, BeanConverterAwareInterface, Path
      * @return bool
      */
     public function hasControllerRequest(): bool;
+
+    /**
+     * @return ViewStatePersistenceInterface
+     */
+    public function getPersistence(): ViewStatePersistenceInterface;
+
+    /**
+     * @param ViewStatePersistenceInterface $persistence
+     *
+     * @return $this
+     */
+    public function setPersistence(ViewStatePersistenceInterface $persistence): self;
+
+    /**
+     * @return bool
+     */
+    public function hasPersistence(): bool;
+
+    /**
+     * @return ViewRenderer
+     */
+    public function getRenderer(): ViewRenderer;
+
+    /**
+     * @param ViewRenderer $renderer
+     *
+     * @return $this
+     */
+    public function setRenderer(ViewRenderer $renderer): self;
+
+    /**
+     * @return bool
+     */
+    public function hasRenderer(): bool;
 }

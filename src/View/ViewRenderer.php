@@ -93,7 +93,6 @@ class ViewRenderer
                 $renderable = $view->getLayout();
             }
             if ($renderable instanceof RenderableInterface) {
-                $renderable->setRenderer($this);
                 $renderable->setView($view);
                 $result .= $renderable->render($bean, true);
             }

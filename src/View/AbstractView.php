@@ -6,6 +6,7 @@ use Pars\Bean\Converter\BeanConverterAwareTrait;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Path\PathHelperAwareTrait;
 use Pars\Mvc\Controller\ControllerRequest;
+use Pars\Mvc\View\State\ViewStatePersistenceInterface;
 
 abstract class AbstractView extends AbstractBaseBean implements ViewInterface
 {
@@ -18,6 +19,15 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
     public ?string $template = null;
     protected ViewInjector $injector;
     /**
+     * @var ViewStatePersistenceInterface|null
+     */
+    protected ?ViewStatePersistenceInterface $statePersistence = null;
+
+    /**
+     * @var ViewRenderer|null
+     */
+    protected ?ViewRenderer $renderer;
+    /**
      *
      */
     protected ?ControllerRequest $controllerRequest = null;
@@ -27,18 +37,6 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
      */
     public function getLayout(): LayoutInterface
     {
-        if (
-            !$this->layout->hasBeanConverter()
-            && $this->hasBeanConverter()
-        ) {
-            $this->layout->setBeanConverter($this->getBeanConverter());
-        }
-        if (
-            !$this->layout->hasPathHelper()
-            && $this->hasPathHelper()
-        ) {
-            $this->layout->setPathHelper($this->getPathHelper(false));
-        }
         return $this->layout;
     }
 
@@ -48,9 +46,6 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
      */
     public function setLayout(LayoutInterface $layout): ViewInterface
     {
-        if (!$layout->hasPathHelper() && $this->hasPathHelper()) {
-            $layout->setPathHelper($this->getPathHelper(false));
-        }
         $layout->setView($this);
         $this->layout = $layout;
         return $this;
@@ -208,4 +203,59 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
         return isset($this->controllerRequest);
     }
 
+    /**
+     * @return ViewStatePersistenceInterface
+     */
+    public function getPersistence(): ViewStatePersistenceInterface
+    {
+        return $this->statePersistence;
+    }
+
+    /**
+     * @param ViewStatePersistenceInterface $persistence
+     *
+     * @return $this
+     */
+    public function setPersistence(ViewStatePersistenceInterface $persistence): self
+    {
+        $this->statePersistence = $persistence;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasPersistence(): bool
+    {
+        return isset($this->statePersistence);
+    }
+
+
+    /**
+     * @return ViewRenderer
+     */
+    public function getRenderer(): ViewRenderer
+    {
+        return $this->renderer;
+    }
+
+    /**
+     * @param ViewRenderer $renderer
+     *
+     * @return $this
+     */
+    public function setRenderer(ViewRenderer $renderer): self
+    {
+        $this->renderer = $renderer;
+        return $this;
+    }
+
+
+    /**
+     * @return bool
+     */
+    public function hasRenderer(): bool
+    {
+        return isset($this->renderer);
+    }
 }

@@ -18,9 +18,7 @@ interface ViewElementInterface extends
     BeanInterface,
     OptionAwareInterface,
     AttributeAwareInterface,
-    BeanConverterAwareInterface,
-    BeanAwareInterface,
-    PathHelperAwareInterface
+    BeanAwareInterface
 {
 
     /**
@@ -231,40 +229,6 @@ interface ViewElementInterface extends
      * @return bool
      */
     public function hasState(): bool;
-
-    /**
-     * @return ViewStatePersistenceInterface
-     */
-    public function getPersistence(): ViewStatePersistenceInterface;
-
-    /**
-     * @param ViewStatePersistenceInterface $persistence
-     *
-     * @return $this
-     */
-    public function setPersistence(ViewStatePersistenceInterface $persistence): self;
-
-    /**
-     * @return bool
-     */
-    public function hasPersistence(): bool;
-
-    /**
-     * @return ViewRenderer
-     */
-    public function getRenderer(): ViewRenderer;
-
-    /**
-     * @param ViewRenderer $renderer
-     *
-     * @return $this
-     */
-    public function setRenderer(ViewRenderer $renderer): self;
-
-    /**
-     * @return bool
-     */
-    public function hasRenderer(): bool;
 
     public function setView(ViewInterface $view);
     public function getView(): ViewInterface;

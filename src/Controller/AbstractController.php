@@ -508,6 +508,9 @@ abstract class AbstractController implements ControllerInterface
         if (!$view->hasPathHelper()) {
             $this->getView()->setPathHelper($this->getPathHelper(true));
         }
+        if (!$view->hasControllerRequest()) {
+            $this->getView()->setControllerRequest($this->getControllerRequest());
+        }
         return $this;
     }
 
@@ -560,9 +563,6 @@ abstract class AbstractController implements ControllerInterface
     public function execute(?Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface
     {
         $this->initialize();
-        if ($this->hasView()) {
-            $this->getView()->setControllerRequest($this->getControllerRequest());
-        }
         if ($throwable) {
             switch (true) {
                 case $throwable instanceof NotFoundException:

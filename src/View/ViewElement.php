@@ -3,15 +3,16 @@
 namespace Pars\Mvc\View;
 
 use Pars\Bean\Converter\BeanConverterAwareTrait;
+use Pars\Bean\Converter\BeanConverterInterface;
 use Pars\Bean\Converter\ConverterBeanDecorator;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanAwareTrait;
 use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Path\PathHelperAwareTrait;
 use Pars\Helper\Placeholder\PlaceholderHelper;
-use Pars\Mvc\Controller\ControllerRequest;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;
@@ -29,9 +30,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
-    use BeanConverterAwareTrait;
     use BeanAwareTrait;
-    use PathHelperAwareTrait;
 
     /**
      *
@@ -89,16 +88,6 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     protected ?ViewState $state = null;
 
     /**
-     * @var ViewStatePersistenceInterface|null
-     */
-    protected ?ViewStatePersistenceInterface $statePersistence = null;
-
-    /**
-     * @var ViewRenderer|null
-     */
-    protected ?ViewRenderer $renderer;
-
-    /**
      * @var ViewInterface|null
      */
     protected ?ViewInterface $view;
@@ -107,8 +96,6 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      * @var ViewElement|null
      */
     protected ?ViewElement $parent = null;
-
-
 
     /**
      * HtmlElement constructor.
@@ -666,24 +653,42 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      */
     protected function injectDependencies(ViewElement $element, bool $injectBean = true)
     {
-        if (!$element->hasBeanConverter() && $this->hasBeanConverter()) {
-            $element->setBeanConverter($this->getBeanConverter());
-        }
-        if (!$element->hasPersistence() && $this->hasPersistence()) {
-            $element->setPersistence($this->getPersistence());
-        }
         if ($injectBean && !$element->hasBean() && $this->hasBean()) {
             $element->setBean($this->getBean());
-        }
-        if (!$element->hasRenderer() && $this->hasRenderer()) {
-            $element->setRenderer($this->getRenderer());
         }
         if (!$element->hasView() && $this->hasView()) {
             $element->setView($this->getView());
         }
-        if (!$element->hasPathHelper() && $this->hasPathHelper()) {
-            $element->setPathHelper($this->getPathHelper(false));
-        }
+    }
+
+    public function getPersistence(): ViewStatePersistenceInterface
+    {
+        return $this->getView()->getPersistence();
+    }
+
+    public function hasPersistence(): bool
+    {
+        return $this->hasView() && $this->getView()->hasPersistence();
+    }
+
+    public function getPathHelper(bool $reset = true): PathHelper
+    {
+        return $this->getControllerRequest()->getPathHelper($reset);
+    }
+
+    public function hasPathHelper(): bool
+    {
+        return $this->hasControllerRequest() &&  $this->getControllerRequest()->hasPathHelper();
+    }
+
+    public function hasBeanConverter(): bool
+    {
+        return $this->hasView() && $this->getView()->hasBeanConverter();
+    }
+
+    public function getBeanConverter(): BeanConverterInterface
+    {
+        returN $this->getView()->getBeanConverter();
     }
 
     public function getControllerRequest()
@@ -693,7 +698,7 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
 
     public function hasControllerRequest()
     {
-        return $this->getView()->hasControllerRequest();
+        return $this->hasView() && $this->getView()->hasControllerRequest();
     }
 
     protected function injectEventDependencies()
@@ -923,7 +928,6 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     public function setEvent(?ViewEvent $event): self
     {
         $this->event = $event;
-        $this->injectEventDependencies();
         return $this;
     }
 
@@ -965,64 +969,6 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     public function hasState(): bool
     {
         return isset($this->state);
-    }
-
-    /**
-     * @return ViewStatePersistenceInterface
-     */
-    public function getPersistence(): ViewStatePersistenceInterface
-    {
-        return $this->statePersistence;
-    }
-
-    /**
-     * @param ViewStatePersistenceInterface $persistence
-     *
-     * @return $this
-     */
-    public function setPersistence(ViewStatePersistenceInterface $persistence): self
-    {
-        $this->statePersistence = $persistence;
-        if ($this->hasState()) {
-            $this->getState()->setPersistence($persistence);
-        }
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasPersistence(): bool
-    {
-        return isset($this->statePersistence);
-    }
-
-
-    /**
-     * @return ViewRenderer
-     */
-    public function getRenderer(): ViewRenderer
-    {
-        return $this->renderer;
-    }
-
-    /**
-     * @param ViewRenderer $renderer
-     *
-     * @return $this
-     */
-    public function setRenderer(ViewRenderer $renderer): self
-    {
-        $this->renderer = $renderer;
-        return $this;
-    }
-
-    /**
-     * @return bool
-     */
-    public function hasRenderer(): bool
-    {
-        return isset($this->renderer);
     }
 
     /**
