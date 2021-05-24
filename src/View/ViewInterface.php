@@ -5,6 +5,7 @@ namespace Pars\Mvc\View;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Path\PathHelperAwareInterface;
+use Pars\Mvc\Controller\ControllerRequest;
 
 /**
  * Interface ViewInterface
@@ -85,4 +86,21 @@ interface ViewInterface extends BeanInterface, BeanConverterAwareInterface, Path
      * @return ViewInjector
      */
     public function getInjector(): ViewInjector;
+
+    /**
+     * @return ControllerRequest
+     */
+    public function getControllerRequest(): ControllerRequest;
+
+    /**
+     * @param ControllerRequest $controllerRequest
+     *
+     * @return $this
+     */
+    public function setControllerRequest(ControllerRequest $controllerRequest): self;
+
+    /**
+     * @return bool
+     */
+    public function hasControllerRequest(): bool;
 }

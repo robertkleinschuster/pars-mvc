@@ -560,7 +560,9 @@ abstract class AbstractController implements ControllerInterface
     public function execute(?Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface
     {
         $this->initialize();
-
+        if ($this->hasView()) {
+            $this->getView()->setControllerRequest($this->getControllerRequest());
+        }
         if ($throwable) {
             switch (true) {
                 case $throwable instanceof NotFoundException:
@@ -649,7 +651,7 @@ abstract class AbstractController implements ControllerInterface
      */
     protected function getRunner(): ControllerRunner
     {
-        return $this->getContainer()->get(ControllerRunner::class);;
+        return $this->getContainer()->get(ControllerRunner::class);
     }
 
     /**

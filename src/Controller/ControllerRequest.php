@@ -131,6 +131,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $pathHelper->setCurrentPathReal($this->getCurrentPathReal());
         $pathHelper->setController($this->getController());
         $pathHelper->setAction($this->getAction());
+        $pathHelper->setHash($this->getHash());
         if ($this->hasId()) {
             $pathHelper->setId($this->getId());
         }

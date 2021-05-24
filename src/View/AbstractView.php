@@ -5,6 +5,7 @@ namespace Pars\Mvc\View;
 use Pars\Bean\Converter\BeanConverterAwareTrait;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Path\PathHelperAwareTrait;
+use Pars\Mvc\Controller\ControllerRequest;
 
 abstract class AbstractView extends AbstractBaseBean implements ViewInterface
 {
@@ -16,6 +17,10 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
     protected ?LayoutInterface $layout = null;
     public ?string $template = null;
     protected ViewInjector $injector;
+    /**
+     *
+     */
+    protected ?ControllerRequest $controllerRequest = null;
 
     /**
      * @return LayoutInterface
@@ -176,6 +181,31 @@ abstract class AbstractView extends AbstractBaseBean implements ViewInterface
         }
         return $this->injector;
     }
+    /**
+     * @return ControllerRequest
+     */
+    public function getControllerRequest(): ControllerRequest
+    {
+        return $this->controllerRequest;
+    }
 
+    /**
+     * @param ControllerRequest $controllerRequest
+     *
+     * @return $this
+     */
+    public function setControllerRequest(ControllerRequest $controllerRequest): self
+    {
+        $this->controllerRequest = $controllerRequest;
+        return $this;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasControllerRequest(): bool
+    {
+        return isset($this->controllerRequest);
+    }
 
 }

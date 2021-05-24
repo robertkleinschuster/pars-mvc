@@ -6,6 +6,7 @@ use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Path\PathHelperAwareInterface;
+use Pars\Mvc\Controller\ControllerRequest;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;

@@ -11,6 +11,7 @@ use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Helper\Path\PathHelperAwareTrait;
 use Pars\Helper\Placeholder\PlaceholderHelper;
+use Pars\Mvc\Controller\ControllerRequest;
 use Pars\Mvc\View\Event\ViewEvent;
 use Pars\Mvc\View\State\ViewState;
 use Pars\Mvc\View\State\ViewStatePersistenceInterface;
@@ -106,6 +107,8 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      * @var ViewElement|null
      */
     protected ?ViewElement $parent = null;
+
+
 
     /**
      * HtmlElement constructor.
@@ -683,6 +686,16 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
         }
     }
 
+    public function getControllerRequest()
+    {
+        return $this->getView()->getControllerRequest();
+    }
+
+    public function hasControllerRequest()
+    {
+        return $this->getView()->hasControllerRequest();
+    }
+
     protected function injectEventDependencies()
     {
         if ($this->hasEvent()) {
@@ -1065,5 +1078,8 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     {
         return isset($this->parent);
     }
+
+
+
 
 }

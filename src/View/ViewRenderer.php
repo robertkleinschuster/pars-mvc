@@ -9,7 +9,6 @@ use Pars\Bean\Converter\BeanConverterAwareInterface;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
-use Pars\Pattern\Exception\CoreException;
 
 /**
  * Class ViewRenderer
