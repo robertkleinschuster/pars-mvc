@@ -157,7 +157,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     protected function handleName()
     {
         if ($this->hasName()) {
-            $this->getBefore()->unshift(new ViewElement('h3.mb-1.modal-hidden', $this->getName()));
+            $this->getBefore()->unshift(new ViewElement('h3.mb-2.modal-hidden', $this->getName()));
         }
     }
 
