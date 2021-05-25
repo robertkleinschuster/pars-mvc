@@ -18,6 +18,7 @@ use Pars\Mvc\Factory\ModelFactory;
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
 use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\LayoutInterface;
 use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewInterface;
 use Pars\Mvc\View\ViewRenderer;
@@ -48,9 +49,9 @@ abstract class AbstractController implements ControllerInterface
     private ControllerResponse $controllerResponse;
 
     /**
-     * @var ResponseFactoryInterface
+     * @var ServerResponseFactory
      */
-    private ResponseFactoryInterface $responseFactory;
+    private ServerResponseFactory $responseFactory;
 
     /**
      * @var ModelInterface
@@ -207,7 +208,7 @@ abstract class AbstractController implements ControllerInterface
     {
         if ($this->hasView()) {
             $this->view = null;
-            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         }
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Error</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Error</h1><p>{$exception->getMessage()}</p></body></html>");
     }
@@ -220,7 +221,7 @@ abstract class AbstractController implements ControllerInterface
         if ($this->hasView()) {
             $this->view = null;
         }
-        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Unauthorized</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Unauthorized</h1><p>Permission to requested ressource was denied!</p></body></html>");
     }
 
@@ -233,7 +234,7 @@ abstract class AbstractController implements ControllerInterface
         if ($this->hasView()) {
             $this->view = null;
         }
-        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Not found</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Not found</h1><p>The requested ressource was not found!</p><p>{$exception->getMessage()}</p></body></html>");
     }
 
@@ -468,7 +469,7 @@ abstract class AbstractController implements ControllerInterface
     public function getControllerResponse(): ControllerResponse
     {
         if (!isset($this->controllerResponse)) {
-            $this->controllerResponse = new ControllerResponse();
+            $this->controllerResponse = new ControllerResponse($this->getResponseFactory());
         }
         return $this->controllerResponse;
     }
@@ -525,6 +526,22 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @return bool
      */
+    public function hasViewLayout(): bool
+    {
+        return $this->hasView() && $this->getView()->hasLayout();
+    }
+
+    /**
+     * @return LayoutInterface
+     */
+    public function getViewLayout(): LayoutInterface
+    {
+        return $this->getView()->getLayout();
+    }
+
+    /**
+     * @return bool
+     */
     public function isAuthorized(): bool
     {
         return true;
@@ -543,14 +560,32 @@ abstract class AbstractController implements ControllerInterface
     /**
      * @return ResponseFactoryInterface
      */
-    public function getResponseFactory(): ResponseFactoryInterface
+    public function getResponseFactory(): ServerResponseFactory
     {
         return $this->responseFactory;
     }
 
     /**
      * @param Throwable|null $throwable
-     * @param ControllerSubAction|null $subAction
+     * @return mixed|ResponseInterface
+     * @throws MvcException
+     */
+    public function executeError(?Throwable $throwable)
+    {
+        $this->initialize();
+        switch (true) {
+            case $throwable instanceof NotFoundException:
+                $this->notfound($throwable);
+                break;
+            default:
+                $this->error($throwable);
+                break;
+        }
+        $this->finalize();
+        return $this->renderResponse();
+    }
+
+    /**
      * @return ResponseInterface
      * @throws ActionNotFoundException
      * @throws AttributeExistsException
@@ -560,90 +595,65 @@ abstract class AbstractController implements ControllerInterface
      * @throws MvcException
      * @throws ViewException
      */
-    public function execute(?Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface
+    public function execute(): ResponseInterface
     {
         $this->initialize();
-        if ($throwable) {
-            switch (true) {
-                case $throwable instanceof NotFoundException:
-                    $this->notfound($throwable);
-                    break;
-                default:
-                    $this->error($throwable);
-                    break;
-            }
-        } else {
-            if ($this->isAuthorized()) {
-                $methodBlacklist = get_class_methods(ControllerInterface::class);
-                $actionMethod = $this->getActionMethod($this->getControllerRequest()->getAction());
-                if (method_exists($this, $actionMethod) && !in_array($actionMethod, $methodBlacklist)) {
-                    $this->{$actionMethod}();
-                } else {
-                    throw new ActionNotFoundException("Controller action $actionMethod not found.");
-                }
+        if ($this->isAuthorized()) {
+            $methodBlacklist = get_class_methods(ControllerInterface::class);
+            $actionMethod = $this->getActionMethod($this->getControllerRequest()->getAction());
+            if (method_exists($this, $actionMethod) && !in_array($actionMethod, $methodBlacklist)) {
+                $this->{$actionMethod}();
             } else {
-                $this->getControllerResponse()->setStatusCode(401);
-                $this->unauthorized();
-            }
-        }
-
-        $this->finalize();
-        if ($this->hasParent() && $subAction) {
-            if (
-                $this->hasView()
-                && $this->getParent()->hasView()
-                && $this->getParent()->getView()->hasLayout()
-                && $this->getView()->hasLayout()
-            ) {
-                $parentJs = $this->getParent()->getView()->getJavascript();
-                $parentCss = $this->getParent()->getView()->getStylesheets();
-                $actionJs = $this->getView()->getJavascript();
-                $actionCss = $this->getView()->getStylesheets();
-                $this->getParent()->getView()->setStylesheets(array_unique(array_merge($parentCss, $actionCss)));
-                $this->getParent()->getView()->setJavascript(array_unique(array_merge($parentJs, $actionJs)));
-
-                $parentLayout = $this->getParent()->getView()->getLayout();
-                $sourceLayout = $this->getView()->getLayout();
-                $target = $parentLayout->getElementById($subAction->getTargetId());
-                $source = $sourceLayout->getElementById($subAction->getSourceId());
-                if ($target && $source) {
-                    $source->setId($subAction->getId());
-                    $source->removeOption('container-fluid');
-                    $target->push($source);
-                }
+                throw new ActionNotFoundException("Controller action $actionMethod not found.");
             }
         } else {
-            $runner = $this->getRunner();
-            $runner->runSubAction($this->getSubActionContainer());
-            if ($this->hasView()) {
-                $id = null;
-                if (
-                    $this->getControllerRequest()->hasEvent()
-                    && $this->getControllerRequest()->getEvent()->hasTarget()
-                ) {
-                    $id = $this->getControllerRequest()->getEvent()->getTarget();
-                }
-                if (!$this->getControllerResponse()->getBody()) {
-                    $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
-                }
-                foreach ($this->getView()->getInjector()->getItemList() as $item) {
-                    if ($item->getElement()->hasId()) {
-                        $this->getControllerResponse()->getInjector()->addHtml(
-                            $item->getElement()->render($this->getView()),
-                            $item->getSelector(),
-                            $item->getMode()
-                        );
-                    }
-                }
+            $this->getControllerResponse()->setStatusCode(401);
+            $this->unauthorized();
+        }
+        $this->finalize();
+        return $this->renderResponse();
+    }
+
+    /**
+     * @return ResponseInterface
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws ControllerNotFoundException
+     * @throws MvcException
+     * @throws ViewException
+     */
+    protected function renderResponse(): ResponseInterface
+    {
+        if ($this->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_VIEW)) {
+            $this->getRunner()->runSubActions($this->getSubActionContainer());
+            $this->renderView();
+        }
+        return $this->getControllerResponse()->createServerResponse();
+    }
+
+
+    /**
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws ViewException
+     */
+    protected function renderView()
+    {
+        if ($this->hasView()) {
+            $id = $this->getControllerRequest()->getEventTarget();
+            if (!$this->getControllerResponse()->hasBody()) {
+                $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
+            }
+            foreach ($this->getView()->getInjector()->getItemList() as $item) {
+                $this->getControllerResponse()->getInjector()->addHtml(
+                    $item->getElement()->render($this->getView()),
+                    $item->getSelector(),
+                    $item->getMode()
+                );
             }
         }
-
-
-        $responseFactory = $this->getResponseFactory();
-        if ($responseFactory instanceof ServerResponseFactory) {
-            $responseFactory->setControllerResponse($this->getControllerResponse());
-        }
-        return $responseFactory->createResponse();
     }
 
     /**

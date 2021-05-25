@@ -131,7 +131,6 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         $pathHelper->setCurrentPathReal($this->getCurrentPathReal());
         $pathHelper->setController($this->getController());
         $pathHelper->setAction($this->getAction());
-        $pathHelper->setHash($this->getHash());
         if ($this->hasId()) {
             $pathHelper->setId($this->getId());
         }
@@ -596,5 +595,15 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getCurrentPathReal(): string
     {
         return $this->getServerRequest()->getUri()->getPath() . '?' . $this->getServerRequest()->getUri()->getQuery();
+    }
+
+    public function getEventTarget()
+    {
+        $id = null;
+        if ($this->hasEvent() && $this->getEvent()->hasTarget())
+        {
+            $id = $this->getEvent()->getTarget();
+        }
+        return $id;
     }
 }

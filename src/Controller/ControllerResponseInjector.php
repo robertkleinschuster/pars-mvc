@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Mvc\View\ViewInjector;
+
 /**
  * Class ControllerResponseInjector
  * @package Pars\Mvc\Controller

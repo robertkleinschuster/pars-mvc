@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Mode\ModeAwareInterface;
@@ -12,6 +14,7 @@ use Pars\Pattern\Mode\ModeAwareTrait;
 use Pars\Pattern\Option\OptionAwareInterface;
 use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Mvc\Exception\MvcException;
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * Class ControllerResponse
@@ -31,7 +34,7 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public const ATTRIBUTE_REDIRECT_URI = 'redirect_url';
     public const ATTRIBUTE_FILENAME = 'filename';
 
-    public const OPTION_RENDER_RESPONSE = 'render_response';
+    public const OPTION_RENDER_VIEW = 'render_view';
 
     public const STATUS_NOT_FOUND = 404;
     public const STATUS_PERMISSION_DENIED = 401;
@@ -63,12 +66,18 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     private ?ViewEvent $event = null;
 
     /**
+     * @var ServerResponseFactory
+     */
+    protected ServerResponseFactory $responseFactory;
+
+    /**
      * ControllerResponseProperties constructor.
      */
-    public function __construct()
+    public function __construct(ServerResponseFactory $responseFactory)
     {
+        $this->responseFactory = $responseFactory;
         $this->setMode(self::MODE_HTML);
-        $this->addOption(self::OPTION_RENDER_RESPONSE);
+        $this->addOption(self::OPTION_RENDER_VIEW);
         $this->setStatusCode(self::STATUS_FOUND);
         $this->setHeaders([]);
         $this->setBody('');
@@ -117,6 +126,14 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public function getBody(): string
     {
         return $this->body ?? '';
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasBody(): bool
+    {
+        return strlen($this->getBody()) > 0;
     }
 
     /**
@@ -224,7 +241,7 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
             $this->setMode(self::MODE_REDIRECT);
         }
         $this->setAttribute(self::ATTRIBUTE_REDIRECT_URI, $uri);
-        $this->removeOption(self::OPTION_RENDER_RESPONSE);
+        $this->removeOption(self::OPTION_RENDER_VIEW);
         return true;
     }
 
@@ -238,9 +255,26 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public function setDownload(string $filename, string $body, string $contentType)
     {
         $this->setMode(self::MODE_DOWNLOAD);
-        $this->unsetOption(self::OPTION_RENDER_RESPONSE);
+        $this->unsetOption(self::OPTION_RENDER_VIEW);
         $this->setAttribute(self::ATTRIBUTE_FILENAME, $filename);
         $this->setBody($body);
         $this->setHeaders(['Content-Type' => $contentType]);
+    }
+
+    /**
+     * @return ServerResponseFactory
+     */
+    public function getResponseFactory(): ServerResponseFactory
+    {
+        return $this->responseFactory;
+    }
+
+    /**
+     * @return ResponseInterface
+     * @throws MvcException
+     */
+    public function createServerResponse(): ResponseInterface
+    {
+        return $this->getResponseFactory()->setControllerResponse($this)->createResponse();
     }
 }

@@ -16,6 +16,7 @@ use Pars\Bean\Type\Base\BeanException;
 use Pars\Bean\Type\Base\BeanInterface;
 use Pars\Bean\Type\Base\BeanListAwareInterface;
 use Pars\Bean\Type\Base\BeanListInterface;
+use Pars\Helper\Debug\DebugHelper;
 use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;

@@ -786,9 +786,15 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      */
     public function generateId(): string
     {
-        $this->setId(
-            substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10)
-        );
+        if (!$this->hasId()) {
+            if ($this->hasControllerRequest()) {
+                $this->setId($this->getElementClass() . $this->getControllerRequest()->getHash());
+            } else {
+                $this->setId(
+                    substr(str_shuffle(str_repeat($x = 'abcdefghijklmnopqrstuvwxyz', (int)(ceil(10 / strlen($x))))), 1, 10)
+                );
+            }
+        }
         return $this->getId();
     }
 

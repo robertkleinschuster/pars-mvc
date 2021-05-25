@@ -60,6 +60,15 @@ export class ViewEventHandler {
                     }
                 }
                 let uri = new URL(viewEvent.path, document.baseURI);
+
+                let debugElementRow = debugElementBody.insertRow();
+                debugElementRow.style.borderBottom = '1px black solid';
+                let cellName = debugElementRow.insertCell();
+                cellName.innerText = 'PATH';
+                cellName.style.verticalAlign = 'top';
+                cellName.style.borderRight = '1px black solid';
+                cellName.style.fontWeight = 500;
+                debugElementRow.insertCell().append(uri.pathname);
                 uri.searchParams.forEach((param, name) => {
                     let debugElementRow = debugElementBody.insertRow();
                     debugElementRow.style.borderBottom = '1px black solid';

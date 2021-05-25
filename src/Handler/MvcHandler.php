@@ -8,6 +8,7 @@ use Exception;
 use Mezzio\Router\RouteResult;
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Type\Base\BeanException;
+use Pars\Helper\Debug\DebugHelper;
 use Pars\Helper\Parameter\NavParameter;
 use Pars\Mvc\Controller\AbstractController;
 use Pars\Mvc\Controller\ControllerInterface;

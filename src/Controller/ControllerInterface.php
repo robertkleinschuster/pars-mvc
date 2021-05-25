@@ -6,6 +6,7 @@ namespace Pars\Mvc\Controller;
 
 use Pars\Helper\Path\PathHelper;
 use Pars\Mvc\Model\ModelInterface;
+use Pars\Mvc\View\LayoutInterface;
 use Pars\Mvc\View\ViewInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -83,13 +84,29 @@ interface ControllerInterface
     /**
      * @return bool
      */
+    public function hasViewLayout(): bool;
+
+    /**
+     * @return LayoutInterface
+     */
+    public function getViewLayout(): LayoutInterface;
+
+    /**
+     * @return bool
+     */
     public function isAuthorized(): bool;
 
     /**
      * @param Throwable|null $throwable
      * @return ResponseInterface
      */
-    public function execute(Throwable $throwable = null, ?ControllerSubAction $subAction = null): ResponseInterface;
+    public function execute(): ResponseInterface;
+
+    /**
+     * @param Throwable|null $throwable
+     * @return mixed
+     */
+    public function executeError(?Throwable $throwable);
 
     /**
      * @return ControllerInterface|null
