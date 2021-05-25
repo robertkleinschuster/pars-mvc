@@ -39,8 +39,6 @@ class ControllerSubActionContainer implements \IteratorAggregate
     }
 
 
-
-
     /**
      * @param ControllerSubAction $action
      * @return $this
@@ -59,6 +57,12 @@ class ControllerSubActionContainer implements \IteratorAggregate
     public function get(string $id): ControllerSubAction
     {
         return $this->list[$this->idGroupMap[$id]];
+    }
+
+    public function clear()
+    {
+        $this->list = [];
+        $this->idGroupMap = [];
     }
 
     /**
