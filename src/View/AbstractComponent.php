@@ -24,6 +24,7 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
     private ?ViewElement $before = null;
     private ?ViewElement $after = null;
     private ?ViewElement $main = null;
+    protected bool $showToolbar = true;
 
     /**
      * @param FieldInterface $field
@@ -112,11 +113,13 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
 
     protected function handleToolbar()
     {
-        if ($this->hasToolbar()) {
-            $this->getMain()->push($this->getToolbar());
-        }
-        if ($this->hasSubToolbar()) {
-            $this->getMain()->push($this->getSubToolbar());
+        if ($this->isShowToolbar()) {
+            if ($this->hasToolbar()) {
+                $this->getMain()->push($this->getToolbar());
+            }
+            if ($this->hasSubToolbar()) {
+                $this->getMain()->push($this->getSubToolbar());
+            }
         }
     }
 
@@ -304,5 +307,24 @@ abstract class AbstractComponent extends ViewElement implements ComponentInterfa
         }
         return $this->subToolbar;
     }
+
+    /**
+     * @return bool
+     */
+    public function isShowToolbar(): bool
+    {
+        return $this->showToolbar;
+    }
+
+    /**
+     * @param bool $showToolbar
+     * @return AbstractComponent
+     */
+    public function setShowToolbar(bool $showToolbar): AbstractComponent
+    {
+        $this->showToolbar = $showToolbar;
+        return $this;
+    }
+
 
 }
