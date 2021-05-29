@@ -97,7 +97,6 @@ interface ControllerInterface
     public function isAuthorized(): bool;
 
     /**
-     * @param Throwable|null $throwable
      * @return ResponseInterface
      */
     public function execute(): ResponseInterface;

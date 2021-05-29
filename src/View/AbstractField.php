@@ -194,19 +194,8 @@ abstract class AbstractField extends ViewElement implements FieldInterface
         return parent::render($bean, $placeholders);
     }
 
-    /**
-     * @param bool $hide
-     * @return $this
-     */
-    public function hideInModal(bool $hide): self
-    {
-        if ($hide) {
-            $this->addOption('modal-hidden');
-        } else {
-            $this->removeOption('modal-hidden');
-        }
-        return $this;
-    }
+
+
 
     /**
      * @return int

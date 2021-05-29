@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Laminas\Diactoros\CallbackStream;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
@@ -25,6 +26,7 @@ use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Exception\AttributeExistsException;
 use Pars\Pattern\Exception\AttributeLockException;
 use Pars\Pattern\Exception\AttributeNotFoundException;
+use Pars\Pattern\Exception\CoreException;
 use Psr\Container\ContainerInterface;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
@@ -597,6 +599,7 @@ abstract class AbstractController implements ControllerInterface
      */
     public function execute(): ResponseInterface
     {
+        ob_start();
         $this->initialize();
         if ($this->isAuthorized()) {
             $methodBlacklist = get_class_methods(ControllerInterface::class);
@@ -611,6 +614,7 @@ abstract class AbstractController implements ControllerInterface
             $this->unauthorized();
         }
         $this->finalize();
+        ob_get_clean();
         return $this->renderResponse();
     }
 
@@ -625,10 +629,19 @@ abstract class AbstractController implements ControllerInterface
      */
     protected function renderResponse(): ResponseInterface
     {
-        if ($this->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_VIEW)) {
-            $this->getRunner()->runSubActions($this->getSubActionContainer());
-            $this->renderView();
-        }
+        $render = function () {
+            if ($this->getControllerResponse()->isMode(ControllerResponse::MODE_HTML)) {
+                flush();
+            }
+            if ($this->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_VIEW)) {
+                $this->getRunner()->runSubActions($this->getSubActionContainer());
+                if (!$this->hasParent()) {
+                    $this->renderView();
+                }
+            }
+        };
+        $stream = new CallbackStream($render);
+        $this->getControllerResponse()->setBody($stream);
         return $this->getControllerResponse()->createServerResponse();
     }
 
@@ -643,9 +656,7 @@ abstract class AbstractController implements ControllerInterface
     {
         if ($this->hasView()) {
             $id = $this->getControllerRequest()->getEventTarget();
-            if (!$this->getControllerResponse()->hasBody()) {
-                $this->getControllerResponse()->setBody($this->getViewRenderer()->render($this->getView(), $id));
-            }
+            $this->getViewRenderer()->display($this->getView(), $id);
             foreach ($this->getView()->getInjector()->getItemList() as $item) {
                 $this->getControllerResponse()->getInjector()->addHtml(
                     $item->getElement()->render($this->getView()),

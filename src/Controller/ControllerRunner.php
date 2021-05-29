@@ -110,6 +110,7 @@ class ControllerRunner
             $sourceLayout = $controller->getViewLayout();
             $target = $parentLayout->getElementById($subAction->getTargetId());
             $source = $sourceLayout->getElementById($subAction->getSourceId());
+            $source->setView($parent->getView());
             if ($target && $source) {
                 $source->setId($subAction->getId());
                 $source->removeOption('container-fluid');

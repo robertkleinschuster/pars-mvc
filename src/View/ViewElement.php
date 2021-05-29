@@ -377,6 +377,16 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
     }
 
     /**
+     * @param string $content
+     * @return $this
+     */
+    public function appendContent(string $content): self
+    {
+        $this->content .= $content;
+        return $this;
+    }
+
+    /**
      * @return bool
      */
     public function hasContent(): bool
@@ -449,21 +459,44 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      */
     public function render(BeanInterface $bean = null, bool $placeholders = false): string
     {
+      ob_start();
+      $this->display($bean, $placeholders);
+      return ob_get_clean();
+    }
+
+    /**
+     * @param BeanInterface|null $bean
+     * @param bool $placeholders
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    public function display(BeanInterface $bean = null, bool $placeholders = false): void
+    {
         $this->handleInitialize();
-        if ($this instanceof BeanAwareInterface && $this->hasBean()) {
+        if ($this->hasBean()) {
             $placeholders = true;
             $bean = $this->getBean();
         }
         $this->beforeRender($bean);
-        $result = '';
-        $result .= $this->renderOpenTag($bean);
-        $result .= $this->renderValue($bean);
-        $result .= $this->renderElements($bean);
-        $result .= $this->renderCloseTag($bean);
+        ob_start();
+        $this->renderOpenTag($bean);
+        $this->renderValue($bean);
+        $this->renderElements($bean);
+        $this->renderCloseTag($bean);
+        $result = ob_get_clean();
         if ($bean !== null && $placeholders) {
             $result = $this->replacePlaceholder($result, $bean);
         }
-        return $result;
+        if ($this->isFlush()) {
+            flush();
+        }
+        echo $result;
+    }
+
+    protected function isFlush()
+    {
+        return $this->hasView() && $this->getView()->hasRenderer() && $this->getView()->getRenderer()->isFlush();
     }
 
     /**
@@ -616,36 +649,32 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      * @param BeanInterface|null $bean
      * @return string
      */
-    protected function renderValue(BeanInterface $bean = null): string
+    protected function renderValue(BeanInterface $bean = null): void
     {
-        $result = '';
         if ($this->hasContent()) {
-            $result .= $this->getContent($bean);
+            echo $this->getContent($bean);
         }
-        return $result;
     }
 
     /**
      * @param BeanInterface|null $bean
      * @return string
      */
-    protected function renderElements(BeanInterface $bean = null): string
+    protected function renderElements(BeanInterface $bean = null): void
     {
-        $result = '';
         if ($this->hasElementList()) {
             foreach ($this->getElementList() as $element) {
                 try {
                     $element->setParent($this);
                     $this->injectDependencies($element, false);
                     $this->beforeRenderElement($element, $bean);
-                    $result .= $element->render($bean);
+                    echo $element->render($bean);
                 } catch (\Throwable $error) {
-                    $result .= $error->getMessage();
-                    $result .= str_replace(PHP_EOL, '<br>', $error->getTraceAsString());
+                    echo $error->getMessage();
+                    echo str_replace(PHP_EOL, '<br>', $error->getTraceAsString());
                 }
             }
         }
-        return $result;
     }
 
     /***
@@ -732,50 +761,44 @@ class ViewElement extends AbstractBaseBean implements ViewElementInterface
      * @param BeanInterface|null $bean
      * @return string
      */
-    public function renderOpenTag(BeanInterface $bean = null): string
+    protected function renderOpenTag(BeanInterface $bean = null): void
     {
-        $tag = '';
         if ($this->hasPath()) {
             $this->addOption('position-relative');
         }
         $attributes = $this->getHtmlAttributes($bean, true);
         if (empty($attributes)) {
-            $tag .= "<{$this->getTag()}>";
+            echo "<{$this->getTag()}>";
         } else {
-            $tag .= "<{$this->getTag()} {$attributes}>";
+            echo "<{$this->getTag()} {$attributes}>";
         }
         if ($this->hasPath()) {
             if ($this->hasTarget()) {
                 if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                    echo "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
                 } else {
-                    $tag .= "<a class='text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
+                    echo "<a class='text-reset stretched-link' href='{$this->getPath($bean)}' target='{$this->getTarget()}'>";
                 }
             } else {
                 if ($this->hasOption('text-decoration-none')) {
-                    $tag .= "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}'>";
+                    echo "<a class='text-decoration-none text-reset stretched-link' href='{$this->getPath($bean)}'>";
                 } else {
-                    $tag .= "<a class='text-reset stretched-link' href='{$this->getPath($bean)}'>";
+                    echo "<a class='text-reset stretched-link' href='{$this->getPath($bean)}'>";
                 }
             }
         }
-
-        return $tag;
     }
 
     /**
      * @param BeanInterface|null $bean
      * @return string
      */
-    public function renderCloseTag(BeanInterface $bean = null): string
+    protected function renderCloseTag(BeanInterface $bean = null): void
     {
-        $tag = '';
         if ($this->hasPath()) {
-            $tag .= "</a>";
+            echo "</a>";
         }
-        $tag .= "</{$this->getTag()}>";
-
-        return $tag;
+        echo "</{$this->getTag()}>";
     }
 
     /**

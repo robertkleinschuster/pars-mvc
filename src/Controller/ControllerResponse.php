@@ -6,7 +6,6 @@ namespace Pars\Mvc\Controller;
 
 use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\View\Event\ViewEvent;
-use Pars\Mvc\View\ViewRenderer;
 use Pars\Pattern\Attribute\AttributeAwareInterface;
 use Pars\Pattern\Attribute\AttributeAwareTrait;
 use Pars\Pattern\Mode\ModeAwareInterface;
@@ -15,6 +14,7 @@ use Pars\Pattern\Option\OptionAwareInterface;
 use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Mvc\Exception\MvcException;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Class ControllerResponse
@@ -41,7 +41,7 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     public const STATUS_FOUND = 200;
 
     /**
-     * @var string
+     * @var string|StreamInterface
      */
     private $body;
 
@@ -121,9 +121,9 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     }
 
     /**
-     * @return string
+     * @return string|StreamInterface
      */
-    public function getBody(): string
+    public function getBody()
     {
         return $this->body ?? '';
     }
@@ -137,9 +137,9 @@ class ControllerResponse implements OptionAwareInterface, AttributeAwareInterfac
     }
 
     /**
-     * @param string $body
+     * @param string|StreamInterface $body
      */
-    public function setBody(string $body): void
+    public function setBody($body): void
     {
         $this->body = $body;
     }

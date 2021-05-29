@@ -6,10 +6,7 @@ namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
-use Pars\Pattern\Exception\AttributeExistsException;
-use Pars\Pattern\Exception\AttributeLockException;
-use Pars\Pattern\Exception\AttributeNotFoundException;
-
+use Pars\Helper\Debug\DebugHelper;
 /**
  * Class ViewRenderer
  * @package Pars\Mvc\View
@@ -28,6 +25,11 @@ class ViewRenderer
      * @var string
      */
     private string $templateFolder;
+
+    /**
+     * @var bool
+     */
+    protected bool $flush = true;
 
     /**
      * ViewRenderer constructor.
@@ -59,14 +61,14 @@ class ViewRenderer
     /**
      * @param ViewInterface $view
      * @param string|null $id
-     * @return string
      * @throws ViewException
-     * @throws AttributeExistsException
-     * @throws AttributeLockException
-     * @throws AttributeNotFoundException
      */
-    public function render(ViewInterface $view, ?string $id = null): string
+    public function display(ViewInterface $view, ?string $id = null)
     {
+        $view->setRenderer($this);
+        if (DebugHelper::hasDebug()) {
+            echo DebugHelper::getDebug();
+        }
         $this->getTemplateRenderer()->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
             'templateFolder',
@@ -81,25 +83,47 @@ class ViewRenderer
             $view->setBeanConverter(new ViewBeanConverter());
         }
         if ($view->hasTemplate()) {
-            return $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
+            echo $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
         } elseif ($view->hasLayout()) {
-            $result = self::HTML_START;
+            echo self::HTML_START;
             $bean = $view->hasBeanConverter() ? $view->getBeanConverter()->convert($view) : $view;
-            if ($id !== null) {
-                $id = str_replace('#', '', $id);
-                $result = '';
-                $renderable = $view->getLayout()->getElementById($id);
-            } else {
+            if ($id === null) {
                 $renderable = $view->getLayout();
+            } else {
+                $id = str_replace('#', '', $id);
+                $renderable = $view->getLayout()->getElementById($id);
             }
             if ($renderable instanceof RenderableInterface) {
                 $renderable->setView($view);
-                $result .= $renderable->render($bean, true);
+                $renderable->display($bean, true);
             }
-            return $result;
         } else {
             $class = get_class($view);
             throw new ViewException("Could not render view {$class}, no template or layout set.");
         }
     }
+
+    /**
+     * @param ViewInterface $view
+     * @param string|null $id
+     * @return string
+     * @throws ViewException
+     */
+    public function render(ViewInterface $view, ?string $id = null): string
+    {
+        $this->flush = false;
+        ob_start();
+        $this->display($view, $id);
+        return ob_get_clean();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFlush(): bool
+    {
+        return $this->flush;
+    }
+
+
 }

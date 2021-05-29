@@ -29,16 +29,6 @@ class ViewBeanConverter extends AbstractBeanConverter
             case \DateTime::class:
                 try {
                     if ($value instanceof \DateTime) {
-                        if ($this->hasTimezone()) {
-                            $timezone = $this->getTimezone();
-                            $userTimezone = new \DateTimeZone($timezone);
-                            $offset = $userTimezone->getOffset($value);
-                            $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                            if ($value->getTimezone()->getName() != $userTimezone->getName()) {
-                                #$value->add($myInterval);
-                                #$value->setTimezone($userTimezone);
-                            }
-                        }
                         return $value->format(self::DATE_FORMAT);
                     } else {
                         return '';
@@ -79,16 +69,6 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value === 'true' || $value === true;
             case \DateTime::class:
                 $value = new \DateTime($value);
-                if ($this->hasTimezone()) {
-                    $timezone = $this->getTimezone();
-                    $userTimezone = new \DateTimeZone($timezone);
-                    $offset = $userTimezone->getOffset($value);
-                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                    if ($value->getTimezone()->getName() != $userTimezone->getName()) {
-                        #$value->sub($myInterval);
-                        #$value->setTimezone($userTimezone);
-                    }
-                }
                 return $value;
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;

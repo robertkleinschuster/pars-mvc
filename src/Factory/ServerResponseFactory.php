@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Factory;
 
+use Laminas\Diactoros\CallbackStream;
 use Laminas\Diactoros\Response;
 use Laminas\Diactoros\Response\HtmlResponse;
 use Laminas\Diactoros\Response\JsonResponse;
@@ -14,6 +15,7 @@ use Pars\Mvc\Controller\ControllerResponse;
 use Pars\Mvc\Exception\MvcException;
 use Psr\Http\Message\ResponseFactoryInterface;
 use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\StreamInterface;
 
 /**
  * Class ServerResponseFactory
@@ -74,32 +76,40 @@ class ServerResponseFactory implements ResponseFactoryInterface
      */
     protected function createServerResponse(ControllerResponse $controllerResponse)
     {
+        $body = $controllerResponse->getBody();
         switch ($controllerResponse->getMode()) {
             case ControllerResponse::MODE_HTML:
-                if (DebugHelper::hasDebug()) {
-                    $controllerResponse->setBody(DebugHelper::getDebug() . $controllerResponse->getBody());
-                }
                 return new HtmlResponse(
                     $controllerResponse->getBody(),
                     $controllerResponse->getStatusCode(),
                     $controllerResponse->getHeaders()
                 );
             case ControllerResponse::MODE_JSON:
-                $data = [
-                    'html' => $controllerResponse->getBody(),
-                    'attributes' => $controllerResponse->getAttributes(),
-                    'inject' => $controllerResponse->getInjector()->toArray(),
-                ];
-                if ($controllerResponse->hasEvent()) {
-                    $data['event'] = $controllerResponse->getEvent()->toArray(true);
-                }
-                if (DebugHelper::hasDebug()) {
-                    $data['debug'] = [
-                      'data' => DebugHelper::getDebugList(),
-                      'trace' => DebugHelper::getDebug(),
+                $function = function () use ($body, $controllerResponse) {
+                    flush();
+                    if ($body instanceof StreamInterface) {
+                        ob_start();
+                        $body = $body->getContents();
+                        $body .= ob_get_clean();
+                    }
+                    $data = [
+                        'html' => $body,
+                        'attributes' => $controllerResponse->getAttributes(),
+                        'inject' => $controllerResponse->getInjector()->toArray(),
                     ];
-                }
-                return new JsonResponse($data, $controllerResponse->getStatusCode(), $controllerResponse->getHeaders());
+                    if ($controllerResponse->hasEvent()) {
+                        $data['event'] = $controllerResponse->getEvent()->toArray(true);
+                    }
+                    if (DebugHelper::hasDebug()) {
+                        $data['debug'] = [
+                            'data' => DebugHelper::getDebugList(),
+                            'trace' => DebugHelper::getDebug(),
+                        ];
+                    }
+                    return json_encode($data, JsonResponse::DEFAULT_JSON_FLAGS);
+                };
+                return (new Response(new CallbackStream($function), $controllerResponse->getStatusCode(), $controllerResponse->getHeaders()))
+                    ->withAddedHeader('content-type', 'application/json');
             case ControllerResponse::MODE_REDIRECT:
                 return new RedirectResponse(
                     (new UriFactory())->createUri(
