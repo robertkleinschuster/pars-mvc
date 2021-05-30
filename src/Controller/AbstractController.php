@@ -208,6 +208,9 @@ abstract class AbstractController implements ControllerInterface
      */
     public function error(Throwable $exception)
     {
+        if ($exception instanceof NotFoundException) {
+            return $this->notfound($exception);
+        }
         if ($this->hasView()) {
             $this->view = null;
             $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
@@ -574,17 +577,12 @@ abstract class AbstractController implements ControllerInterface
      */
     public function executeError(?Throwable $throwable)
     {
+        ob_start();
         $this->initialize();
-        switch (true) {
-            case $throwable instanceof NotFoundException:
-                $this->notfound($throwable);
-                break;
-            default:
-                $this->error($throwable);
-                break;
-        }
+        $this->error($throwable);
         $this->finalize();
-        return $this->renderResponse();
+        $output = ob_get_clean();
+        return $this->renderResponse($output);
     }
 
     /**
@@ -601,6 +599,14 @@ abstract class AbstractController implements ControllerInterface
     {
         ob_start();
         $this->initialize();
+        $this->action();
+        $this->finalize();
+        $output = ob_get_clean();
+        return $this->renderResponse($output);
+    }
+
+    protected function action()
+    {
         if ($this->isAuthorized()) {
             $methodBlacklist = get_class_methods(ControllerInterface::class);
             $actionMethod = $this->getActionMethod($this->getControllerRequest()->getAction());
@@ -613,24 +619,21 @@ abstract class AbstractController implements ControllerInterface
             $this->getControllerResponse()->setStatusCode(401);
             $this->unauthorized();
         }
-        $this->finalize();
-        ob_get_clean();
-        return $this->renderResponse();
     }
 
     /**
+     * @param string $output
      * @return ResponseInterface
-     * @throws AttributeExistsException
-     * @throws AttributeLockException
-     * @throws AttributeNotFoundException
-     * @throws ControllerNotFoundException
      * @throws MvcException
-     * @throws ViewException
      */
-    protected function renderResponse(): ResponseInterface
+    protected function renderResponse(string $output): ResponseInterface
     {
-        $render = function () {
+        if ($this->hasParent()) {
+            echo $output;
+        }
+        $render = function () use ($output) {
             if ($this->getControllerResponse()->isMode(ControllerResponse::MODE_HTML)) {
+                echo $output;
                 flush();
             }
             if ($this->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_VIEW)) {
