@@ -44,27 +44,12 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
 
     public const CONTROLLER_ATTRIBUTE = 'controller';
     public const ACTION_ATTRIBUTE = 'action';
-    public const STATIC_FILES_ATTRIBUTE = 'static_files';
 
     /**
      * @var ContainerInterface
      */
     protected ContainerInterface $container;
 
-    /**
-     * @var TemplateRendererInterface
-     */
-    private TemplateRendererInterface $renderer;
-
-    /**
-     * @var ControllerFactory
-     */
-    private ControllerFactory $controllerFactory;
-
-    /**
-     * @var array
-     */
-    private array $appConfig;
 
     /**
      * MvcHandler constructor.
@@ -73,9 +58,6 @@ class MvcHandler implements RequestHandlerInterface, MiddlewareInterface
     public function __construct(ContainerInterface $container)
     {
         $this->container = $container;
-        $this->renderer = $container->get(TemplateRendererInterface::class);
-        $this->controllerFactory = $container->get(ControllerFactory::class);
-        $this->appConfig = $container->get('config');
     }
 
     /**

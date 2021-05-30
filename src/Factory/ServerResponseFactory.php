@@ -28,18 +28,18 @@ class ServerResponseFactory implements ResponseFactoryInterface
 
 
     /**
-    * @return ControllerResponse
-    */
+     * @return ControllerResponse
+     */
     public function getControllerResponse(): ControllerResponse
     {
         return $this->controllerResponse;
     }
 
     /**
-    * @param ControllerResponse $controllerResponse
-    *
-    * @return $this
-    */
+     * @param ControllerResponse $controllerResponse
+     *
+     * @return $this
+     */
     public function setControllerResponse(ControllerResponse $controllerResponse): self
     {
         $this->controllerResponse = $controllerResponse;
@@ -47,8 +47,8 @@ class ServerResponseFactory implements ResponseFactoryInterface
     }
 
     /**
-    * @return bool
-    */
+     * @return bool
+     */
     public function hasControllerResponse(): bool
     {
         return isset($this->controllerResponse);
@@ -79,11 +79,11 @@ class ServerResponseFactory implements ResponseFactoryInterface
         $body = $controllerResponse->getBody();
         switch ($controllerResponse->getMode()) {
             case ControllerResponse::MODE_HTML:
-                return new HtmlResponse(
+                return (new HtmlResponse(
                     $controllerResponse->getBody(),
                     $controllerResponse->getStatusCode(),
                     $controllerResponse->getHeaders()
-                );
+                ))->withAddedHeader('X-Accel-Buffering', 'no');
             case ControllerResponse::MODE_JSON:
                 $function = function () use ($body, $controllerResponse) {
                     flush();
@@ -109,7 +109,8 @@ class ServerResponseFactory implements ResponseFactoryInterface
                     return json_encode($data, JsonResponse::DEFAULT_JSON_FLAGS);
                 };
                 return (new Response(new CallbackStream($function), $controllerResponse->getStatusCode(), $controllerResponse->getHeaders()))
-                    ->withAddedHeader('content-type', 'application/json');
+                    ->withAddedHeader('content-type', 'application/json')
+                    ->withAddedHeader('X-Accel-Buffering', 'no');
             case ControllerResponse::MODE_REDIRECT:
                 return new RedirectResponse(
                     (new UriFactory())->createUri(
