@@ -46,6 +46,8 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     use AttributeAwareTrait;
     use PathHelperAwareTrait;
 
+    public const ATTRIBUTE_EVENT = 'pars-view-event-data';
+
     /**
      * @var ServerRequestInterface
      */
@@ -94,12 +96,11 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
             $this->setAttribute($key, $value);
         }
         $this->setPathHelper($this->initPathHelper($pathHelper));
-        $queryParams = $serverRequest->getQueryParams();
         $event = null;
-        if (isset($queryParams['pars-view-event-data'])) {
-            $event = json_decode($queryParams['pars-view-event-data'], true);
-        } elseif ($serverRequest->hasHeader('pars-view-event-data')) {
-            $event = json_decode($serverRequest->getHeaderLine('pars-view-event-data'), true);
+        if ($this->hasAttribute(self::ATTRIBUTE_EVENT)) {
+            $event = json_decode($this->getAttribute(self::ATTRIBUTE_EVENT), true);
+        } elseif ($serverRequest->hasHeader(self::ATTRIBUTE_EVENT)) {
+            $event = json_decode($serverRequest->getHeaderLine(self::ATTRIBUTE_EVENT), true);
         }
         if ($event) {
             $this->setEvent(new ViewEvent($event));

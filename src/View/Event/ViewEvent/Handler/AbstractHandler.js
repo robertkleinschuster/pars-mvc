@@ -42,11 +42,12 @@ export class AbstractHandler {
     }
 
     _buildFetchOptions(viewEvent: ViewEvent): RequestInit {
+        let formData = new FormData();
+        formData.set('pars-view-event-data', JSON.stringify(viewEvent))
         return {
-            headers: {
-                'pars-ajax': 'true',
-                'pars-view-event-data': JSON.stringify(viewEvent)
-            },
+            headers: {'pars-ajax': 'true'},
+            method: 'post',
+            body: formData
         };
     }
 
