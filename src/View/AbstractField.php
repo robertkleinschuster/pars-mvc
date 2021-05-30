@@ -21,6 +21,7 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     public ?string $template = null;
     public ?string $label = null;
     public ?string $labelPath = null;
+    public ?string $tooltip = null;
     public int $row = 1;
     public int $column = 1;
 
@@ -39,6 +40,23 @@ abstract class AbstractField extends ViewElement implements FieldInterface
         $this->label = $label;
         $this->content = $content;
     }
+
+    protected function initialize()
+    {
+        parent::initialize();
+
+    }
+
+    protected function beforeRender(BeanInterface $bean = null)
+    {
+        parent::beforeRender($bean);
+        if ($this->hasTooltip()) {
+            $this->setData('bs-toggle', 'tooltip');
+            $this->setData('bs-placement', 'top');
+            $this->setAttribute('title', $this->getTooltip());
+        }
+    }
+
 
     public function getTemplate(): string
     {
@@ -233,5 +251,32 @@ abstract class AbstractField extends ViewElement implements FieldInterface
         return $this;
     }
 
+
+    /**
+    * @return string
+    */
+    public function getTooltip(): ?string
+    {
+        return $this->tooltip;
+    }
+
+    /**
+    * @param string $tooltip
+    *
+    * @return $this
+    */
+    public function setTooltip(?string $tooltip): self
+    {
+        $this->tooltip = $tooltip;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasTooltip(): bool
+    {
+        return isset($this->tooltip);
+    }
 
 }
