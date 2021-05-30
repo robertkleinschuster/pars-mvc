@@ -149,6 +149,7 @@ class ViewEvent extends AbstractBaseBean
             'path' => $path,
             'id' => $id,
             'target' => "#$id",
+            'history' => false
         ]))->setCallback($callback);
     }
 
@@ -158,7 +159,8 @@ class ViewEvent extends AbstractBaseBean
             'type' => self::TYPE_REFRESH_FORM,
             'trigger' => self::TRIGGER_CHANGE,
             'form' => $form,
-            'target'=> "#$form"
+            'target'=> "#$form",
+            'history' => false
         ]));
     }
 
@@ -167,11 +169,12 @@ class ViewEvent extends AbstractBaseBean
      * @param string|null $path
      * @return static
      */
-    public static function createLink(string $path = null): self
+    public static function createLink(string $path = null, bool $history = true): self
     {
         return new static([
             'type' => self::TYPE_LINK,
             'path' => $path,
+            'history' => $history,
         ]);
     }
 
