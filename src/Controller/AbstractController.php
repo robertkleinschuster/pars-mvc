@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Pars\Mvc\Controller;
 
 use Laminas\Diactoros\CallbackStream;
+use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
@@ -296,11 +298,11 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasSearch()) {
-            if ($this->getControllerRequest()->isPost()) {
+            if ($this->getControllerRequest()->hasPostData(SearchParameter::name())) {
                 $path = $this->getPathHelper(true);
                 $data = $this->getControllerRequest()->getPostData();
                 if (isset($data[$path->getSearch()->name()])) {
-                    $path->getSearch()->fromData($data[$path->getSearch()->name()]);
+                    $path->getSearch()->fromData($data[$path->getSearch()->name()])->removeEmpty();
                 }
                 $this->getControllerResponse()->setRedirect($path->getPath());
             }
@@ -343,15 +345,15 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasFilter()) {
-            if ($this->getControllerRequest()->isPost()) {
+            if ($this->getControllerRequest()->hasPostData(FilterParameter::name())) {
                 $path = $this->getPathHelper(true);
                 $data = $this->getControllerRequest()->getPostData();
                 if (isset($data[$path->getFilter()->name()])) {
-                    $path->getFilter()->fromData($data[$path->getFilter()->name()]);
+                    $path->getFilter()->fromData($data[$path->getFilter()->name()])->removeEmpty();
                 }
                 $this->getControllerResponse()->setRedirect($path->getPath());
             }
-            $filterParemter = $this->getControllerRequest()->getFilter();
+            $filterParemter = $this->getControllerRequest()->getFilter()->removeEmpty();
             if ($this->getControllerRequest()->acceptParameter($filterParemter)) {
                 $this->getModel()->handleFilter($filterParemter);
             }

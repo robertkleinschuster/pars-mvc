@@ -548,6 +548,12 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
         return (array)$this->getServerRequest()->getParsedBody();
     }
 
+    public function hasPostData(string $key): bool
+    {
+        $data = $this->getServerRequest()->getParsedBody();
+        return isset($data[$key]);
+    }
+
     /**
      * @return bool
      */
