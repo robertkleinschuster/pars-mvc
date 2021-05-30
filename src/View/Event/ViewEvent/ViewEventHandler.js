@@ -21,6 +21,9 @@ export class ViewEventHandler {
         this.#root.querySelectorAll('[data-event]')
             .forEach(this.#attachEvents.bind(this));
         this.listeners.push(this.#injectorCallback.bind(this));
+        window.onpopstate = event => {
+            window.location = event.state.event.path;
+        };
         return this;
     }
 
@@ -32,8 +35,7 @@ export class ViewEventHandler {
         if (element && element.matches('[data-event]')) {
             const viewEvent: ViewEvent = ViewEvent.factory(element.dataset.event);
             if (window.debug) {
-            console.debug('%cAttached event: ', 'color: lightgrey;', viewEvent);
-
+                console.debug('%cAttached event: ', 'color: lightgrey;', viewEvent);
             }
             this.triggerListener = (event) => {
                 if (viewEvent.delegate === null || event.target.closest(viewEvent.delegate)) {

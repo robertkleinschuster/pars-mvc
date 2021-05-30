@@ -149,7 +149,7 @@ export class AbstractHandler {
                 console.debug('%cHistory:', 'color: DarkRed; font-weight: bold', response.event.path, response)
 
             }
-            history.replaceState(response, null, response.event.path);
+            history.replaceState({event: {path: window.location.href}}, null, window.location.href);
             history.pushState(response, null, response.event.path);
         }
     }
