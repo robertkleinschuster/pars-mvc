@@ -478,7 +478,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function isAjax(): bool
     {
-        return strtolower($this->getServerRequest()->getHeaderLine('X-Requested-With')) === 'xmlhttprequest';
+        return strtolower($this->getServerRequest()->getHeaderLine('pars-ajax')) === 'true';
     }
 
     /**

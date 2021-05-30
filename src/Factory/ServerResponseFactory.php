@@ -110,7 +110,7 @@ class ServerResponseFactory implements ResponseFactoryInterface
                 };
                 return (new Response(new CallbackStream($function), $controllerResponse->getStatusCode(), $controllerResponse->getHeaders()))
                     ->withAddedHeader('content-type', 'application/json')
-                    ->withAddedHeader('X-Accel-Buffering', 'no');
+                    ->withAddedHeader('X-Accel-Buffering', 'yes');
             case ControllerResponse::MODE_REDIRECT:
                 return new RedirectResponse(
                     (new UriFactory())->createUri(

@@ -8,7 +8,7 @@ export class SubmitHandler extends AbstractHandler {
         let formData = new FormData(form);
         return {
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
+                'pars-ajax': 'true',
                 'pars-view-event-data': JSON.stringify(this._event)
             },
             method: form.method,

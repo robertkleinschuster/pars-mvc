@@ -44,7 +44,7 @@ export class AbstractHandler {
     _buildFetchOptions(viewEvent: ViewEvent): RequestInit {
         return {
             headers: {
-                'X-Requested-With': 'XMLHttpRequest',
+                'pars-ajax': 'true',
                 'pars-view-event-data': JSON.stringify(viewEvent)
             },
         };
