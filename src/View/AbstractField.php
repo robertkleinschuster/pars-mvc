@@ -22,6 +22,7 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     public ?string $label = null;
     public ?string $labelPath = null;
     public ?string $tooltip = null;
+    public bool $iconField = false;
     public int $row = 1;
     public int $column = 1;
 
@@ -278,5 +279,25 @@ abstract class AbstractField extends ViewElement implements FieldInterface
     {
         return isset($this->tooltip);
     }
+
+    /**
+     * @return bool
+     */
+    public function isIconField(): bool
+    {
+        return $this->iconField;
+    }
+
+    /**
+     * @param bool $iconField
+     * @return AbstractField
+     */
+    public function setIconField(bool $iconField): AbstractField
+    {
+        $this->iconField = $iconField;
+        return $this;
+    }
+
+
 
 }

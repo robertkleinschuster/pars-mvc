@@ -71,4 +71,32 @@ interface FieldInterface extends ViewElementInterface
      * @return AbstractField
      */
     public function setColumn(?int $column): AbstractField;
+
+    /**
+     * @return string|null
+     */
+    public function getTooltip(): ?string;
+
+    /**
+     * @param string|null $tooltip
+     *
+     * @return $this
+     */
+    public function setTooltip(?string $tooltip): self;
+
+    /**
+     * @return bool
+     */
+    public function hasTooltip(): bool;
+
+    /**
+     * @return bool
+     */
+    public function isIconField(): bool;
+
+    /**
+     * @param bool $iconField
+     * @return AbstractField
+     */
+    public function setIconField(bool $iconField): AbstractField;
 }
