@@ -98,7 +98,8 @@ class ControllerRunner
         ControllerInterface $controller,
         ControllerInterface $parent,
         ControllerSubAction $subAction
-    ) {
+    )
+    {
         if ($controller->hasViewLayout() && $parent->hasViewLayout()) {
             $parentJs = $parent->getView()->getJavascript();
             $parentCss = $parent->getView()->getStylesheets();
@@ -107,14 +108,16 @@ class ControllerRunner
             $parent->getView()->setStylesheets(array_unique(array_merge($parentCss, $actionCss)));
             $parent->getView()->setJavascript(array_unique(array_merge($parentJs, $actionJs)));
             $parentLayout = $parent->getViewLayout();
-            $sourceLayout = $controller->getViewLayout();
-            $target = $parentLayout->getElementById($subAction->getTargetId());
-            $source = $sourceLayout->getElementById($subAction->getSourceId());
-            $source->setView($parent->getView());
-            if ($target && $source) {
-                $source->setId($subAction->getId());
-                $source->removeOption('container-fluid');
-                $target->push($source);
+            $subActionLayout = $controller->getViewLayout();
+            $targetElement = $parentLayout->getElementById($subAction->getTargetId());
+            $subActionElement = $subActionLayout->getElementById($subAction->getSourceId());
+            if ($targetElement && $subActionElement) {
+                $sourceView = clone $parent->getView();
+                $sourceView->setControllerRequest($subAction->getControllerRequest());
+                $subActionElement->setView($sourceView);
+                $subActionElement->setId($subAction->getId());
+                $subActionElement->removeOption('container-fluid');
+                $targetElement->push($subActionElement);
             }
         }
     }
