@@ -200,7 +200,9 @@ abstract class AbstractController implements ControllerInterface
         $model = $this->getModel();
         if ($model instanceof ValidationHelperAwareInterface && $model->getValidationHelper()->hasError()) {
             $this->handleValidationError($model->getValidationHelper());
-            $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+            if ($this->getControllerRequest()->hasSubmit()) {
+                $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+            }
         }
     }
 
