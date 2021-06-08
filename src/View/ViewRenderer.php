@@ -85,9 +85,9 @@ class ViewRenderer
         if ($view->hasTemplate()) {
             echo $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
         } elseif ($view->hasLayout()) {
-            echo self::HTML_START;
             $bean = $view->hasBeanConverter() ? $view->getBeanConverter()->convert($view) : $view;
             if ($id === null) {
+                echo self::HTML_START;
                 $renderable = $view->getLayout();
             } else {
                 $id = str_replace('#', '', $id);
