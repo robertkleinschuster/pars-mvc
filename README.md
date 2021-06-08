@@ -3,7 +3,14 @@
 [![Build Status](https://travis-ci.com/pars-framework/pars-mvc.svg?branch=master)](https://travis-ci.com/pars-framework/pars-mvc)
 [![Coverage Status](https://coveralls.io/repos/github/pars-framework/pars-mvc/badge.svg?branch=master)](https://coveralls.io/github/pars-framework/pars-mvc?branch=master)
 
-This library provides MVC implementation for PARS Framework
+This library provides MVC implementation for PARS Framework.
+
+## Understanding:
+
+Model: Is responsible for loading and saving data via bean finder and processor. Methods for loading additional data may also be added.
+Controller: Initializes view with data provided by the model. Controller actions can also be nested.
+View: Renders a template or builds html via the provided object oriented html builder.
+
 
 ## Installation
 
@@ -59,7 +66,12 @@ class IndexController extends \Pars\Mvc\Controller\AbstractController {
     {
         $this->getView()->set('heading', $this->getModel()->getHeading());
         $this->getView()->set('text', $this->getModel()->getText());
-        $this->getView()->append(new MyCompontent());
+        // adding compontent to be rendered
+        $this->getView()->pushComponent(new MyCompontent());
+        // nesting additional controller action to be rendered e.g. UserController::indexAction
+        // all compontents of the nested controller action will be appended to the parent controllers view
+        // rendering templates is currently not supported for nested controller actions
+        $this->pushAction('user', 'index');
     }
 }
 ```
