@@ -189,6 +189,15 @@ abstract class AbstractController implements ControllerInterface
         $this->initView();
         $this->initModel();
         $this->handleParameter();
+        $this->handleView();
+    }
+
+    protected function handleView()
+    {
+        $this->injectStaticFiles();
+        if ($this->hasView()) {
+            $this->getView()->set('baseUrl', $this->getPathHelper()->getBaseUrl());
+        }
     }
 
     /**
@@ -701,5 +710,27 @@ abstract class AbstractController implements ControllerInterface
         $actionSuffix = $mvcConfig['action']['suffix'] ?? '';
         $actionPrefix = $mvcConfig['action']['prefix'] ?? '';
         return $actionPrefix . $actionCode . $actionSuffix;
+    }
+
+    protected function injectStaticFiles()
+    {
+        if ($this->hasView()) {
+            try {
+                $entrypoints = json_decode(file_get_contents('public/build/entrypoints.json'), true);
+                if ($entrypoints && isset($entrypoints['entrypoints'])) {
+                    $jsFiles = [];
+                    $cssFiles = [];
+                    $entrypoints = $entrypoints['entrypoints'];
+                    foreach ($entrypoints as $entrypoint) {
+                        $jsFiles = array_unique(array_merge($jsFiles, $entrypoint['js']));
+                        $cssFiles = array_unique(array_merge($cssFiles, $entrypoint['css']));
+                    }
+                    $this->getView()->setJavascript($jsFiles);
+                    $this->getView()->setStylesheets($cssFiles);
+                }
+            } catch (Throwable $exception) {
+                $this->getLogger()->error($exception->getMessage(), ['exception' => $exception]);
+            }
+        }
     }
 }
