@@ -8,7 +8,9 @@ This library provides MVC implementation for PARS Framework.
 ## Understanding:
 
 Model: Is responsible for loading and saving data via bean finder and processor. Methods for loading additional data may also be added.
+
 Controller: Initializes view with data provided by the model. Controller actions can also be nested.
+
 View: Renders a template or builds html via the provided object oriented html builder.
 
 
