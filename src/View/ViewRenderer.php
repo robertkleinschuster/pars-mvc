@@ -94,7 +94,9 @@ class ViewRenderer
                 $renderable = $view->getLayout()->getElementById($id);
             }
             if ($renderable instanceof RenderableInterface) {
-                $renderable->setView($view);
+                if (!$renderable->hasView()) {
+                    $renderable->setView($view);
+                }
                 $renderable->display($bean, true);
             }
         } else {
