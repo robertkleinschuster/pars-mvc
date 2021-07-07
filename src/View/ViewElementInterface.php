@@ -2,9 +2,23 @@
 
 namespace Pars\Mvc\View;
 
+use Pars\Bean\Converter\BeanConverterAwareInterface;
+use Pars\Bean\Type\Base\BeanAwareInterface;
 use Pars\Bean\Type\Base\BeanInterface;
+use Pars\Helper\Path\PathHelperAwareInterface;
+use Pars\Mvc\Controller\ControllerRequest;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\State\ViewState;
+use Pars\Mvc\View\State\ViewStatePersistenceInterface;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Option\OptionAwareInterface;
 
-interface HtmlInterface extends RenderableInterface, BeanInterface
+interface ViewElementInterface extends
+    RenderableInterface,
+    BeanInterface,
+    OptionAwareInterface,
+    AttributeAwareInterface,
+    BeanAwareInterface
 {
 
     /**
@@ -105,16 +119,16 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
     public function hasGroup(): bool;
 
     /**
-     * @return HtmlElementList
+     * @return ViewElementList
      */
-    public function getElementList(): HtmlElementList;
+    public function getElementList(): ViewElementList;
 
     /**
-     * @param HtmlElementList $elementList
+     * @param ViewElementList $elementList
      *
      * @return $this
      */
-    public function setElementList(HtmlElementList $elementList): self;
+    public function setElementList(ViewElementList $elementList): self;
 
     /**
      * @return bool
@@ -123,7 +137,7 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
 
 
     /**
-     * @param HtmlInterface ...$element
+     * @param ViewElementInterface ...$element
      * @return $this
      */
     public function push(...$element): self;
@@ -168,9 +182,9 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
 
     /**
      * @param string $id
-     * @return mixed
+     * @return ViewElement
      */
-    public function getElementById(string $id);
+    public function getElementById(string $id): ?ViewElement;
 
     /**
      * @param string $class
@@ -184,18 +198,39 @@ interface HtmlInterface extends RenderableInterface, BeanInterface
     public function getElementsByTagName(string $tag);
 
     /**
-     * @return HtmlElementEvent
+     * @return ViewEvent
      */
-    public function getEvent(): HtmlElementEvent;
+    public function getEvent(): ViewEvent;
 
     /**
-     * @param HtmlElementEvent $event
+     * @param ViewEvent $event
      * @return $this
      */
-    public function setEvent(HtmlElementEvent $event): self;
+    public function setEvent(ViewEvent $event): self;
 
     /**
      * @return bool
      */
     public function hasEvent(): bool;
+
+    /**
+     * @return ViewState
+     */
+    public function getState(): ViewState;
+
+    /**
+     * @param ViewState $state
+     *
+     * @return $this
+     */
+    public function setState(ViewState $state): self;
+
+    /**
+     * @return bool
+     */
+    public function hasState(): bool;
+
+    public function setView(ViewInterface $view);
+    public function getView(): ViewInterface;
+    public function hasView(): bool;
 }

@@ -4,18 +4,34 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
-use Pars\Pattern\Exception\AttributeExistsException;
-use Pars\Pattern\Exception\AttributeLockException;
-use Pars\Pattern\Exception\AttributeNotFoundException;
+use Laminas\Diactoros\CallbackStream;
+use Pars\Helper\Parameter\FilterParameter;
 use Pars\Helper\Parameter\IdListParameter;
 use Pars\Helper\Parameter\IdParameter;
 use Pars\Helper\Parameter\PaginationParameter;
+use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Path\PathHelper;
 use Pars\Helper\Validation\ValidationHelper;
 use Pars\Helper\Validation\ValidationHelperAwareInterface;
+use Pars\Mvc\Exception\ActionNotFoundException;
+use Pars\Mvc\Exception\ControllerNotFoundException;
 use Pars\Mvc\Exception\MvcException;
+use Pars\Mvc\Exception\NotFoundException;
+use Pars\Mvc\Factory\ModelFactory;
+use Pars\Mvc\Factory\ServerResponseFactory;
 use Pars\Mvc\Model\ModelInterface;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Mvc\View\LayoutInterface;
+use Pars\Mvc\View\ViewException;
 use Pars\Mvc\View\ViewInterface;
+use Pars\Mvc\View\ViewRenderer;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
+use Pars\Pattern\Exception\CoreException;
+use Psr\Container\ContainerInterface;
+use Psr\Http\Message\ResponseFactoryInterface;
+use Psr\Http\Message\ResponseInterface;
 use Throwable;
 
 /**
@@ -24,9 +40,7 @@ use Throwable;
  */
 abstract class AbstractController implements ControllerInterface
 {
-
-    public const SUB_ACTION_MODE_TABBED = 'append';
-    public const SUB_ACTION_MODE_STANDARD = 'prepend';
+    private ContainerInterface $container;
 
     /**
      * @var ControllerRequest
@@ -39,14 +53,14 @@ abstract class AbstractController implements ControllerInterface
     private ControllerResponse $controllerResponse;
 
     /**
+     * @var ServerResponseFactory
+     */
+    private ServerResponseFactory $responseFactory;
+
+    /**
      * @var ModelInterface
      */
     private ModelInterface $model;
-
-    /**
-     * @var PathHelper
-     */
-    private PathHelper $pathHelper;
 
     /**
      * @var ViewInterface|null
@@ -54,78 +68,92 @@ abstract class AbstractController implements ControllerInterface
     private ?ViewInterface $view = null;
 
     /**
-     * @var string|null
-     */
-    private ?string $template = null;
-
-    /**
      * @var ControllerInterface|null
      */
     private ?ControllerInterface $parent = null;
 
     /**
+     * @var ControllerSubActionContainer|null
+     */
+    private ?ControllerSubActionContainer $subActionContainer = null;
+
+    /**
      * AbstractController constructor.
-     * @param ControllerRequest $controllerRequest
-     * @param ControllerResponse $controllerResponse
-     * @param ModelInterface $model
-     * @param PathHelper $pathHelper
+     * @param ContainerInterface $container
+     * @param ControllerRequest $request
+     * @throws ControllerNotFoundException
      */
     public function __construct(
-        ControllerRequest $controllerRequest,
-        ControllerResponse $controllerResponse,
-        ModelInterface $model,
-        PathHelper $pathHelper
-    ) {
-        $this->model = $model;
-        $this->controllerRequest = $controllerRequest;
-        $this->controllerResponse = $controllerResponse;
-        $this->pathHelper = $pathHelper;
+        ContainerInterface $container,
+        ControllerRequest $request
+    )
+    {
+        $this->container = $container;
+        $this->controllerRequest = $request;
+        $this->responseFactory = $container->get(ResponseFactoryInterface::class);
+        $this->model = $this->getModelFactory()->createModel($request);
+
     }
 
     /**
-     * @var array
+     * @return ControllerSubActionContainer
      */
-    private array $action_Map = [];
+    public function getSubActionContainer(): ?ControllerSubActionContainer
+    {
+        if (!$this->hasSubActionContainer()) {
+            $this->subActionContainer = new ControllerSubActionContainer($this);
+        }
+        return $this->subActionContainer;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasSubActionContainer(): bool
+    {
+        return isset($this->subActionContainer);
+    }
+
+    /**
+     * @return ContainerInterface
+     */
+    public function getContainer(): ContainerInterface
+    {
+        return $this->container;
+    }
+
+    /**
+     * @return ModelFactory
+     */
+    protected function getModelFactory(): ModelFactory
+    {
+        return $this->getContainer()->get(ModelFactory::class);
+    }
 
     /**
      * @param string $controller
      * @param string $action
      * @param string $name
-     * @param string $mode
-     * @param bool $ajax
+     * @return ControllerRequest
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     protected function pushAction(
         string $controller,
         string $action,
-        string $name,
-        string $mode = self::SUB_ACTION_MODE_TABBED,
-        bool $ajax = true
-    ) {
-        $this->action_Map[$mode][] = [
-            'controller' => $controller,
-            'action' => $action,
-            'name' => $name,
-            'ajax' => $ajax,
-        ];
+        string $name
+    ): ControllerRequest
+    {
+        $childRequest = clone $this->getControllerRequest();
+        $childRequest->setController($controller);
+        $childRequest->setAction($action);
+        $this->getSubActionContainer()->add(
+            new ControllerSubAction($childRequest, $childRequest->getHash(), $name)
+        );
+        return $childRequest;
     }
 
-    /**
-     * @param string $mode
-     * @return array
-     */
-    public function getActionMap(string $mode): array
-    {
-        return $this->action_Map[$mode];
-    }
-
-    /**
-     * @param string $mode
-     * @return bool
-     */
-    public function hasActions(string $mode): bool
-    {
-        return isset($this->action_Map[$mode]) && count($this->action_Map[$mode]) > 0;
-    }
 
     /**
      * @return ControllerInterface|null
@@ -137,10 +165,12 @@ abstract class AbstractController implements ControllerInterface
 
     /**
      * @param ControllerInterface|null $parent
+     * @return AbstractController
      */
-    public function setParent(?ControllerInterface $parent): void
+    public function setParent(?ControllerInterface $parent): self
     {
         $this->parent = $parent;
+        return $this;
     }
 
     /**
@@ -159,59 +189,70 @@ abstract class AbstractController implements ControllerInterface
         $this->initView();
         $this->initModel();
         $this->handleParameter();
+        $this->handleView();
+    }
+
+    protected function handleView()
+    {
+        $this->injectStaticFiles();
+        if ($this->hasView()) {
+            $this->getView()->set('baseUrl', $this->getPathHelper()->getBaseUrl());
+        }
     }
 
     /**
-     * @return mixed|void
+     * @return void
      * @throws MvcException
-     * @throws AttributeExistsException
-     * @throws AttributeLockException
-     * @throws AttributeNotFoundException
      */
     public function finalize()
     {
         $model = $this->getModel();
         if ($model instanceof ValidationHelperAwareInterface && $model->getValidationHelper()->hasError()) {
             $this->handleValidationError($model->getValidationHelper());
-            $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+            if ($this->getControllerRequest()->hasSubmit()) {
+                $this->getControllerResponse()->setRedirect($this->getPathHelper(true)->getPath());
+            }
         }
     }
 
     /**
      * @param Throwable $exception
-     * @return mixed|void
+     * @return void
      */
     public function error(Throwable $exception)
     {
+        if ($exception instanceof NotFoundException) {
+            return $this->notfound($exception);
+        }
         if ($this->hasView()) {
             $this->view = null;
-            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+            $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         }
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Error</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Error</h1><p>{$exception->getMessage()}</p></body></html>");
     }
 
     /**
-     * @return mixed|void
+     * @return void
      */
     public function unauthorized()
     {
         if ($this->hasView()) {
             $this->view = null;
         }
-        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Unauthorized</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Unauthorized</h1><p>Permission to requested ressource was denied!</p></body></html>");
     }
 
     /**
      * @param Throwable $exception
-     * @return mixed|void
+     * @return void
      */
     public function notfound(Throwable $exception)
     {
         if ($this->hasView()) {
             $this->view = null;
         }
-        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_RESPONSE);
+        $this->getControllerResponse()->removeOption(ControllerResponse::OPTION_RENDER_VIEW);
         $this->getControllerResponse()->setBody("<!DOCTYPE html><html><head><meta charset=\"utf-8\"><title>Not found</title><meta name=\"author\" content=\"\"><meta name=\"description\" content=\"\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"></head><body><h1>Not found</h1><p>The requested ressource was not found!</p><p>{$exception->getMessage()}</p></body></html>");
     }
 
@@ -235,16 +276,21 @@ abstract class AbstractController implements ControllerInterface
     protected function handleParameter()
     {
 
-        if ($this->getControllerRequest()->isAjax()) {
+        if (
+            $this->getControllerRequest()->isAjax()
+            || $this->getControllerRequest()->hasEvent()
+        ) {
             $this->getControllerResponse()->setMode(ControllerResponse::MODE_JSON);
         }
-        if ($this->getControllerRequest()->hasEvent()) {
-            $this->getControllerResponse()->setEvent($this->getControllerRequest()->getEvent());
+        if ($this->getControllerRequest()->hasEvent() && !$this->hasParent()) {
+            $event = $this->getControllerRequest()->getEvent();
+            $this->getControllerResponse()->setEvent($event);
+            ViewEvent::getQueue()->push($event);
         }
 
         if ($this->getControllerRequest()->hasNav()) {
             $navParameter = $this->getControllerRequest()->getNav();
-            if($navParameter->hasId() && $navParameter->hasIndex()) {
+            if ($navParameter->hasId() && $navParameter->hasIndex()) {
                 $this->handleNavigationState(
                     $navParameter->getId(),
                     $navParameter->getIndex()
@@ -254,7 +300,7 @@ abstract class AbstractController implements ControllerInterface
 
         if ($this->getControllerRequest()->hasCollapse()) {
             $collapseParameter = $this->getControllerRequest()->getCollapse();
-            if($collapseParameter->hasId() && $collapseParameter->hasExpanded()) {
+            if ($collapseParameter->hasId() && $collapseParameter->hasExpanded()) {
                 $this->handleCollapsableState(
                     $collapseParameter->getId(),
                     $collapseParameter->isExpanded()
@@ -263,11 +309,11 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasSearch()) {
-            if ($this->getControllerRequest()->isPost()) {
+            if ($this->getControllerRequest()->hasPostData(SearchParameter::name())) {
                 $path = $this->getPathHelper(true);
                 $data = $this->getControllerRequest()->getPostData();
                 if (isset($data[$path->getSearch()->name()])) {
-                    $path->getSearch()->fromData($data[$path->getSearch()->name()]);
+                    $path->getSearch()->fromData($data[$path->getSearch()->name()])->removeEmpty();
                 }
                 $this->getControllerResponse()->setRedirect($path->getPath());
             }
@@ -310,15 +356,18 @@ abstract class AbstractController implements ControllerInterface
         }
 
         if ($this->getControllerRequest()->hasFilter()) {
-            if ($this->getControllerRequest()->isPost()) {
+            if ($this->getControllerRequest()->hasPostData(FilterParameter::name())) {
                 $path = $this->getPathHelper(true);
                 $data = $this->getControllerRequest()->getPostData();
                 if (isset($data[$path->getFilter()->name()])) {
-                    $path->getFilter()->fromData($data[$path->getFilter()->name()]);
+                    $path->getFilter()->fromData($data[$path->getFilter()->name()])->removeEmpty();
                 }
                 $this->getControllerResponse()->setRedirect($path->getPath());
             }
-            $this->getModel()->handleFilter($this->getControllerRequest()->getFilter());
+            $filterParemter = $this->getControllerRequest()->getFilter()->removeEmpty();
+            if ($this->getControllerRequest()->acceptParameter($filterParemter)) {
+                $this->getModel()->handleFilter($filterParemter);
+            }
         }
 
         if ($this->getControllerRequest()->hasSubmit()) {
@@ -437,47 +486,19 @@ abstract class AbstractController implements ControllerInterface
      */
     public function getControllerResponse(): ControllerResponse
     {
+        if (!isset($this->controllerResponse)) {
+            $this->controllerResponse = new ControllerResponse($this->getResponseFactory());
+        }
         return $this->controllerResponse;
     }
 
     /**
      * @param bool $setParameter import current parameter to path
      * @return PathHelper
-     * @throws AttributeExistsException
-     * @throws AttributeLockException
-     * @throws AttributeNotFoundException
      */
     public function getPathHelper(bool $setParameter = false): PathHelper
     {
-        if ($setParameter) {
-            $this->pathHelper->reset();
-            if ($this->getControllerRequest()->hasId()) {
-                $this->pathHelper->setId($this->getControllerRequest()->getId());
-            }
-            if ($this->getControllerRequest()->hasPagingation()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getPagination());
-            }
-            if ($this->getControllerRequest()->hasOrder()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getOrder());
-            }
-            if ($this->getControllerRequest()->hasSearch()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getSearch());
-            }
-            if ($this->getControllerRequest()->hasEditLocale()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getEditLocale());
-            }
-            if ($this->getControllerRequest()->hasContext()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getContext());
-            }
-            if ($this->getControllerRequest()->hasNav()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getNav());
-            }
-            if ($this->getControllerRequest()->hasFilter()) {
-                $this->pathHelper->addParameter($this->getControllerRequest()->getFilter());
-            }
-            return clone $this->pathHelper;
-        }
-        return clone $this->pathHelper->reset();
+        return $this->getControllerRequest()->getPathHelper(!$setParameter);
     }
 
     /**
@@ -503,6 +524,12 @@ abstract class AbstractController implements ControllerInterface
     protected function setView(ViewInterface $view): self
     {
         $this->view = $view;
+        if (!$view->hasPathHelper()) {
+            $this->getView()->setPathHelper($this->getPathHelper(true));
+        }
+        if (!$view->hasControllerRequest()) {
+            $this->getView()->setControllerRequest($this->getControllerRequest());
+        }
         return $this;
     }
 
@@ -515,30 +542,19 @@ abstract class AbstractController implements ControllerInterface
     }
 
     /**
-     * @return string
-     */
-    public function getTemplate(): string
-    {
-        return $this->template;
-    }
-
-    /**
-     * @param string $template
-     *
-     * @return $this
-     */
-    public function setTemplate(string $template): self
-    {
-        $this->template = $template;
-        return $this;
-    }
-
-    /**
      * @return bool
      */
-    public function hasTemplate(): bool
+    public function hasViewLayout(): bool
     {
-        return $this->template !== null;
+        return $this->hasView() && $this->getView()->hasLayout();
+    }
+
+    /**
+     * @return LayoutInterface
+     */
+    public function getViewLayout(): LayoutInterface
+    {
+        return $this->getView()->getLayout();
     }
 
     /**
@@ -557,5 +573,164 @@ abstract class AbstractController implements ControllerInterface
     protected function getMiddlewareAttribute(string $name, $default = null)
     {
         return $this->getControllerRequest()->getMiddlewareAttribute($name, $default);
+    }
+
+    /**
+     * @return ResponseFactoryInterface
+     */
+    public function getResponseFactory(): ServerResponseFactory
+    {
+        return $this->responseFactory;
+    }
+
+    /**
+     * @param Throwable|null $throwable
+     * @return mixed|ResponseInterface
+     * @throws MvcException
+     */
+    public function executeError(?Throwable $throwable)
+    {
+        ob_start();
+        $this->initialize();
+        $this->error($throwable);
+        $this->finalize();
+        $output = ob_get_clean();
+        return $this->renderResponse($output);
+    }
+
+    /**
+     * @return ResponseInterface
+     * @throws ActionNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws ControllerNotFoundException
+     * @throws MvcException
+     * @throws ViewException
+     */
+    public function execute(): ResponseInterface
+    {
+        ob_start();
+        $this->initialize();
+        $this->action();
+        $this->finalize();
+        $output = ob_get_clean();
+        return $this->renderResponse($output);
+    }
+
+    protected function action()
+    {
+        if ($this->isAuthorized()) {
+            $methodBlacklist = get_class_methods(ControllerInterface::class);
+            $actionMethod = $this->getActionMethod($this->getControllerRequest()->getAction());
+            if (method_exists($this, $actionMethod) && !in_array($actionMethod, $methodBlacklist)) {
+                $this->{$actionMethod}();
+            } else {
+                throw new ActionNotFoundException("Controller action $actionMethod not found.");
+            }
+        } else {
+            $this->getControllerResponse()->setStatusCode(401);
+            $this->unauthorized();
+        }
+    }
+
+    /**
+     * @param string $output
+     * @return ResponseInterface
+     * @throws MvcException
+     */
+    protected function renderResponse(string $output): ResponseInterface
+    {
+        if ($this->hasParent()) {
+            echo $output;
+        }
+        $render = function () use ($output) {
+            if ($this->getControllerResponse()->isMode(ControllerResponse::MODE_HTML)) {
+                echo $output;
+                flush();
+            }
+            if ($this->getControllerResponse()->hasOption(ControllerResponse::OPTION_RENDER_VIEW)) {
+                $this->getRunner()->runSubActions($this->getSubActionContainer());
+                if (!$this->hasParent()) {
+                    $this->renderView();
+                }
+            }
+        };
+        $stream = new CallbackStream($render);
+        $this->getControllerResponse()->setBody($stream);
+        return $this->getControllerResponse()->createServerResponse();
+    }
+
+
+    /**
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     * @throws ViewException
+     */
+    protected function renderView()
+    {
+        if ($this->hasView()) {
+            $id = $this->getControllerRequest()->getEventTarget();
+            $this->getViewRenderer()->display($this->getView(), $id);
+            foreach ($this->getView()->getInjector()->getItemList() as $item) {
+                $this->getControllerResponse()->getInjector()->addHtml(
+                    $item->getElement()->render($this->getView()),
+                    $item->getSelector(),
+                    $item->getMode()
+                );
+            }
+        }
+    }
+
+    /**
+     * @return ControllerRunner
+     */
+    protected function getRunner(): ControllerRunner
+    {
+        return $this->getContainer()->get(ControllerRunner::class);
+    }
+
+    /**
+     * @return ViewRenderer
+     */
+    protected function getViewRenderer(): ViewRenderer
+    {
+        return $this->getContainer()->get(ViewRenderer::class);
+    }
+
+    /**
+     * @param string $actionCode
+     * @return string
+     */
+    protected function getActionMethod(string $actionCode): string
+    {
+        $config = $this->getContainer()->get('config');
+        $mvcConfig = $config['mvc'];
+        $actionSuffix = $mvcConfig['action']['suffix'] ?? '';
+        $actionPrefix = $mvcConfig['action']['prefix'] ?? '';
+        return $actionPrefix . $actionCode . $actionSuffix;
+    }
+
+    protected function injectStaticFiles()
+    {
+        if ($this->hasView()) {
+            try {
+                $entrypoints = json_decode(file_get_contents('public/build/entrypoints.json'), true);
+                if ($entrypoints && isset($entrypoints['entrypoints'])) {
+                    $jsFiles = [];
+                    $cssFiles = [];
+                    $entrypoints = $entrypoints['entrypoints'];
+                    foreach ($entrypoints as $entrypoint) {
+                        $jsFiles = array_unique(array_merge($jsFiles, $entrypoint['js']));
+                        $cssFiles = array_unique(array_merge($cssFiles, $entrypoint['css']));
+                    }
+                    $this->getView()->setJavascript($jsFiles);
+                    $this->getView()->setStylesheets($cssFiles);
+                }
+            } catch (Throwable $exception) {
+                $this->getLogger()->error($exception->getMessage(), ['exception' => $exception]);
+            }
+        }
     }
 }

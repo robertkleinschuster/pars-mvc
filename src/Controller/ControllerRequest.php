@@ -7,11 +7,6 @@ namespace Pars\Mvc\Controller;
 use Mezzio\Router\RouteResult;
 use Pars\Bean\Type\Base\AbstractBaseBean;
 use Pars\Helper\Parameter\CollapseParameter;
-use Pars\Mvc\View\HtmlElementEvent;
-use Pars\Pattern\Attribute\AttributeAwareInterface;
-use Pars\Pattern\Attribute\AttributeAwareTrait;
-use Pars\Pattern\Option\OptionAwareInterface;
-use Pars\Pattern\Option\OptionAwareTrait;
 use Pars\Helper\Parameter\ContextParameter;
 use Pars\Helper\Parameter\DataParameter;
 use Pars\Helper\Parameter\EditLocaleParameter;
@@ -26,16 +21,32 @@ use Pars\Helper\Parameter\ParameterInterface;
 use Pars\Helper\Parameter\RedirectParameter;
 use Pars\Helper\Parameter\SearchParameter;
 use Pars\Helper\Parameter\SubmitParameter;
+use Pars\Helper\Path\PathHelper;
+use Pars\Helper\Path\PathHelperAwareInterface;
+use Pars\Helper\Path\PathHelperAwareTrait;
+use Pars\Helper\String\StringHelper;
+use Pars\Mvc\Handler\MvcHandler;
+use Pars\Mvc\View\Event\ViewEvent;
+use Pars\Pattern\Attribute\AttributeAwareInterface;
+use Pars\Pattern\Attribute\AttributeAwareTrait;
+use Pars\Pattern\Exception\AttributeExistsException;
+use Pars\Pattern\Exception\AttributeLockException;
+use Pars\Pattern\Exception\AttributeNotFoundException;
+use Pars\Pattern\Option\OptionAwareInterface;
+use Pars\Pattern\Option\OptionAwareTrait;
 use Psr\Http\Message\ServerRequestInterface;
 
 /**
  * Class ControllerRequest
  * @package Pars\Mvc\Controller
  */
-class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
+class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface, PathHelperAwareInterface
 {
     use OptionAwareTrait;
     use AttributeAwareTrait;
+    use PathHelperAwareTrait;
+
+    public const ATTRIBUTE_EVENT = 'pars-view-event-data';
 
     /**
      * @var ServerRequestInterface
@@ -51,51 +62,117 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      * @var string|null
      */
     private ?string $action = null;
-    private ?string $controller = null;
-
-    protected ?HtmlElementEvent $event = null;
 
     /**
-     * ControllerRequestProperties constructor.
-     * @param ServerRequestInterface $serverRequest
+     * @var string|null
      */
-    public function __construct(ServerRequestInterface $serverRequest)
+    private ?string $controller = null;
+
+    protected ?ViewEvent $event = null;
+
+    /**
+     * ControllerRequest constructor.
+     * @param ServerRequestInterface $serverRequest
+     * @param PathHelper $pathHelper
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     */
+    public function __construct(ServerRequestInterface $serverRequest, PathHelper $pathHelper)
     {
         $this->serverRequest = $serverRequest;
         $this->routeResult = $serverRequest->getAttribute(RouteResult::class);
+        $this->setController($serverRequest->getAttribute(MvcHandler::CONTROLLER_ATTRIBUTE, 'index'));
+        $this->setAction($serverRequest->getAttribute(MvcHandler::ACTION_ATTRIBUTE, 'index'));
         // POST Params
         foreach ($serverRequest->getParsedBody() as $key => $value) {
             $this->setAttribute($key, $value);
         }
-
         // GET Params
         foreach ($serverRequest->getQueryParams() as $key => $value) {
             $this->setAttribute($key, $value);
         }
-
+        // Files
         foreach ($serverRequest->getUploadedFiles() as $key => $value) {
             $this->setAttribute($key, $value);
         }
-        $event = json_decode($serverRequest->getHeaderLine('X-EVENT'), true);
+        $this->setPathHelper($this->initPathHelper($pathHelper));
+        $event = null;
+        if ($this->hasAttribute(self::ATTRIBUTE_EVENT)) {
+            $event = json_decode($this->getAttribute(self::ATTRIBUTE_EVENT), true);
+        } elseif ($serverRequest->hasHeader(self::ATTRIBUTE_EVENT)) {
+            $event = json_decode($serverRequest->getHeaderLine(self::ATTRIBUTE_EVENT), true);
+        }
         if ($event) {
-            $this->event = new HtmlElementEvent($event);
+            $this->setEvent(new ViewEvent($event));
         }
     }
 
     /**
-    * @return HtmlElementEvent
-    */
-    public function getEvent(): HtmlElementEvent
+     * @param ParameterInterface $parameter
+     * @return ControllerRequest
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    public function setParameter(ParameterInterface $parameter): self
+    {
+        $this->setAttribute($parameter->name(), $parameter->toString());
+        return $this;
+    }
+
+    /**
+     * @param PathHelper $pathHelper
+     * @return PathHelper
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    protected function initPathHelper(PathHelper $pathHelper)
+    {
+        $pathHelper->setCurrentPathReal($this->getCurrentPathReal());
+        $pathHelper->setController($this->getController());
+        $pathHelper->setAction($this->getAction());
+        if ($this->hasId()) {
+            $pathHelper->setId($this->getId());
+        }
+        if ($this->hasPagingation()) {
+            $pathHelper->addParameter($this->getPagination());
+        }
+        if ($this->hasOrder()) {
+            $pathHelper->addParameter($this->getOrder());
+        }
+        if ($this->hasSearch()) {
+            $pathHelper->addParameter($this->getSearch());
+        }
+        if ($this->hasEditLocale()) {
+            $pathHelper->addParameter($this->getEditLocale());
+        }
+        if ($this->hasContext()) {
+            $pathHelper->addParameter($this->getContext());
+        }
+        if ($this->hasNav()) {
+            $pathHelper->addParameter($this->getNav());
+        }
+        if ($this->hasFilter()) {
+            $pathHelper->addParameter($this->getFilter());
+        }
+        return $pathHelper;
+    }
+
+    /**
+     * @return ViewEvent|null
+     */
+    public function getEvent(): ?ViewEvent
     {
         return $this->event;
     }
 
     /**
-    * @param HtmlElementEvent $event
+    * @param ViewEvent $event
     *
     * @return $this
     */
-    public function setEvent(HtmlElementEvent $event): self
+    public function setEvent(ViewEvent $event): self
     {
         $this->event = $event;
         return $this;
@@ -136,9 +213,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getId(): IdParameter
     {
@@ -157,9 +234,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return IdParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getIdList(): IdListParameter
     {
@@ -269,9 +346,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return PaginationParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getPagination(): PaginationParameter
     {
@@ -298,9 +375,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return EditLocaleParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getEditLocale(): EditLocaleParameter
     {
@@ -364,9 +441,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return FilterParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getFilter(): FilterParameter
     {
@@ -385,9 +462,9 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
 
     /**
      * @return DataParameter
-     * @throws \Pars\Pattern\Exception\AttributeExistsException
-     * @throws \Pars\Pattern\Exception\AttributeLockException
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
      */
     public function getData(): DataParameter
     {
@@ -402,7 +479,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function isAjax(): bool
     {
-        return strtolower($this->getServerRequest()->getHeaderLine('X-Requested-With')) === 'xmlhttprequest';
+        return strtolower($this->getServerRequest()->getHeaderLine('pars-ajax')) === 'true';
     }
 
     /**
@@ -419,6 +496,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function setAction(?string $action): ControllerRequest
     {
+        $this->serverRequest = $this->serverRequest->withAttribute(MvcHandler::ACTION_ATTRIBUTE, $action);
         $this->action = $action;
         return $this;
     }
@@ -437,6 +515,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function setController(?string $controller): ControllerRequest
     {
+        $this->serverRequest = $this->serverRequest->withAttribute(MvcHandler::CONTROLLER_ATTRIBUTE, $controller);
         $this->controller = $controller;
         return $this;
     }
@@ -444,12 +523,13 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     /**
      * @param ParameterInterface $parameter
      * @return bool
-     * @throws \Pars\Pattern\Exception\AttributeNotFoundException
+     * @throws AttributeNotFoundException
      */
     public function acceptParameter(ParameterInterface $parameter): bool
     {
         return (!$parameter->hasAction() || $parameter->getAction() == $this->getAction())
-           && (!$parameter->hasController() || $parameter->getController() == $this->getController());
+            && (!$parameter->hasController() || $parameter->getController() == $this->getController())
+            && (!$parameter->hasHash() || $parameter->getHash() == $this->getHash());
     }
 
     /**
@@ -465,7 +545,13 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function getPostData(): array
     {
-        return (array) $this->getServerRequest()->getParsedBody();
+        return (array)$this->getServerRequest()->getParsedBody();
+    }
+
+    public function hasPostData(string $key): bool
+    {
+        $data = $this->getServerRequest()->getParsedBody();
+        return isset($data[$key]);
     }
 
     /**
@@ -481,7 +567,7 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
      */
     public function getGetData(): array
     {
-        return (array) $this->getServerRequest()->getQueryParams();
+        return (array)$this->getServerRequest()->getQueryParams();
     }
 
     /**
@@ -492,5 +578,39 @@ class ControllerRequest implements OptionAwareInterface, AttributeAwareInterface
     public function getMiddlewareAttribute(string $name, $default = null)
     {
         return $this->getServerRequest()->getAttribute($name, $default);
+    }
+
+
+    /**
+     * @return string
+     * @throws AttributeExistsException
+     * @throws AttributeLockException
+     * @throws AttributeNotFoundException
+     */
+    public function getHash(): string
+    {
+        $string = $this->getController() . $this->getAction();
+        if ($this->hasId()) {
+            $string .= $this->getId()->toString();
+        }
+        return StringHelper::slugify($string);
+    }
+
+    /**
+     * @return string
+     */
+    public function getCurrentPathReal(): string
+    {
+        return $this->getServerRequest()->getUri()->getPath() . '?' . $this->getServerRequest()->getUri()->getQuery();
+    }
+
+    public function getEventTarget()
+    {
+        $id = null;
+        if ($this->hasEvent() && $this->getEvent()->hasTarget())
+        {
+            $id = $this->getEvent()->getTarget();
+        }
+        return $id;
     }
 }

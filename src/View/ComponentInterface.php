@@ -4,7 +4,7 @@ namespace Pars\Mvc\View;
 
 use Pars\Bean\Type\Base\BeanInterface;
 
-interface ComponentInterface extends FieldListAwareInterface
+interface ComponentInterface extends ViewElementInterface, FieldListAwareInterface
 {
     /**
      * @return string
@@ -34,4 +34,10 @@ interface ComponentInterface extends FieldListAwareInterface
      * @return bool
      */
     public function hasName(): bool;
+
+    public function getBefore(): ViewElement;
+
+    public function getAfter(): ViewElement;
+
+    public function getMain(): ViewElement;
 }

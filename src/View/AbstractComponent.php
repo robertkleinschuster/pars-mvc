@@ -12,7 +12,7 @@ use Pars\Pattern\Exception\AttributeLockException;
  * Class AbstractComponent
  * @package Pars\Mvc\View
  */
-abstract class AbstractComponent extends HtmlElement implements ComponentInterface
+abstract class AbstractComponent extends ViewElement implements ComponentInterface
 {
     use FieldListAwareTrait;
 
@@ -21,24 +21,26 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     private ?Toolbar $toolbar = null;
     protected ?Toolbar $subToolbar = null;
-    private ?HtmlElement $before = null;
-    private ?HtmlElement $after = null;
+    private ?ViewElement $before = null;
+    private ?ViewElement $after = null;
+    private ?ViewElement $main = null;
+    protected bool $showToolbar = true;
 
     /**
-     * @param AbstractField $field
+     * @param FieldInterface $field
      * @return $this
      */
-    public function pushField(AbstractField $field): self
+    public function pushField(FieldInterface $field): self
     {
         $this->getFieldList()->push($field);
         return $this;
     }
 
     /**
-     * @param AbstractField $field
+     * @param FieldInterface $field
      * @return $this
      */
-    public function unshiftField(AbstractField $field): self
+    public function unshiftField(FieldInterface $field): self
     {
         $this->getFieldList()->unshift($field);
         return $this;
@@ -51,17 +53,35 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
         $this->initTemplate();
     }
 
+
     protected function initialize()
     {
         parent::initialize();
+        $this->initBase();
+        $this->handleName();
         $this->initAdditionalBefore();
         $this->handleAdditionalBefore();
+        $this->initToolbar();
+        $this->handleToolbar();
         $this->initFieldsBefore();
         $this->initFields();
         $this->initFieldsAfter();
         $this->handleFields();
+        $this->handleMain();
         $this->initAdditionalAfter();
         $this->handleAdditionalAfter();
+    }
+
+    protected function initBase()
+    {
+
+    }
+
+    protected function handleMain()
+    {
+        if ($this->hasMain()) {
+            $this->push($this->getMain());
+        }
     }
 
     protected function initName()
@@ -81,12 +101,25 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     protected function handleAdditionalBefore()
     {
-        $this->push($this->getBefore());
-        if ($this->hasToolbar()) {
-            $this->push($this->getToolbar());
+        if ($this->hasBefore()) {
+            $this->push($this->getBefore());
         }
-        if ($this->hasSubToolbar()) {
-            $this->push($this->getSubToolbar());
+    }
+
+    protected function initToolbar()
+    {
+
+    }
+
+    protected function handleToolbar()
+    {
+        if ($this->isShowToolbar()) {
+            if ($this->hasToolbar()) {
+                $this->getMain()->push($this->getToolbar());
+            }
+            if ($this->hasSubToolbar()) {
+                $this->getMain()->push($this->getSubToolbar());
+            }
         }
     }
 
@@ -118,9 +151,18 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
 
     protected function handleAdditionalAfter()
     {
-        $this->push($this->getAfter());
+        if ($this->hasAfter()) {
+
+            $this->push($this->getAfter());
+        }
     }
 
+    protected function handleName()
+    {
+        if ($this->hasName()) {
+            $this->getBefore()->unshift(new ViewElement('h3.mb-2.modal-hidden', $this->getName()));
+        }
+    }
 
     /**
      * @param BeanInterface|null $bean
@@ -130,9 +172,7 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
      */
     protected function beforeRender(BeanInterface $bean = null)
     {
-        if ($this->hasName()) {
-            $this->unshift(new HtmlElement('h3.mb-1.modal-hidden', $this->getName()));
-        }
+
         parent::beforeRender($bean);
     }
 
@@ -200,25 +240,48 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     public function getToolbar(): Toolbar
     {
         if (null === $this->toolbar) {
-            $this->toolbar = new Toolbar();
+            $this->toolbar = new Toolbar('div.component-toolbar');
         }
         return $this->toolbar;
     }
 
-    public function getBefore(): HtmlElement
+    public function getBefore(): ViewElement
     {
         if (null === $this->before) {
-            $this->before = new HtmlElement();
+            $this->before = new ViewElement('div.component-before');
         }
         return $this->before;
     }
 
-    public function getAfter(): HtmlElement
+    public function hasBefore()
+    {
+        return isset($this->before);
+    }
+
+    public function getAfter(): ViewElement
     {
         if (null === $this->after) {
-            $this->after = new HtmlElement();
+            $this->after = new ViewElement('div.component-after');
         }
         return $this->after;
+    }
+
+    public function hasAfter()
+    {
+        return isset($this->after);
+    }
+
+    public function getMain(): ViewElement
+    {
+        if (null === $this->main) {
+            $this->main = new ViewElement('div.component-main');
+        }
+        return $this->main;
+    }
+
+    public function hasMain()
+    {
+        return isset($this->main);
     }
 
     public function hasToolbar(): bool
@@ -240,9 +303,28 @@ abstract class AbstractComponent extends HtmlElement implements ComponentInterfa
     public function getSubToolbar(): Toolbar
     {
         if (null == $this->subToolbar) {
-            $this->subToolbar = new Toolbar();
+            $this->subToolbar = new Toolbar('div.component-subtoolbar');
         }
         return $this->subToolbar;
     }
+
+    /**
+     * @return bool
+     */
+    public function isShowToolbar(): bool
+    {
+        return $this->showToolbar;
+    }
+
+    /**
+     * @param bool $showToolbar
+     * @return AbstractComponent
+     */
+    public function setShowToolbar(bool $showToolbar): AbstractComponent
+    {
+        $this->showToolbar = $showToolbar;
+        return $this;
+    }
+
 
 }

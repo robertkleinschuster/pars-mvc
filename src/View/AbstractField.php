@@ -8,7 +8,7 @@ use Pars\Bean\Type\Base\BeanInterface;
  * Class AbstractField
  * @package Pars\Mvc\View
  */
-abstract class AbstractField extends HtmlElement implements FieldInterface
+abstract class AbstractField extends ViewElement implements FieldInterface
 {
 
     public const OPTION_RESET_COLOR = 'text-reset';
@@ -21,6 +21,10 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
     public ?string $template = null;
     public ?string $label = null;
     public ?string $labelPath = null;
+    public ?string $tooltip = null;
+    public bool $iconField = false;
+    public int $row = 1;
+    public int $column = 1;
 
     public ?FieldAcceptInterface $accept = null;
     public ?FieldFormatInterface $format = null;
@@ -37,6 +41,23 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
         $this->label = $label;
         $this->content = $content;
     }
+
+    protected function initialize()
+    {
+        parent::initialize();
+
+    }
+
+    protected function beforeRender(BeanInterface $bean = null)
+    {
+        parent::beforeRender($bean);
+        if ($this->hasTooltip()) {
+            $this->setData('bs-toggle', 'tooltip');
+            $this->setData('bs-placement', 'top');
+            $this->setAttribute('title', $this->getTooltip());
+        }
+    }
+
 
     public function getTemplate(): string
     {
@@ -147,18 +168,18 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
     }
 
     /**
-    * @return string
-    */
+     * @return string
+     */
     public function getLabelPath(): string
     {
         return $this->labelPath;
     }
 
     /**
-    * @param string $labelPath
-    *
-    * @return $this
-    */
+     * @param string $labelPath
+     *
+     * @return $this
+     */
     public function setLabelPath(string $labelPath): self
     {
         $this->labelPath = $labelPath;
@@ -166,8 +187,8 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
     }
 
     /**
-    * @return bool
-    */
+     * @return bool
+     */
     public function hasLabelPath(): bool
     {
         return isset($this->labelPath);
@@ -186,26 +207,97 @@ abstract class AbstractField extends HtmlElement implements FieldInterface
                 return '';
             }
         }
-        if (!$this->hasBeanConverter()) {
-            $this->setBeanConverter(new ViewBeanConverter());
-        }
         if ($this->hasFormat()) {
             $this->setContent(($this->getFormat())($this, $this->hasContent() ? $this->getContent($bean) : '', $bean));
         }
         return parent::render($bean, $placeholders);
     }
 
+
+
+
     /**
-     * @param bool $hide
-     * @return $this
+     * @return int
      */
-    public function hideInModal(bool $hide): self
+    public function getRow(): int
     {
-        if ($hide) {
-            $this->addOption('modal-hidden');
-        } else {
-            $this->removeOption('modal-hidden');
-        }
+        return $this->row;
+    }
+
+    /**
+     * @param int $row
+     * @return AbstractField
+     */
+    public function setRow(?int $row): AbstractField
+    {
+        $this->row = $row ?? 1;
         return $this;
     }
+
+    /**
+     * @return int
+     */
+    public function getColumn(): int
+    {
+        return $this->column;
+    }
+
+    /**
+     * @param int $column
+     * @return AbstractField
+     */
+    public function setColumn(?int $column): AbstractField
+    {
+        $this->column = $column ?? 1;
+        return $this;
+    }
+
+
+    /**
+    * @return string
+    */
+    public function getTooltip(): ?string
+    {
+        return $this->tooltip;
+    }
+
+    /**
+    * @param string $tooltip
+    *
+    * @return $this
+    */
+    public function setTooltip(?string $tooltip): self
+    {
+        $this->tooltip = $tooltip;
+        return $this;
+    }
+
+    /**
+    * @return bool
+    */
+    public function hasTooltip(): bool
+    {
+        return isset($this->tooltip);
+    }
+
+    /**
+     * @return bool
+     */
+    public function isIconField(): bool
+    {
+        return $this->iconField;
+    }
+
+    /**
+     * @param bool $iconField
+     * @return AbstractField
+     */
+    public function setIconField(bool $iconField): AbstractField
+    {
+        $this->iconField = $iconField;
+        return $this;
+    }
+
+
+
 }

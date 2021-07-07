@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Pars\Mvc\Controller;
 
+use Pars\Mvc\View\ViewInjector;
+
 /**
  * Class ControllerResponseInjector
  * @package Pars\Mvc\Controller
  */
-class ControllerResponseInjector
+class ControllerResponseInjector implements \JsonSerializable
 {
 
     public const MODE_PREPEND = 'prepend';
@@ -70,7 +72,7 @@ class ControllerResponseInjector
     public function addScript(string $script, bool $unique = true)
     {
         $this->script[] = [
-            'script' => $script,
+            'src' => $script,
             'unique' => $unique
         ];
     }
@@ -83,4 +85,11 @@ class ControllerResponseInjector
             'template' => $this->template,
         ];
     }
+
+    public function jsonSerialize()
+    {
+        return $this->toArray();
+    }
+
+
 }

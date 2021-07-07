@@ -20,10 +20,6 @@ class MvcHandlerFactory
      */
     public function __invoke(ContainerInterface $container): MvcHandler
     {
-        return new MvcHandler(
-            $container->get(TemplateRendererInterface::class),
-            $container->get(ControllerFactory::class),
-            $container->get('config')
-        );
+        return new MvcHandler($container);
     }
 }

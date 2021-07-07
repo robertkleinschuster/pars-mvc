@@ -7,7 +7,7 @@ trait FieldListAwareTrait
     protected ?FieldList $fieldList = null;
 
     /**
-     * @return FieldList|null
+     * @return FieldList|null|FieldInterface[]
      */
     public function getFieldList(): ?FieldList
     {

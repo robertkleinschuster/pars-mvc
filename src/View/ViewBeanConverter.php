@@ -29,16 +29,6 @@ class ViewBeanConverter extends AbstractBeanConverter
             case \DateTime::class:
                 try {
                     if ($value instanceof \DateTime) {
-                        if ($this->hasTimezone()) {
-                            $timezone = $this->getTimezone();
-                            $userTimezone = new \DateTimeZone($timezone);
-                            $offset = $userTimezone->getOffset($value);
-                            $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                            if ($value->getTimezone()->getName() != $userTimezone->getName()) {
-                                #$value->add($myInterval);
-                                #$value->setTimezone($userTimezone);
-                            }
-                        }
                         return $value->format(self::DATE_FORMAT);
                     } else {
                         return '';
@@ -79,16 +69,6 @@ class ViewBeanConverter extends AbstractBeanConverter
                 return $value === 'true' || $value === true;
             case \DateTime::class:
                 $value = new \DateTime($value);
-                if ($this->hasTimezone()) {
-                    $timezone = $this->getTimezone();
-                    $userTimezone = new \DateTimeZone($timezone);
-                    $offset = $userTimezone->getOffset($value);
-                    $myInterval = \DateInterval::createFromDateString((string)$offset . 'seconds');
-                    if ($value->getTimezone()->getName() != $userTimezone->getName()) {
-                        #$value->sub($myInterval);
-                        #$value->setTimezone($userTimezone);
-                    }
-                }
                 return $value;
             case UploadedFileInterface::class:
                 return $value instanceof UploadedFileInterface ? $value : null;
@@ -113,7 +93,7 @@ class ViewBeanConverter extends AbstractBeanConverter
     protected function sanitizeString(string $name, $value)
     {
         if (in_array($name, ['ArticleTranslation_Teaser', 'ArticleTranslation_Text', 'ArticleTranslation_Footer'])) {
-            $allowed = '<div><span><pre><p><br><hr><hgroup><h1><h2><h3><h4><h5><h6>
+            $allowed = '<div><span><pre><p><strike><br><hr><hgroup><h1><h2><h3><h4><h5><h6>
             <ul><ol><li><dl><dt><dd><strong><em><b><i><u>
             <img><a><abbr><address><blockquote>
             <form><fieldset><label><input><textarea>

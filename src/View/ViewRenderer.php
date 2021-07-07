@@ -6,14 +6,16 @@ namespace Pars\Mvc\View;
 
 use Mezzio\Template\TemplateRendererInterface;
 use Pars\Bean\Converter\BeanConverterAwareInterface;
-use Pars\Bean\Type\Base\BeanInterface;
-
+use Pars\Helper\Debug\DebugHelper;
 /**
  * Class ViewRenderer
  * @package Pars\Mvc\View
  */
 class ViewRenderer
 {
+
+    public const HTML_START = '<!DOCTYPE html>';
+
     /**
      * @var TemplateRendererInterface
      */
@@ -23,6 +25,11 @@ class ViewRenderer
      * @var string
      */
     private string $templateFolder;
+
+    /**
+     * @var bool
+     */
+    protected bool $flush = true;
 
     /**
      * ViewRenderer constructor.
@@ -54,12 +61,14 @@ class ViewRenderer
     /**
      * @param ViewInterface $view
      * @param string|null $id
-     * @param bool $onlyelement
-     * @return string
      * @throws ViewException
      */
-    public function render(ViewInterface $view, ?string $id = null, bool $onlyelement = false): string
+    public function display(ViewInterface $view, ?string $id = null)
     {
+        $view->setRenderer($this);
+        if (DebugHelper::hasDebug()) {
+            echo DebugHelper::getDebug();
+        }
         $this->getTemplateRenderer()->addDefaultParam(
             TemplateRendererInterface::TEMPLATE_ALL,
             'templateFolder',
@@ -74,58 +83,49 @@ class ViewRenderer
             $view->setBeanConverter(new ViewBeanConverter());
         }
         if ($view->hasTemplate()) {
-            return $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
+            echo $this->getTemplateRenderer()->render($this->getTemplateFolder() . '::' . $view->getTemplate());
         } elseif ($view->hasLayout()) {
-            $layout = $view->getLayout();
-            if (
-                $view instanceof BeanConverterAwareInterface &&
-                $layout instanceof BeanConverterAwareInterface
-            ) {
-                if ($view->hasBeanConverter()) {
-                    if (!$layout->hasBeanConverter()) {
-                        $layout->setBeanConverter($view->getBeanConverter());
-                    }
-                }
-            }
-            $result = '<!DOCTYPE html>';
-            if ($view instanceof BeanInterface) {
-                if ($view->hasBeanConverter()) {
-                    $bean = $view->getBeanConverter()->convert($view);
-                } else {
-                    $bean = $view;
-                }
-                if ($id !== null) {
-                    $result = '';
-                    $layout = $view->getLayout();
-                    $renderable = new $layout();
-                    $element = $view->getLayout()->getElementById($id);
-                    if ($renderable instanceof BeanConverterAwareInterface && $element !== null) {
-                        if ($view->hasBeanConverter()) {
-                            $renderable->setBeanConverter($view->getBeanConverter());
-                            $element->setBeanConverter($view->getBeanConverter());
-                        } else {
-                            $renderable->setBeanConverter(new ViewBeanConverter());
-                            $element->setBeanConverter(new ViewBeanConverter());
-                        }
-                    }
-                    if ($onlyelement) {
-                        $renderable = $element;
-                    } else {
-                        $renderable->getComponentList()->push($element);
-                    }
-                } else {
-                    $renderable = $view->getLayout();
-                }
-                if ($renderable instanceof RenderableInterface) {
-                    $result .= $renderable->render($bean, true);
-                }
+            $bean = $view->hasBeanConverter() ? $view->getBeanConverter()->convert($view) : $view;
+            if ($id === null) {
+                echo self::HTML_START;
+                $renderable = $view->getLayout();
             } else {
-                $result .= $view->getLayout()->render();
+                $id = str_replace('#', '', $id);
+                $renderable = $view->getLayout()->getElementById($id);
             }
-            return $result;
+            if ($renderable instanceof RenderableInterface) {
+                if (!$renderable->hasView()) {
+                    $renderable->setView($view);
+                }
+                $renderable->display($bean, true);
+            }
         } else {
             $class = get_class($view);
             throw new ViewException("Could not render view {$class}, no template or layout set.");
         }
     }
+
+    /**
+     * @param ViewInterface $view
+     * @param string|null $id
+     * @return string
+     * @throws ViewException
+     */
+    public function render(ViewInterface $view, ?string $id = null): string
+    {
+        $this->flush = false;
+        ob_start();
+        $this->display($view, $id);
+        return ob_get_clean();
+    }
+
+    /**
+     * @return bool
+     */
+    public function isFlush(): bool
+    {
+        return $this->flush;
+    }
+
+
 }

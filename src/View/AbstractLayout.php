@@ -2,13 +2,12 @@
 
 namespace Pars\Mvc\View;
 
-abstract class AbstractLayout extends HtmlElement implements LayoutInterface
+abstract class AbstractLayout extends ViewElement implements LayoutInterface
 {
     private ?ComponentList $componentList = null;
     private ?ComponentList $componentListBefore = null;
     private ?ComponentList $componentListAfter = null;
     protected ?array $staticFiles = [];
-
     /**
      * @return ComponentList
      */
@@ -61,4 +60,7 @@ abstract class AbstractLayout extends HtmlElement implements LayoutInterface
     {
         return $this->staticFiles ?? [];
     }
+
+
+
 }

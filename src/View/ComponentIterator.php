@@ -7,7 +7,7 @@ class ComponentIterator extends \IteratorIterator
     /**
      * @return ComponentInterface
      */
-    public function current(): HtmlInterface
+    public function current(): ViewElementInterface
     {
         return parent::current();
     }

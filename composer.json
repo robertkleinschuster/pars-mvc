@@ -13,12 +13,10 @@
     "forum": "https://discourse.parsphp.org/"
   },
   "require": {
-    "php": "^7.4",
-    "pars/pars-core": "dev-master",
-    "pars/pars-helpers": "dev-master",
-    "pars/pars-models": "dev-master",
-    "pars/pars-beans": "dev-master",
-    "pars/pars-patterns": "dev-master"
+    "php": "^7.4 || ^8.0",
+    "pars/pars-helpers": "@dev",
+    "pars/pars-beans": "@dev",
+    "pars/pars-patterns": "@dev"
   },
   "autoload": {
     "psr-4": {
